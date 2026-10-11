@@ -6,8 +6,9 @@ construye una **plataforma de métricas multi-juego**: cada juego del estudio ma
 eventos a la API y los administradores ven estadísticas por juego en un dashboard.
 
 Primer juego registrado: **"La Casa del Bosque"** (Unity, 2D plataformero narrativo sobre
-el duelo infantil, ~20 min, lineal, un solo jugador). Tres niveles: casa abandonada,
-habitación en llamas, cuarto de hospital. Mecánicas: saltar, esquivar fantasmas, evitar
+el duelo infantil, ~20 min, lineal, un solo jugador). Tres niveles, en este orden:
+casa abandonada (`casa_abandonada`) → cuarto de hospital (`hospital_cuarto`) → habitación
+en llamas (`habitacion_llamas`). Mecánicas: saltar, esquivar fantasmas, evitar
 caer a la lava, recolectar una flor para pasar de nivel.
 
 ### Los 3 entregables del curso (este repo es el ENTREGA 1)
@@ -91,10 +92,12 @@ CLAUDE.md
 - Los IDs de jugador y sesión son UUID v4 (string). Los `_id` de Mongo no se exponen
   como llave de negocio.
 - Formato de error uniforme: `{ "error": { "codigo": "...", "mensaje": "...", "detalles": [] } }`
-- Códigos HTTP: 201 al crear, 400 validación, 401 sin auth, 403 sin permiso, 404, 429 rate limit.
+- Códigos HTTP: 201 al crear, 400 validación, 401 sin auth, 403 sin permiso, 404,
+  413 body demasiado grande, 429 rate limit.
 - Respuestas de listas con paginación (`pagina`, `limite`, `total`) donde aplique.
 - Ingesta por lotes: `POST /eventos` acepta un evento o un arreglo (Unity puede acumular
-  y mandar varios para no saturar la red).
+  y mandar varios para no saturar la red). Aceptación parcial: responde
+  `201 { aceptados, rechazados: [{ indice, codigo, mensaje }] }` aunque `aceptados` sea 0.
 - Índices pensados para las consultas del dashboard (juegoId + tipo + timestamp, etc.).
 
 ## 7. Esquema base de evento

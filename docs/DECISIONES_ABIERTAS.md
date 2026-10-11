@@ -19,9 +19,8 @@ Aquí se anota lo que **no** está definido en `CLAUDE.md` o en `docs/`.
 | A-03 | Hosting de la API: Render o Railway              | El deploy (día 4–5), la URL "producción" en Postman y el valor de `trust proxy` (S-23). |
 | A-04 | Modo oscuro / identidad visual del estudio       | `docs/DISENO_DASHBOARD.md`.                                                       |
 | A-05 | Crear `docs/DISENO_DASHBOARD.md`                 | **Todo el Angular.** No se escribe dashboard hasta que exista.                    |
-| A-06 | `suelo_descubierto`: tipo de elemento del catálogo, `nivelId` y disparador | Su entrada en el catálogo. **No está en el seed** hasta que se defina. El resto de A-06 quedó resuelto (R-02). |
+| A-06 | `suelo_descubierto` es un **logro**; faltan su `nivelId` y su disparador | Su entrada en el catálogo. **No está en el seed** hasta que se defina. El resto de A-06 quedó resuelto (R-02). |
 | A-07 | Imagen y límites de mundo (`minX, maxX, minY, maxY`) de cada nivel | El mapa de calor. Los entrega el equipo de Unity.                   |
-| A-08 | ¿El SDK reintenta también ante 429 o 5xx?        | Comportamiento del SDK. Hoy solo reintenta por fallo de red (R-06). Con `eventoId` reintentar sería seguro. |
 
 ---
 
@@ -40,7 +39,6 @@ Aquí se anota lo que **no** está definido en `CLAUDE.md` o en `docs/`.
 | S-10 | `juegoId` es un UUID v4 generado al crear el juego; `slug` es aparte, legible, para URLs. IDs de catálogo en `snake_case`. | `juegoId` = slug.                                                   | Seed, SDK de Unity (config del `juegoId`).           |
 | S-11 | Se usa **413** para body demasiado grande, aunque §6 de `CLAUDE.md` no lo lista.                               | Responder 400.                                                      | Un código de estado.                                 |
 | S-13 | El JWT del admin expira en 8 h.                                                                                | Otra duración; refresh token.                                       | Solo configuración.                                  |
-| S-14 | El rate limit por IP es de **60 peticiones/min** (el método por IP + tope por key está resuelto en R-05; solo el número es supuesto). | Otro valor.                                                         | Solo configuración.                                  |
 | S-15 | La cola offline (guardar eventos sin red y reenviarlos) es responsabilidad del SDK de Unity (entrega 2).       | Que la API ofrezca algo específico.                                 | Ninguno en esta entrega.                             |
 | S-16 | Con `consentimiento: false`: no se crea sesión (respuesta 200 con `sessionId: null`); si el jugador no existía no se guarda nada; si existía, solo cambia `consentimiento` a `false`, sus datos se conservan hasta borrarlos y sus eventos nuevos se rechazan con `SIN_CONSENTIMIENTO`. | Borrar automáticamente los datos anteriores al retirar el consentimiento. | Lógica de `POST /sesiones` y privacidad.            |
 | S-17 | El borrado de datos de un jugador lo hace un admin (JWT); Unity no puede pedirlo directamente.                 | Endpoint de borrado con `X-Api-Key` para que el jugador lo pida desde el juego. | Un endpoint más y el SDK.                     |
@@ -52,6 +50,7 @@ Aquí se anota lo que **no** está definido en `CLAUDE.md` o en `docs/`.
 | S-23 | `trust proxy` = 1 salto (un proxy delante, como en Render/Railway).                                            | Otro número de saltos según el hosting final (A-03).                | Configuración de Express; si está mal, el rate limit por IP no funciona. |
 | S-24 | `dialogoId` es texto libre (1–64 caracteres), no se valida contra el catálogo.                                | Agregar los diálogos al catálogo.                                   | Catálogo y validación.                               |
 | S-25 | `tutorial_completado.duracionMs` = desde el primer `nivel_inicio` de `casa_abandonada` en la sesión hasta que termina el último aviso. | Medirlo desde que aparece el primer aviso.                          | SDK de Unity.                                        |
+| S-26 | `GET /salud` lleva solo un límite laxo de 600 req/min por IP (no el de ingesta ni el de login).                | Sin ningún límite.                                                  | Solo configuración.                                  |
 
 ---
 
@@ -75,7 +74,13 @@ Aquí se anota lo que **no** está definido en `CLAUDE.md` o en `docs/`.
 | R-03 | Los logros los manda Unity (los de completar nivel junto con `nivel_fin` `completado`; `tutorial_superado` junto con `tutorial_completado`). La API no los calcula. | — | 2026-10-10 | Equipo |
 | R-04 | Lotes con **aceptación parcial**: `201 { aceptados, rechazados: [{ indice, codigo, mensaje }] }`.                 | S-03 (todo o nada) | 2026-10-10 | Equipo |
 | R-05 | Rate limit **por IP** con `trust proxy` activado, más un tope de **1000 req/min por API key** (la key la comparten todos los jugadores). | S-14 (por key) | 2026-10-10 | Equipo |
-| R-06 | El SDK reintenta solo por fallo de red, nunca por un rechazo.                                                     | —          | 2026-10-10 | Equipo |
+| R-06 | El SDK reintenta ante **fallo de red, 429 y 5xx** con espera creciente (backoff); **nunca** ante otros 4xx ni por eventos en `rechazados`. (Actualizada: antes solo fallo de red.) | A-08 | 2026-10-10 | Equipo |
 | R-07 | `eventoId` (UUID v4, obligatorio) en los campos comunes, índice único `{ juegoId, eventoId }`. Un duplicado se ignora sin error y cuenta como aceptado. | S-12 (sin `eventoId`) | 2026-10-10 | Equipo |
 | R-08 | `consentimiento` se recibe en `POST /sesiones` y se guarda en `jugadores`. Qué pasa si es `false`: S-16.          | —          | 2026-10-10 | Equipo |
 | R-09 | Se documentan colecciones, endpoints de admin, alta de juegos/API keys por script (key hasheada, mostrada una sola vez) y la agregación de cada métrica. | — | 2026-10-10 | Equipo |
+| R-10 | Límite por IP de ingesta: **300 req/min** (varios jugadores comparten IP en redes de la universidad). Se mantiene 1000 req/min por API key. | S-14 (60/min) | 2026-10-10 | Equipo |
+| R-11 | Abandono (§10.8): una sesión cuyo último evento es `nivel_fin` `completado` de un nivel que no es el último cuenta como `entreNiveles`, no como abandono dentro del nivel. | — | 2026-10-10 | Equipo |
+| R-12 | `GET /api/v1/salud` sin auth, responde `200 { estado: "ok" }`.                                                   | —          | 2026-10-10 | Equipo |
+| R-13 | `suelo_descubierto` es un logro (nivelId y disparador siguen en A-06).                                          | A-06 (tipo) | 2026-10-10 | Equipo |
+| R-14 | Se mantiene `juegoId` UUID v4 + `slug` aparte (S-10 confirmado).                                                 | S-10       | 2026-10-10 | Equipo |
+| R-15 | Orden de niveles en `CLAUDE.md` §1 actualizado; `CLAUDE.md` §6 documenta el 413 y el `201 { aceptados, rechazados }` aun con `aceptados: 0`. | — | 2026-10-10 | Equipo |

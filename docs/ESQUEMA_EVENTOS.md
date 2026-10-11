@@ -69,15 +69,26 @@ Al arrancar el juego, el cliente llama `POST /api/v1/sesiones` con `juegoId`, `p
 - Cada evento se valida por separado. Los válidos se guardan; los inválidos se reportan.
   La respuesta es **`201 { aceptados, rechazados: [{ indice, codigo, mensaje }] }`**.
   `indice` es la posición del evento en el arreglo (0 si se mandó un objeto).
+  La respuesta es **201 aunque `aceptados` sea 0** (todos rechazados): la petición en sí
+  fue válida; el detalle va en `rechazados`.
 - **Duplicados:** si llega un `eventoId` que ya existe para ese juego, se ignora sin error
   y **cuenta como aceptado**.
 - Errores de **toda la petición** (no llegan a validar eventos): API key inválida (401),
   body que no es objeto ni arreglo (400), más de 100 eventos (400), body mayor a 100 KB
   (413), rate limit (429) (S-04, S-11).
-- **Reintentos del SDK:** el SDK reintenta un lote **solo cuando hay fallo de red** (no
-  llegó respuesta). **Nunca reintenta un evento rechazado**: un rechazo significa que el
-  evento está mal y volver a mandarlo daría el mismo resultado. Como cada evento lleva
-  `eventoId`, reenviar un lote completo es seguro (los repetidos se ignoran).
+- **Reintentos del SDK:**
+
+  | Resultado de la petición                         | ¿Reintenta?                                      |
+  |--------------------------------------------------|--------------------------------------------------|
+  | Fallo de red (no llegó respuesta, timeout)       | Sí, con espera creciente (backoff)               |
+  | `429` (rate limit)                               | Sí, con espera creciente (backoff)               |
+  | `5xx` (error del servidor)                       | Sí, con espera creciente (backoff)               |
+  | Cualquier otro `4xx` (400, 401, 403, 404, 413)   | **No.** Volver a mandarlo daría el mismo error.  |
+  | `201` con eventos en `rechazados`                | **No reintenta los rechazados.** Están mal; reenviarlos daría el mismo resultado. |
+
+  Como cada evento lleva `eventoId`, reenviar un lote completo es seguro (los repetidos se
+  ignoran). Los valores del backoff (espera inicial, máximo, número de intentos) los define
+  el SDK en la entrega 2.
 
 ### 1.4 Fin de sesión
 - Con `sesion_fin`: la sesión guarda `fin` = `timestamp` de ese evento.
@@ -88,13 +99,17 @@ Al arrancar el juego, el cliente llama `POST /api/v1/sesiones` con `juegoId`, `p
   no entran en las métricas de duración (S-05).
 
 ### 1.5 Rate limit y CORS
-- **Por IP:** 60 peticiones/min por IP a los endpoints de ingesta (el valor es S-14). La
+- **Por IP:** 300 peticiones/min por IP a los endpoints de ingesta. Es alto porque varios
+  jugadores pueden compartir IP en redes de la universidad (R-10). La
   API se configura con `trust proxy` activado (1 salto, el proxy de Render/Railway) para
   leer la IP real del jugador (S-23). La IP solo se usa en memoria para contar peticiones;
   **no se guarda** en la base de datos.
 - **Por API key:** tope alto de **1000 peticiones/min por key**, como protección si una key
   se filtra o un build tiene un bug que manda en bucle.
 - **Login de admin:** 5 intentos cada 15 min por IP (S-18).
+- **`GET /salud`:** sin el rate limit de ingesta ni el de login, para que el monitoreo del
+  hosting pueda consultarlo seguido. Solo lleva un límite laxo de 600 peticiones/min por
+  IP, para que no se pueda usar para saturar el servidor (S-26).
 - CORS: solo el dominio del dashboard. Unity no usa CORS (no es navegador), salvo un build
   WebGL, que no está previsto.
 
@@ -297,7 +312,8 @@ En el seed se define **una sola constante** con este catálogo. Se ampliará des
 | `la_verdad`                     | **La verdad**                | **Reconstruye la carta con todas las piezas de la habitación en llamas** | Al recoger las 4 piezas de carta (`carta_pieza_1..4`).      |
 
 Los nombres y descripciones de todos los logros salvo `la_verdad` son propuestos (S-20).
-`suelo_descubierto` **no está en el catálogo**: sigue abierto (A-06).
+`suelo_descubierto` es un **logro**, pero **no está en el catálogo ni en el seed**: su
+`nivelId` y su disparador siguen abiertos (A-06).
 
 **Coleccionables** (constantes del seed: 4 por nivel):
 
@@ -407,6 +423,12 @@ Los campos de la sección 2 más `recibidoEn`.
 ## 7. Endpoints
 
 Todos con prefijo `/api/v1`. Errores con el formato de la sección 9.
+
+### 7.0 Salud — sin auth
+
+| Método | Ruta      | Auth | Respuesta                | Notas                                                         |
+|--------|-----------|------|--------------------------|---------------------------------------------------------------|
+| GET    | `/salud`  | no   | `200 { estado: "ok" }`   | Para el health check del hosting. Sin rate limit estricto (sección 1.5). No consulta datos ni expone versiones. |
 
 ### 7.1 Ingesta (la usa Unity) — auth: `X-Api-Key`
 
@@ -653,10 +675,18 @@ db.eventos.aggregate([
 `datos`: `[{ nivelId, pasaron: { sesiones, promedioIntentos, maxIntentos }, seRindieron: { … } }]`.
 
 ### 10.8 Abandono por nivel (drop-off)
-Último nivel visto en cada sesión que no terminó el juego. Solo sesiones terminadas
-(misma regla que 10.1).
+Último evento de nivel de cada sesión que no terminó el juego. Solo sesiones terminadas
+(misma regla que 10.1). Cada sesión cae en una sola categoría:
+
+| Último evento de nivel de la sesión                                   | Categoría                      |
+|-----------------------------------------------------------------------|--------------------------------|
+| `nivel_fin` `completado` del **último** nivel                         | Terminó el juego (no cuenta)   |
+| `nivel_fin` `completado` de un nivel que **no** es el último          | `entreNiveles`, por nivel completado (cerró después de pasar ese nivel y antes de empezar el siguiente) |
+| Cualquier otro (`nivel_inicio`, `nivel_fin` con `muerte` o `abandono`) | `dentroDelNivel`, por nivel (abandonó mientras jugaba ese nivel) |
+| Sin eventos de nivel                                                  | `antesDelPrimerNivel`          |
 
 ```js
+const limite = new Date(Date.now() - 30 * 60 * 1000); // S-05
 db.eventos.aggregate([
   { $match: { ...F, tipo: { $in: ["nivel_inicio", "nivel_fin"] } } },
   { $sort: { sessionId: 1, timestamp: 1 } },
@@ -664,13 +694,28 @@ db.eventos.aggregate([
               ultimoNivel: { $last: "$data.nivelId" },
               ultimoTipo: { $last: "$tipo" },
               ultimoResultado: { $last: "$data.resultado" } } },
-  { $match: { $nor: [ { ultimoNivel: ultimoNivelId, ultimoResultado: "completado" } ] } },
-  { $group: { _id: "$ultimoNivel", sesiones: { $sum: 1 } } }
+  // solo sesiones terminadas
+  { $lookup: { from: "sesiones", localField: "_id", foreignField: "sessionId", as: "sesion" } },
+  { $unwind: "$sesion" },
+  { $match: { $or: [ { "sesion.fin": { $ne: null } }, { "sesion.ultimoEventoEn": { $lt: limite } } ] } },
+  { $addFields: {
+      completoNivel: { $and: [ { $eq: ["$ultimoTipo", "nivel_fin"] }, { $eq: ["$ultimoResultado", "completado"] } ] } } },
+  { $match: { $nor: [ { completoNivel: true, ultimoNivel: ultimoNivelId } ] } },   // terminaron el juego
+  { $group: { _id: { categoria: { $cond: ["$completoNivel", "entreNiveles", "dentroDelNivel"] },
+                     nivelId: "$ultimoNivel" },
+              sesiones: { $sum: 1 } } }
 ])
 ```
-Las sesiones sin ningún evento de nivel se cuentan aparte como `antesDelPrimerNivel`
-(`sesiones` terminadas − sesiones con eventos de nivel).
-`datos`: `{ antesDelPrimerNivel, porNivel: [{ nivelId, sesiones, porcentaje }] }`.
+`antesDelPrimerNivel` = sesiones terminadas (consulta de 10.1) − sesiones que aparecen en
+esta consulta o que terminaron el juego. `porcentaje` es sobre las sesiones terminadas.
+
+`datos`:
+```js
+{ sesionesTerminadas,
+  antesDelPrimerNivel: { sesiones, porcentaje },
+  dentroDelNivel: [{ nivelId, sesiones, porcentaje }],   // abandono dentro de ese nivel
+  entreNiveles:   [{ nivelId, sesiones, porcentaje }] }  // nivelId = nivel que acababa de completar
+```
 
 ### 10.9 Completado del tutorial
 
