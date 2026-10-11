@@ -16,8 +16,6 @@ Aquí se anota lo que **no** está definido en `CLAUDE.md` o en `docs/`.
 | ID   | Decisión                                         | Qué bloquea                                                                       |
 |------|--------------------------------------------------|-----------------------------------------------------------------------------------|
 | A-03 | Hosting de la API: Render o Railway              | El deploy (día 4–5), la URL "producción" en Postman y el valor de `trust proxy` (S-23). |
-| A-04 | Modo oscuro / identidad visual del estudio       | `docs/DISENO_DASHBOARD.md`.                                                       |
-| A-05 | Crear `docs/DISENO_DASHBOARD.md`                 | **Todo el Angular.** No se escribe dashboard hasta que exista.                    |
 | A-06 | `suelo_descubierto` es un **logro**; faltan su `nivelId` y su disparador | Su entrada en el catálogo. **No está en el seed** hasta que se defina. El resto de A-06 quedó resuelto (R-02). |
 | A-07 | Imagen y límites de mundo (`minX, maxX, minY, maxY`) de cada nivel | El mapa de calor. Los entrega el equipo de Unity.                   |
 
@@ -93,3 +91,5 @@ Aquí se anota lo que **no** está definido en `CLAUDE.md` o en `docs/`.
 | R-18 | Validación de eventos por tipo con una librería de esquemas (propuesta: zod), no a mano. | — | 2026-10-10 | Equipo |
 | R-19 | Rúbrica: no hay. Criterio libre del profesor: sistema **escalable, completo, bien integrado y con visión de futuro**. Se agregan entregables: segundo juego ficticio en el seed, `docs/ARQUITECTURA.md` (diagrama, decisiones, "Cómo crece" 10x/100x), OpenAPI en `/api/v1/docs` desde los esquemas, prueba de carga con resultados en el README. Reflejado en `CLAUDE.md` §10. | A-02 | 2026-10-10 | Equipo |
 | R-20 | La primera estadística extra (después de las imprescindibles) es el mapa de calor. | — | 2026-10-10 | Equipo |
+| R-21 | `docs/DISENO_DASHBOARD.md` creado: es la fuente de verdad visual del dashboard (tokens, componentes, gráficas, pantallas, reglas de Angular). Desbloquea el Angular. | A-05 | 2026-10-10 | Equipo |
+| R-22 | Tema **oscuro por defecto**. El modo claro queda preparado en los tokens pero no se implementa en la entrega 1. Identidad: marca "Estudio Xolos", acento brasa y pétalo azul (ver `DISENO_DASHBOARD.md`). | A-04 (en parte: el modo claro queda para después) | 2026-10-10 | Equipo |
