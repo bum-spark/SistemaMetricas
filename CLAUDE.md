@@ -1,4 +1,4 @@
-# Plataforma de analítica para videojuegos (nombre del estudio: PENDIENTE)
+# Plataforma de analítica para videojuegos — Estudio Xolos
 
 ## 1. Contexto
 Proyecto de la materia de sistemas propietarios. Estudio de videojuegos ficticio que
@@ -15,8 +15,8 @@ caer a la lava, recolectar una flor para pasar de nivel.
 2. Juego en Unity con el SDK/cliente de métricas integrado (otro repo).
 3. Página web del estudio: proceso de desarrollo, equipo y foro (otro repo).
 
-El nombre del estudio aún no está definido: usar una variable de configuración
-(`APP_NAME`), nunca escribirlo a mano en el código.
+Nombre del estudio: **Estudio Xolos**. En el código se lee siempre de la variable de
+configuración `APP_NAME` (valor por defecto "Estudio Xolos"); nunca escribirlo a mano.
 
 ## 2. Reglas de trabajo para Claude (importante)
 - **No inventes requisitos.** Si algo no está en este archivo o en `docs/`, pregunta o
@@ -150,7 +150,6 @@ adquisición y retención D1/D7/D30; no aplican a un juego gratuito de ~20 min.
 - [ ] `docs/ESQUEMA_EVENTOS.md` actualizado y coincidente con lo implementado
 
 ## 11. Decisiones abiertas (el usuario las resuelve; no las asumas)
-- Nombre del estudio
 - Requisitos exactos de la rúbrica del profesor para la entrega 1
 - Proveedor final de hosting de la API
 - Si el dashboard llevará modo oscuro / identidad visual del estudio
