@@ -15,7 +15,6 @@ Aquí se anota lo que **no** está definido en `CLAUDE.md` o en `docs/`.
 
 | ID   | Decisión                                         | Qué bloquea                                                                       |
 |------|--------------------------------------------------|-----------------------------------------------------------------------------------|
-| A-02 | Rúbrica exacta del profesor (entrega 1)          | Puede cambiar prioridades de la sección 10 de `CLAUDE.md`.                        |
 | A-03 | Hosting de la API: Render o Railway              | El deploy (día 4–5), la URL "producción" en Postman y el valor de `trust proxy` (S-23). |
 | A-04 | Modo oscuro / identidad visual del estudio       | `docs/DISENO_DASHBOARD.md`.                                                       |
 | A-05 | Crear `docs/DISENO_DASHBOARD.md`                 | **Todo el Angular.** No se escribe dashboard hasta que exista.                    |
@@ -51,6 +50,11 @@ Aquí se anota lo que **no** está definido en `CLAUDE.md` o en `docs/`.
 | S-24 | `dialogoId` es texto libre (1–64 caracteres), no se valida contra el catálogo.                                | Agregar los diálogos al catálogo.                                   | Catálogo y validación.                               |
 | S-25 | `tutorial_completado.duracionMs` = desde el primer `nivel_inicio` de `casa_abandonada` en la sesión hasta que termina el último aviso. | Medirlo desde que aparece el primer aviso.                          | SDK de Unity.                                        |
 | S-26 | `GET /salud` lleva solo un límite laxo de 600 req/min por IP (no el de ingesta ni el de login).                | Sin ningún límite.                                                  | Solo configuración.                                  |
+| S-27 | El segundo juego del seed se llama "Faro Nocturno (demo)" (`faro-nocturno-demo`), con 4 niveles, causas `agua`/`caida`/`cuervo`, 3 logros y 3 conchas (catálogo en `ESQUEMA_EVENTOS.md` §5.2). | Otro nombre o catálogo. | Solo el seed. |
+| S-28 | El segundo juego usa solo tipos de evento ya existentes. Un tipo nuevo requiere agregar su esquema zod y desplegar; mover los esquemas del `data` al catálogo (JSON Schema) queda como crecimiento futuro. | Esquemas dinámicos desde la entrega 1 (más complejo). | Validación de ingesta. |
+| S-29 | OpenAPI 3.1 armado con la conversión nativa de zod 4 a JSON Schema (`z.toJSONSchema`) y servido con Swagger UI; `/api/v1/docs` es público, sin auth. | Librería `zod-to-openapi`; proteger `/docs` con JWT. | Una dependencia y un middleware. |
+| S-30 | Volumen de referencia 1x: ~100 jugadores/día, ~150 eventos por sesión, ~15 000 eventos/día (base de "Cómo crece" en `ARQUITECTURA.md`). | Otras cifras. | Solo el texto de `ARQUITECTURA.md`. |
+| S-31 | La prueba de carga corre contra la API **local** conectada a Atlas, con el límite por IP subido por variable de entorno (desde una sola máquina, 300/min cortaría la prueba). Una segunda corrida con los límites normales comprueba que aparece el 429. No se prueba contra producción (plan gratuito, arranques en frío). | Probar contra producción. | Script y sección del README. |
 
 ---
 
@@ -87,3 +91,5 @@ Aquí se anota lo que **no** está definido en `CLAUDE.md` o en `docs/`.
 | R-16 | `secuencia` (entero ≥ 1, obligatorio) en los campos comunes: contador por sesión que incrementa el cliente. Las consultas que ordenan eventos usan `{ sessionId, secuencia }`. Los duplicados se siguen detectando por `eventoId`. | — | 2026-10-10 | Equipo |
 | R-17 | MongoDB 7.0 o superior en Atlas y en los tests de agregación (por `$median`). | — | 2026-10-10 | Equipo |
 | R-18 | Validación de eventos por tipo con una librería de esquemas (propuesta: zod), no a mano. | — | 2026-10-10 | Equipo |
+| R-19 | Rúbrica: no hay. Criterio libre del profesor: sistema **escalable, completo, bien integrado y con visión de futuro**. Se agregan entregables: segundo juego ficticio en el seed, `docs/ARQUITECTURA.md` (diagrama, decisiones, "Cómo crece" 10x/100x), OpenAPI en `/api/v1/docs` desde los esquemas, prueba de carga con resultados en el README. Reflejado en `CLAUDE.md` §10. | A-02 | 2026-10-10 | Equipo |
+| R-20 | La primera estadística extra (después de las imprescindibles) es el mapa de calor. | — | 2026-10-10 | Equipo |

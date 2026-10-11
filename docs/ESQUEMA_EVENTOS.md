@@ -16,7 +16,7 @@
 2. Campos comunes de los eventos
 3. Eventos genéricos
 4. Eventos específicos de La Casa del Bosque
-5. Catálogo por juego (y catálogo de La Casa del Bosque)
+5. Catálogo por juego (La Casa del Bosque y juego demo)
 6. Colecciones e índices
 7. Endpoints
 8. Alta de juegos, API keys y admins (scripts)
@@ -107,7 +107,7 @@ Al arrancar el juego, el cliente llama `POST /api/v1/sesiones` con `juegoId`, `p
 - **Por API key:** tope alto de **1000 peticiones/min por key**, como protección si una key
   se filtra o un build tiene un bug que manda en bucle.
 - **Login de admin:** 5 intentos cada 15 min por IP (S-18).
-- **`GET /salud`:** sin el rate limit de ingesta ni el de login, para que el monitoreo del
+- **`GET /salud` y `GET /docs`:** sin el rate limit de ingesta ni el de login, para que el monitoreo del
   hosting pueda consultarlo seguido. Solo lleva un límite laxo de 600 peticiones/min por
   IP, para que no se pueda usar para saturar el servidor (S-26).
 - CORS: solo el dominio del dashboard. Unity no usa CORS (no es navegador), salvo un build
@@ -339,6 +339,39 @@ Nombres visibles propuestos: "Pieza de carta N", "Pétalo N" (S-20).
 **Tipos de evento:** los 10 genéricos + `flor_recogida`, `dialogo_saltado`,
 `coleccionable_encontrado`, `tutorial_completado`.
 
+### 5.2 Segundo juego ficticio (solo para datos de prueba)
+
+Lo crea `seed-datos` para demostrar que el sistema es multi-juego: otro catálogo, otros
+niveles y logros, y el mismo código en la API y el dashboard. No es un juego real del
+estudio. Nombre, IDs y textos son propuestos (S-27).
+
+- **Nombre:** "Faro Nocturno (demo)" · **slug:** `faro-nocturno-demo`
+- **Diferencias a propósito con La Casa del Bosque:** 4 niveles en lugar de 3, otras
+  causas de muerte, sin tutorial, sin `flor_recogida` ni `tutorial_completado`, y 3
+  coleccionables en un nivel distinto. Así el dashboard tiene que adaptarse solo al catálogo.
+
+| `orden` | `nivelId`        | `nombre`             | `tieneTutorial` |
+|:-------:|------------------|----------------------|:---------------:|
+| 1       | `muelle`         | Muelle               | no              |
+| 2       | `escalera_faro`  | Escalera del faro    | no              |
+| 3       | `sala_lampara`   | Sala de la lámpara   | no              |
+| 4       | `azotea`         | Azotea               | no              |
+
+**Causas de muerte:** `agua` (Agua), `caida` (Caída), `cuervo` (Cuervo).
+
+**Logros:** `primer_paso` (Primer paso: completa el muelle), `luz_encendida` (Luz
+encendida: completa la azotea), `coleccionista` (Coleccionista: encuentra las 3 conchas).
+
+**Coleccionables:** `concha_1`, `concha_2`, `concha_3` en `muelle` (dan `coleccionista`).
+
+**Tipos de evento:** los 10 genéricos + `coleccionable_encontrado` + `dialogo_saltado`.
+
+> **Límite actual:** el segundo juego solo usa tipos de evento que ya existen. El catálogo
+> decide *qué* tipos acepta cada juego, pero la forma del `data` de cada tipo está en los
+> esquemas de validación de la API (código). Un tipo **nuevo** (por ejemplo
+> `palanca_activada`) hoy requiere agregar su esquema y desplegar. Mover esos esquemas
+> al catálogo está en `ARQUITECTURA.md`, "Cómo crece" (S-28).
+
 ---
 
 ## 6. Colecciones e índices
@@ -441,6 +474,8 @@ Todos con prefijo `/api/v1`. Errores con el formato de la sección 9.
 | Método | Ruta      | Auth | Respuesta                | Notas                                                         |
 |--------|-----------|------|--------------------------|---------------------------------------------------------------|
 | GET    | `/salud`  | no   | `200 { estado: "ok" }`   | Para el health check del hosting. Sin rate limit estricto (sección 1.5). No consulta datos ni expone versiones. |
+| GET    | `/docs`   | no   | Interfaz Swagger UI      | Documentación OpenAPI 3.1 de todos los endpoints. Se genera desde los esquemas zod de validación, así no se desincroniza del código. Mismo límite laxo que `/salud` (S-26, S-29). |
+| GET    | `/docs/openapi.json` | no | Documento OpenAPI en JSON | Para importarlo en Postman u otras herramientas. |
 
 ### 7.1 Ingesta (la usa Unity) — auth: `X-Api-Key`
 

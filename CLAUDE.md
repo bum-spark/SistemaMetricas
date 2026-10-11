@@ -46,8 +46,8 @@ configuración `APP_NAME` (valor por defecto "Estudio Xolos"); nunca escribirlo 
 /api            Express + Mongoose
 /dashboard      Angular
 /postman        colección y entornos exportados (local y producción)
-/docs           ESQUEMA_EVENTOS.md, DECISIONES_ABIERTAS.md, DISENO_DASHBOARD.md
-/scripts        seed de admin y de datos de prueba
+/docs           ESQUEMA_EVENTOS.md, DECISIONES_ABIERTAS.md, DISENO_DASHBOARD.md, ARQUITECTURA.md
+/scripts        seed de admin y de datos de prueba, prueba de carga
 CLAUDE.md
 ```
 
@@ -101,8 +101,9 @@ CLAUDE.md
 - Índices pensados para las consultas del dashboard (juegoId + tipo + timestamp, etc.).
 
 ## 7. Esquema base de evento
-Campos comunes: `juegoId`, `playerId`, `sessionId`, `timestamp`, `buildVersion`,
-`plataforma`, `tipo`, `data` (flexible según el tipo), `versionEsquema`.
+Campos comunes: `eventoId`, `juegoId`, `playerId`, `sessionId`, `secuencia`, `timestamp`,
+`buildVersion`, `plataforma`, `tipo`, `data` (flexible según el tipo), `versionEsquema`.
+El detalle vive en `docs/ESQUEMA_EVENTOS.md`.
 
 Eventos **genéricos** (sirven para cualquier juego): sesion_inicio, sesion_fin,
 nivel_inicio, nivel_fin, muerte, logro, pausa, inactividad, error, rendimiento.
@@ -143,16 +144,26 @@ adquisición y retención D1/D7/D30; no aplican a un juego gratuito de ~20 min.
   ANTES de escribir Angular. Si ese archivo no existe, pregunta; no improvises un estilo.
 
 ## 10. Definición de "terminado" para la entrega 1
+**Criterio de evaluación:** el profesor no dio rúbrica. Evalúa con criterio libre y quiere
+un sistema **escalable, completo, bien integrado y con visión de futuro**. Ante una duda
+de prioridad, gana lo que demuestre esos cuatro puntos.
+
 - [ ] API desplegada y conectada a Atlas
 - [ ] Endpoints de ingesta y de estadísticas funcionando, con validación y tests
 - [ ] Login de admin con JWT y rutas protegidas
 - [ ] Colección de Postman exportada (entornos local y producción) con tests básicos
-- [ ] Datos de prueba que llenen el dashboard (script seed)
+- [ ] Datos de prueba que llenen el dashboard (script seed), incluyendo un **segundo juego
+      ficticio** con catálogo propio (otros niveles y logros) para demostrar que el sistema
+      es multi-juego sin cambiar código
 - [ ] Dashboard con al menos: embudo, tiempo por nivel, muertes por nivel y logros
 - [ ] README con instrucciones de instalación, variables de entorno y cómo correrlo
 - [ ] `docs/ESQUEMA_EVENTOS.md` actualizado y coincidente con lo implementado
+- [ ] `docs/ARQUITECTURA.md`: diagrama (Unity → API → MongoDB → dashboard), decisiones
+      clave y sección "Cómo crece" (qué cambia con 10x y 100x de volumen)
+- [ ] Documentación OpenAPI servida en `/api/v1/docs`, generada desde los esquemas de
+      validación
+- [ ] Prueba de carga sencilla con script en `/scripts` y resultados en el README
 
 ## 11. Decisiones abiertas (el usuario las resuelve; no las asumas)
-- Requisitos exactos de la rúbrica del profesor para la entrega 1
 - Proveedor final de hosting de la API
 - Si el dashboard llevará modo oscuro / identidad visual del estudio
