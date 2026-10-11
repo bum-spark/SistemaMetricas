@@ -84,3 +84,6 @@ Aquí se anota lo que **no** está definido en `CLAUDE.md` o en `docs/`.
 | R-13 | `suelo_descubierto` es un logro (nivelId y disparador siguen en A-06).                                          | A-06 (tipo) | 2026-10-10 | Equipo |
 | R-14 | Se mantiene `juegoId` UUID v4 + `slug` aparte (S-10 confirmado).                                                 | S-10       | 2026-10-10 | Equipo |
 | R-15 | Orden de niveles en `CLAUDE.md` §1 actualizado; `CLAUDE.md` §6 documenta el 413 y el `201 { aceptados, rechazados }` aun con `aceptados: 0`. | — | 2026-10-10 | Equipo |
+| R-16 | `secuencia` (entero ≥ 1, obligatorio) en los campos comunes: contador por sesión que incrementa el cliente. Las consultas que ordenan eventos usan `{ sessionId, secuencia }`. Los duplicados se siguen detectando por `eventoId`. | — | 2026-10-10 | Equipo |
+| R-17 | MongoDB 7.0 o superior en Atlas y en los tests de agregación (por `$median`). | — | 2026-10-10 | Equipo |
+| R-18 | Validación de eventos por tipo con una librería de esquemas (propuesta: zod), no a mano. | — | 2026-10-10 | Equipo |

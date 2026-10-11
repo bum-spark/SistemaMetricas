@@ -123,6 +123,7 @@ Al arrancar el juego, el cliente llama `POST /api/v1/sesiones` con `juegoId`, `p
 | `juegoId`        | string (UUID v4)      | sí     | Debe coincidir con el juego de la `X-Api-Key` (S-01, S-10).                                  |
 | `playerId`       | string (UUID v4)      | sí     | UUID v4 generado por el cliente (PlayerPrefs en Unity). El jugador debe tener consentimiento.|
 | `sessionId`      | string (UUID v4)      | sí     | Debe existir y pertenecer al mismo `juegoId + playerId`.                                     |
+| `secuencia`      | entero                | sí     | ≥ 1. Contador por sesión que el cliente incrementa con cada evento (ver abajo).               |
 | `timestamp`      | string (ISO 8601 UTC) | sí     | Formato `YYYY-MM-DDTHH:mm:ss.sssZ`. Se rechaza si está a más de 24 h en el futuro o más de 7 días en el pasado (S-06). |
 | `buildVersion`   | string                | sí     | 1–32 caracteres. Se sugiere semver (`1.0.3`).                                                |
 | `plataforma`     | string (enum)         | sí     | `windows`, `macos`, `linux`, `webgl`, `android`, `ios` (S-07).                               |
@@ -132,6 +133,17 @@ Al arrancar el juego, el cliente llama `POST /api/v1/sesiones` con `juegoId`, `p
 
 **Campo que agrega el servidor:** `recibidoEn` (ISO 8601 UTC, hora del servidor). El cliente
 no lo manda; si lo manda, el evento se rechaza.
+
+**`secuencia` (orden dentro de la sesión)**
+- El cliente la empieza en 1 con el primer evento de cada sesión (normalmente
+  `sesion_inicio`) y la incrementa en 1 con cada evento nuevo, sin importar el tipo.
+- Sirve de **desempate**: varios eventos pueden tener el mismo `timestamp` (por ejemplo
+  `nivel_fin` y `logro`). Toda consulta que necesite el orden de los eventos ordena por
+  **`sessionId` y `secuencia`**, no solo por `timestamp`.
+- Un reintento manda el evento con la misma `secuencia` y el mismo `eventoId`.
+- **Los duplicados se siguen detectando solo por `eventoId`.** La API no exige que
+  `secuencia` sea única ni consecutiva: un hueco (evento perdido) o un número repetido no
+  provocan rechazo.
 
 **Reglas generales**
 - Validación estricta: cualquier campo no listado (en el evento o dentro de `data`) hace que
@@ -388,7 +400,7 @@ Los campos de la sección 2 más `recibidoEn`.
 Índices:
 - `{ juegoId: 1, eventoId: 1 }` **único** — descarta duplicados.
 - `{ juegoId: 1, tipo: 1, timestamp: 1 }` — consultas por tipo y rango de fechas.
-- `{ juegoId: 1, sessionId: 1, timestamp: 1 }` — reconstruir sesión, abandono.
+- `{ juegoId: 1, sessionId: 1, secuencia: 1 }` — reconstruir el orden de una sesión, abandono.
 - `{ juegoId: 1, playerId: 1 }` — borrado de jugador.
 - `{ juegoId: 1, tipo: 1, buildVersion: 1 }` — filtro por versión.
 
@@ -543,8 +555,13 @@ F = { juegoId, timestamp: { $gte: desde, $lt: hasta }, buildVersion, plataforma 
 ```
 
 Las consultas son pipelines de agregación de MongoDB. Donde hace falta el orden de los
-niveles o el total de coleccionables, se toma de `juegos.catalogo`. `$median` requiere
-MongoDB 7.0+ (Atlas lo cumple).
+niveles o el total de coleccionables, se toma de `juegos.catalogo`.
+
+- **Versión de MongoDB:** `$median` requiere **MongoDB 7.0 o superior**. Atlas debe usar
+  7.0+, y los tests de agregación corren contra un MongoDB en memoria fijado a 7.0 o
+  superior (no la versión por defecto de la librería).
+- **Orden de eventos:** cuando una consulta depende del orden (por ejemplo 10.8), se ordena
+  por `{ sessionId: 1, secuencia: 1 }` (sección 2).
 
 ### Resumen
 
@@ -689,7 +706,7 @@ db.eventos.aggregate([
 const limite = new Date(Date.now() - 30 * 60 * 1000); // S-05
 db.eventos.aggregate([
   { $match: { ...F, tipo: { $in: ["nivel_inicio", "nivel_fin"] } } },
-  { $sort: { sessionId: 1, timestamp: 1 } },
+  { $sort: { sessionId: 1, secuencia: 1 } },   // secuencia desempata eventos con el mismo timestamp
   { $group: { _id: "$sessionId",
               ultimoNivel: { $last: "$data.nivelId" },
               ultimoTipo: { $last: "$tipo" },
@@ -808,31 +825,33 @@ recoge la flor y cierra. Antes, `POST /api/v1/sesiones` respondió:
 ```
 
 Lote enviado a `POST /api/v1/eventos` (todos los eventos llevan los mismos `juegoId`,
-`playerId`, `sessionId`, `buildVersion`, `plataforma` y `versionEsquema`):
+`playerId`, `sessionId`, `buildVersion`, `plataforma` y `versionEsquema`; `secuencia` va
+de 1 a 11). Fíjate en los eventos 9 y 10: `nivel_fin` y `logro` tienen el mismo
+`timestamp`, y es `secuencia` la que define el orden:
 
 ```json
 [
-  { "eventoId": "a1f0c3d2-0000-4000-8000-000000000001", "juegoId": "8c4f2a1e-5d3b-4f7a-9e2c-1b6d8a0f3e57", "playerId": "3f1c9a2e-7b4d-4e8a-9c1f-2d6b8e0a5f71", "sessionId": "b7e2d4c1-0a9f-4b3e-8d2c-6f1a5e9b3c08", "timestamp": "2026-10-12T18:00:00.000Z", "buildVersion": "1.0.0", "plataforma": "windows", "versionEsquema": 1,
+  { "eventoId": "a1f0c3d2-0000-4000-8000-000000000001", "juegoId": "8c4f2a1e-5d3b-4f7a-9e2c-1b6d8a0f3e57", "playerId": "3f1c9a2e-7b4d-4e8a-9c1f-2d6b8e0a5f71", "sessionId": "b7e2d4c1-0a9f-4b3e-8d2c-6f1a5e9b3c08", "secuencia": 1, "timestamp": "2026-10-12T18:00:00.000Z", "buildVersion": "1.0.0", "plataforma": "windows", "versionEsquema": 1,
     "tipo": "sesion_inicio", "data": {} },
-  { "eventoId": "a1f0c3d2-0000-4000-8000-000000000002", "juegoId": "8c4f2a1e-5d3b-4f7a-9e2c-1b6d8a0f3e57", "playerId": "3f1c9a2e-7b4d-4e8a-9c1f-2d6b8e0a5f71", "sessionId": "b7e2d4c1-0a9f-4b3e-8d2c-6f1a5e9b3c08", "timestamp": "2026-10-12T18:00:05.000Z", "buildVersion": "1.0.0", "plataforma": "windows", "versionEsquema": 1,
+  { "eventoId": "a1f0c3d2-0000-4000-8000-000000000002", "juegoId": "8c4f2a1e-5d3b-4f7a-9e2c-1b6d8a0f3e57", "playerId": "3f1c9a2e-7b4d-4e8a-9c1f-2d6b8e0a5f71", "sessionId": "b7e2d4c1-0a9f-4b3e-8d2c-6f1a5e9b3c08", "secuencia": 2, "timestamp": "2026-10-12T18:00:05.000Z", "buildVersion": "1.0.0", "plataforma": "windows", "versionEsquema": 1,
     "tipo": "nivel_inicio", "data": { "nivelId": "casa_abandonada", "intento": 1 } },
-  { "eventoId": "a1f0c3d2-0000-4000-8000-000000000003", "juegoId": "8c4f2a1e-5d3b-4f7a-9e2c-1b6d8a0f3e57", "playerId": "3f1c9a2e-7b4d-4e8a-9c1f-2d6b8e0a5f71", "sessionId": "b7e2d4c1-0a9f-4b3e-8d2c-6f1a5e9b3c08", "timestamp": "2026-10-12T18:01:00.000Z", "buildVersion": "1.0.0", "plataforma": "windows", "versionEsquema": 1,
+  { "eventoId": "a1f0c3d2-0000-4000-8000-000000000003", "juegoId": "8c4f2a1e-5d3b-4f7a-9e2c-1b6d8a0f3e57", "playerId": "3f1c9a2e-7b4d-4e8a-9c1f-2d6b8e0a5f71", "sessionId": "b7e2d4c1-0a9f-4b3e-8d2c-6f1a5e9b3c08", "secuencia": 3, "timestamp": "2026-10-12T18:01:00.000Z", "buildVersion": "1.0.0", "plataforma": "windows", "versionEsquema": 1,
     "tipo": "tutorial_completado", "data": { "duracionMs": 55000 } },
-  { "eventoId": "a1f0c3d2-0000-4000-8000-000000000004", "juegoId": "8c4f2a1e-5d3b-4f7a-9e2c-1b6d8a0f3e57", "playerId": "3f1c9a2e-7b4d-4e8a-9c1f-2d6b8e0a5f71", "sessionId": "b7e2d4c1-0a9f-4b3e-8d2c-6f1a5e9b3c08", "timestamp": "2026-10-12T18:01:00.000Z", "buildVersion": "1.0.0", "plataforma": "windows", "versionEsquema": 1,
+  { "eventoId": "a1f0c3d2-0000-4000-8000-000000000004", "juegoId": "8c4f2a1e-5d3b-4f7a-9e2c-1b6d8a0f3e57", "playerId": "3f1c9a2e-7b4d-4e8a-9c1f-2d6b8e0a5f71", "sessionId": "b7e2d4c1-0a9f-4b3e-8d2c-6f1a5e9b3c08", "secuencia": 4, "timestamp": "2026-10-12T18:01:00.000Z", "buildVersion": "1.0.0", "plataforma": "windows", "versionEsquema": 1,
     "tipo": "logro", "data": { "logroId": "tutorial_superado" } },
-  { "eventoId": "a1f0c3d2-0000-4000-8000-000000000005", "juegoId": "8c4f2a1e-5d3b-4f7a-9e2c-1b6d8a0f3e57", "playerId": "3f1c9a2e-7b4d-4e8a-9c1f-2d6b8e0a5f71", "sessionId": "b7e2d4c1-0a9f-4b3e-8d2c-6f1a5e9b3c08", "timestamp": "2026-10-12T18:01:40.000Z", "buildVersion": "1.0.0", "plataforma": "windows", "versionEsquema": 1,
+  { "eventoId": "a1f0c3d2-0000-4000-8000-000000000005", "juegoId": "8c4f2a1e-5d3b-4f7a-9e2c-1b6d8a0f3e57", "playerId": "3f1c9a2e-7b4d-4e8a-9c1f-2d6b8e0a5f71", "sessionId": "b7e2d4c1-0a9f-4b3e-8d2c-6f1a5e9b3c08", "secuencia": 5, "timestamp": "2026-10-12T18:01:40.000Z", "buildVersion": "1.0.0", "plataforma": "windows", "versionEsquema": 1,
     "tipo": "muerte", "data": { "nivelId": "casa_abandonada", "intento": 1, "causa": "fantasma", "x": 12.5, "y": -3.2 } },
-  { "eventoId": "a1f0c3d2-0000-4000-8000-000000000006", "juegoId": "8c4f2a1e-5d3b-4f7a-9e2c-1b6d8a0f3e57", "playerId": "3f1c9a2e-7b4d-4e8a-9c1f-2d6b8e0a5f71", "sessionId": "b7e2d4c1-0a9f-4b3e-8d2c-6f1a5e9b3c08", "timestamp": "2026-10-12T18:01:40.000Z", "buildVersion": "1.0.0", "plataforma": "windows", "versionEsquema": 1,
+  { "eventoId": "a1f0c3d2-0000-4000-8000-000000000006", "juegoId": "8c4f2a1e-5d3b-4f7a-9e2c-1b6d8a0f3e57", "playerId": "3f1c9a2e-7b4d-4e8a-9c1f-2d6b8e0a5f71", "sessionId": "b7e2d4c1-0a9f-4b3e-8d2c-6f1a5e9b3c08", "secuencia": 6, "timestamp": "2026-10-12T18:01:40.000Z", "buildVersion": "1.0.0", "plataforma": "windows", "versionEsquema": 1,
     "tipo": "nivel_fin", "data": { "nivelId": "casa_abandonada", "intento": 1, "resultado": "muerte", "duracionMs": 95000 } },
-  { "eventoId": "a1f0c3d2-0000-4000-8000-000000000007", "juegoId": "8c4f2a1e-5d3b-4f7a-9e2c-1b6d8a0f3e57", "playerId": "3f1c9a2e-7b4d-4e8a-9c1f-2d6b8e0a5f71", "sessionId": "b7e2d4c1-0a9f-4b3e-8d2c-6f1a5e9b3c08", "timestamp": "2026-10-12T18:01:42.000Z", "buildVersion": "1.0.0", "plataforma": "windows", "versionEsquema": 1,
+  { "eventoId": "a1f0c3d2-0000-4000-8000-000000000007", "juegoId": "8c4f2a1e-5d3b-4f7a-9e2c-1b6d8a0f3e57", "playerId": "3f1c9a2e-7b4d-4e8a-9c1f-2d6b8e0a5f71", "sessionId": "b7e2d4c1-0a9f-4b3e-8d2c-6f1a5e9b3c08", "secuencia": 7, "timestamp": "2026-10-12T18:01:42.000Z", "buildVersion": "1.0.0", "plataforma": "windows", "versionEsquema": 1,
     "tipo": "nivel_inicio", "data": { "nivelId": "casa_abandonada", "intento": 2 } },
-  { "eventoId": "a1f0c3d2-0000-4000-8000-000000000008", "juegoId": "8c4f2a1e-5d3b-4f7a-9e2c-1b6d8a0f3e57", "playerId": "3f1c9a2e-7b4d-4e8a-9c1f-2d6b8e0a5f71", "sessionId": "b7e2d4c1-0a9f-4b3e-8d2c-6f1a5e9b3c08", "timestamp": "2026-10-12T18:04:12.000Z", "buildVersion": "1.0.0", "plataforma": "windows", "versionEsquema": 1,
+  { "eventoId": "a1f0c3d2-0000-4000-8000-000000000008", "juegoId": "8c4f2a1e-5d3b-4f7a-9e2c-1b6d8a0f3e57", "playerId": "3f1c9a2e-7b4d-4e8a-9c1f-2d6b8e0a5f71", "sessionId": "b7e2d4c1-0a9f-4b3e-8d2c-6f1a5e9b3c08", "secuencia": 8, "timestamp": "2026-10-12T18:04:12.000Z", "buildVersion": "1.0.0", "plataforma": "windows", "versionEsquema": 1,
     "tipo": "flor_recogida", "data": { "nivelId": "casa_abandonada", "duracionMs": 150000 } },
-  { "eventoId": "a1f0c3d2-0000-4000-8000-000000000009", "juegoId": "8c4f2a1e-5d3b-4f7a-9e2c-1b6d8a0f3e57", "playerId": "3f1c9a2e-7b4d-4e8a-9c1f-2d6b8e0a5f71", "sessionId": "b7e2d4c1-0a9f-4b3e-8d2c-6f1a5e9b3c08", "timestamp": "2026-10-12T18:04:12.000Z", "buildVersion": "1.0.0", "plataforma": "windows", "versionEsquema": 1,
+  { "eventoId": "a1f0c3d2-0000-4000-8000-000000000009", "juegoId": "8c4f2a1e-5d3b-4f7a-9e2c-1b6d8a0f3e57", "playerId": "3f1c9a2e-7b4d-4e8a-9c1f-2d6b8e0a5f71", "sessionId": "b7e2d4c1-0a9f-4b3e-8d2c-6f1a5e9b3c08", "secuencia": 9, "timestamp": "2026-10-12T18:04:12.000Z", "buildVersion": "1.0.0", "plataforma": "windows", "versionEsquema": 1,
     "tipo": "nivel_fin", "data": { "nivelId": "casa_abandonada", "intento": 2, "resultado": "completado", "duracionMs": 150000 } },
-  { "eventoId": "a1f0c3d2-0000-4000-8000-00000000000a", "juegoId": "8c4f2a1e-5d3b-4f7a-9e2c-1b6d8a0f3e57", "playerId": "3f1c9a2e-7b4d-4e8a-9c1f-2d6b8e0a5f71", "sessionId": "b7e2d4c1-0a9f-4b3e-8d2c-6f1a5e9b3c08", "timestamp": "2026-10-12T18:04:12.000Z", "buildVersion": "1.0.0", "plataforma": "windows", "versionEsquema": 1,
+  { "eventoId": "a1f0c3d2-0000-4000-8000-00000000000a", "juegoId": "8c4f2a1e-5d3b-4f7a-9e2c-1b6d8a0f3e57", "playerId": "3f1c9a2e-7b4d-4e8a-9c1f-2d6b8e0a5f71", "sessionId": "b7e2d4c1-0a9f-4b3e-8d2c-6f1a5e9b3c08", "secuencia": 10, "timestamp": "2026-10-12T18:04:12.000Z", "buildVersion": "1.0.0", "plataforma": "windows", "versionEsquema": 1,
     "tipo": "logro", "data": { "logroId": "casa_abandonada_completada" } },
-  { "eventoId": "a1f0c3d2-0000-4000-8000-00000000000b", "juegoId": "8c4f2a1e-5d3b-4f7a-9e2c-1b6d8a0f3e57", "playerId": "3f1c9a2e-7b4d-4e8a-9c1f-2d6b8e0a5f71", "sessionId": "b7e2d4c1-0a9f-4b3e-8d2c-6f1a5e9b3c08", "timestamp": "2026-10-12T18:04:30.000Z", "buildVersion": "1.0.0", "plataforma": "windows", "versionEsquema": 1,
+  { "eventoId": "a1f0c3d2-0000-4000-8000-00000000000b", "juegoId": "8c4f2a1e-5d3b-4f7a-9e2c-1b6d8a0f3e57", "playerId": "3f1c9a2e-7b4d-4e8a-9c1f-2d6b8e0a5f71", "sessionId": "b7e2d4c1-0a9f-4b3e-8d2c-6f1a5e9b3c08", "secuencia": 11, "timestamp": "2026-10-12T18:04:30.000Z", "buildVersion": "1.0.0", "plataforma": "windows", "versionEsquema": 1,
     "tipo": "sesion_fin", "data": { "motivo": "menu_salir" } }
 ]
 ```
