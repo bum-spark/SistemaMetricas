@@ -134,7 +134,8 @@ de eventos a este ritmo).
 
 - **Prueba de carga:** `scripts/` contiene una prueba con autocannon contra la ingesta.
   Los resultados (peticiones/s, latencias p50/p99, errores) y las condiciones en que se
-  midió están en el README (S-31).
+  midió están en el README (S-31). Corre contra un MongoDB local o una base aparte
+  que se borra al terminar, nunca contra `xolos_analytics`.
 - **Multi-juego:** `seed-datos` crea La Casa del Bosque y un segundo juego ficticio con
   catálogo distinto; el dashboard muestra los dos sin cambios de código.
 - **Contrato verificable:** OpenAPI en `/api/v1/docs`, generado desde los mismos esquemas
