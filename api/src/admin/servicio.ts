@@ -1,4 +1,5 @@
 import { esquemaCatalogo } from '../dominio/catalogo';
+import { condicionOrigen, type OrigenFiltro } from '../estadisticas/filtros';
 import { AppError } from '../errores';
 import type { AdminAutenticado } from '../middlewares/autenticarAdmin';
 import { AdminModelo, EventoModelo, JuegoModelo, JugadorModelo, LogroObtenidoModelo, SesionModelo } from '../modelos';
@@ -29,18 +30,19 @@ export async function iniciarSesion(email: string, password: string, jwtSecret: 
 
 // ---------- Juegos ----------
 
-async function resumenDeJuego(juegoId: string, ultimoNivelId: string | undefined) {
+async function resumenDeJuego(juegoId: string, ultimoNivelId: string | undefined, origen: OrigenFiltro) {
+  const base = { juegoId, ...condicionOrigen(origen) };
   const [jugadores, sesiones, completaron] = await Promise.all([
-    JugadorModelo.countDocuments({ juegoId }),
-    SesionModelo.countDocuments({ juegoId }),
+    JugadorModelo.countDocuments(base),
+    SesionModelo.countDocuments(base),
     ultimoNivelId === undefined
       ? Promise.resolve([] as string[])
-      : EventoModelo.distinct('playerId', { juegoId, tipo: 'nivel_fin', 'data.nivelId': ultimoNivelId, 'data.resultado': 'completado' }),
+      : EventoModelo.distinct('playerId', { ...base, tipo: 'nivel_fin', 'data.nivelId': ultimoNivelId, 'data.resultado': 'completado' }),
   ]);
   return { jugadores, sesiones, tasaCompletado: jugadores === 0 ? 0 : Math.min(1, completaron.length / jugadores) };
 }
 
-export async function listarJuegos(admin: AdminAutenticado, pagina: number, limite: number) {
+export async function listarJuegos(admin: AdminAutenticado, pagina: number, limite: number, origen: OrigenFiltro = 'todos') {
   const filtro = { juegoId: { $in: admin.juegosPermitidos } };
   const [total, juegos] = await Promise.all([
     JuegoModelo.countDocuments(filtro),
@@ -59,11 +61,11 @@ export async function listarJuegos(admin: AdminAutenticado, pagina: number, limi
         slug: j.slug,
         versionActual: j.versionActual,
         activo: j.activo,
-        resumen: await resumenDeJuego(j.juegoId, ultimo),
+        resumen: await resumenDeJuego(j.juegoId, ultimo, origen),
       };
     }),
   );
-  return { datos, pagina, limite, total };
+  return { datos, pagina, limite, total, origen };
 }
 
 export async function detalleJuego(juegoId: string) {
@@ -71,9 +73,13 @@ export async function detalleJuego(juegoId: string) {
   if (!juego) {
     throw new AppError(404, 'JUEGO_NO_ENCONTRADO', 'El juego no existe.');
   }
-  const [buildVersions, plataformas] = await Promise.all([
+  const seed = { juegoId, origen: 'seed' as const };
+  const [buildVersions, plataformas, jugadoresSeed, sesionesSeed, eventosSeed] = await Promise.all([
     SesionModelo.distinct('buildVersion', { juegoId }),
     SesionModelo.distinct('plataforma', { juegoId }),
+    JugadorModelo.exists(seed),
+    SesionModelo.exists(seed),
+    EventoModelo.exists(seed),
   ]);
   return {
     juegoId: juego.juegoId,
@@ -83,6 +89,7 @@ export async function detalleJuego(juegoId: string) {
     activo: juego.activo,
     catalogo: esquemaCatalogo.parse(juego.catalogo),
     filtros: { buildVersions: [...buildVersions].sort(), plataformas: [...plataformas].sort() },
+    contieneDatosSeed: Boolean(jugadoresSeed ?? sesionesSeed ?? eventosSeed),
   };
 }
 

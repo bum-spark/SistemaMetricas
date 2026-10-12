@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { PATRON_UUID_V4 } from '../dominio/constantes';
+import { esquemaOrigenFiltro, ORIGENES_FILTRO } from '../estadisticas/filtros';
 import { registrarEsquema } from '../openapi/registro';
 
 // Cuerpos, parámetros y respuestas de la administración (ESQUEMA_EVENTOS.md §7.2).
@@ -26,6 +27,9 @@ export const esquemaPaginacion = z.object({
   limite: z.coerce.number().int().min(1).max(100).default(20),
 });
 
+// GET /juegos: paginación + origen de los datos que se cuentan en el resumen (R-48).
+export const esquemaConsultaJuegos = esquemaPaginacion.extend({ origen: esquemaOrigenFiltro });
+
 export const esquemaResumenJuego = registrarEsquema(
   'ResumenJuego',
   z.object({
@@ -45,7 +49,13 @@ export const esquemaResumenJuego = registrarEsquema(
 
 export const esquemaListaJuegos = registrarEsquema(
   'ListaJuegos',
-  z.object({ datos: z.array(esquemaResumenJuego), pagina: z.number().int(), limite: z.number().int(), total: z.number().int() }),
+  z.object({
+    datos: z.array(esquemaResumenJuego),
+    pagina: z.number().int(),
+    limite: z.number().int(),
+    total: z.number().int(),
+    origen: z.enum(ORIGENES_FILTRO),
+  }),
 );
 
 export const esquemaDetalleJuego = registrarEsquema(
@@ -58,6 +68,8 @@ export const esquemaDetalleJuego = registrarEsquema(
     activo: z.boolean(),
     catalogo: z.record(z.string(), z.unknown()),
     filtros: z.object({ buildVersions: z.array(z.string()), plataformas: z.array(z.string()) }),
+    // true si el juego tiene jugadores, sesiones o eventos con origen "seed".
+    contieneDatosSeed: z.boolean(),
   }),
 );
 

@@ -152,3 +152,54 @@ describe('OpenAPI de la administración', () => {
     });
   });
 });
+
+describe('filtro origen en GET /juegos y contieneDatosSeed (R-48)', () => {
+  // Un jugador seed que completa el último nivel, insertado directo (como seed-datos).
+  async function sembrarJugadorSeed(juegoId: string) {
+    const playerId = randomUUID();
+    const sessionId = randomUUID();
+    const ahora = new Date();
+    await JugadorModelo.create({ juegoId, playerId, consentimiento: true, primeraVez: ahora, ultimaVez: ahora, origen: 'seed' });
+    await SesionModelo.create({ sessionId, juegoId, playerId, buildVersion: '1.0.1', plataforma: 'ios', creadaEn: ahora, origen: 'seed' });
+    await EventoModelo.create({
+      eventoId: randomUUID(), juegoId, playerId, sessionId, secuencia: 1, timestamp: ahora, buildVersion: '1.0.1', plataforma: 'ios',
+      tipo: 'nivel_fin', data: { nivelId: 'habitacion_llamas', intento: 1, resultado: 'completado', duracionMs: 1 },
+      versionEsquema: 1, recibidoEn: ahora, origen: 'seed',
+    });
+  }
+
+  beforeEach(async () => {
+    const real = { juegoId: casa.juegoId, ...(await abrirSesion(app, casa)) };
+    await enviar(casa, loteEjemplo(real)); // jugador real que no termina
+    await sembrarJugadorSeed(casa.juegoId);
+  });
+
+  const resumenCasa = async (consulta: string) => {
+    const res = await get(`/juegos${consulta}`);
+    expect(res.status).toBe(200);
+    return { origen: res.body.origen as string, resumen: (res.body.datos as { slug: string; resumen: unknown }[]).find((j) => j.slug === 'la-casa-del-bosque')?.resumen };
+  };
+
+  it('por defecto (todos) cuenta datos reales y seed', async () => {
+    expect(await resumenCasa('')).toEqual({ origen: 'todos', resumen: { jugadores: 2, sesiones: 2, tasaCompletado: 0.5 } });
+  });
+
+  it('origen=real cuenta solo la ingesta real', async () => {
+    expect(await resumenCasa('?origen=real')).toEqual({ origen: 'real', resumen: { jugadores: 1, sesiones: 1, tasaCompletado: 0 } });
+  });
+
+  it('origen=seed cuenta solo los datos de prueba', async () => {
+    expect(await resumenCasa('?origen=seed')).toEqual({ origen: 'seed', resumen: { jugadores: 1, sesiones: 1, tasaCompletado: 1 } });
+  });
+
+  it('un origen desconocido responde 400', async () => {
+    const res = await get('/juegos?origen=importado');
+    expect(res.status).toBe(400);
+    expect(res.body.error.codigo).toBe('VALIDACION_FALLIDA');
+  });
+
+  it('GET /juegos/:juegoId indica si el juego contiene datos seed', async () => {
+    expect((await get(`/juegos/${casa.juegoId}`)).body.contieneDatosSeed).toBe(true);
+    expect((await get(`/juegos/${faro.juegoId}`)).body.contieneDatosSeed).toBe(false);
+  });
+});

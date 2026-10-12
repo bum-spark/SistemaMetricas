@@ -1021,6 +1021,92 @@
           ]
         },
         {
+          "name": "Juegos solo con datos reales (?origen=real)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/juegos?origen=real",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "juegos"
+              ],
+              "query": [
+                {
+                  "key": "origen",
+                  "value": "real"
+                }
+              ]
+            },
+            "description": "origen: real (ingesta), seed (datos de prueba) o todos (por defecto)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 y el resumen cuenta solo origen real', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r.origen).to.eql('real');",
+                  "  r.datos.forEach((j) => pm.expect(j.resumen).to.include.keys('jugadores', 'sesiones', 'tasaCompletado'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Juegos con origen inválido (400)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/juegos?origen=importado",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "juegos"
+              ],
+              "query": [
+                {
+                  "key": "origen",
+                  "value": "importado"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 VALIDACION_FALLIDA', () => {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().error.codigo).to.eql('VALIDACION_FALLIDA');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "Detalle del juego (catálogo y filtros)",
           "request": {
             "method": "GET",
@@ -1054,6 +1140,7 @@
                   "  pm.expect(r.catalogo.niveles).to.be.an('array').that.is.not.empty;",
                   "  pm.expect(r.filtros.buildVersions).to.be.an('array');",
                   "  pm.expect(r.filtros.plataformas).to.be.an('array');",
+                  "  pm.expect(r.contieneDatosSeed).to.be.a('boolean');",
                   "  pm.expect(r).to.not.have.property('apiKeyHash');",
                   "});"
                 ]

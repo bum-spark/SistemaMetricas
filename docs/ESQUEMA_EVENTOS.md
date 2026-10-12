@@ -542,14 +542,14 @@ Todos con prefijo `/api/v1`. Errores con el formato de la sección 9.
 
 Si la ruta lleva `:juegoId`: si no es UUID v4 → `400`; si no está en `juegosPermitidos` del admin → `403 SIN_PERMISO`; si está permitido pero ya no existe → `404`.
 
-`resumen.tasaCompletado` = jugadores distintos con `nivel_fin` `completado` del último nivel (mayor `orden`) ÷ jugadores del juego, entre 0 y 1 (S-44). `jugadores` y `sesiones` cuentan todos los documentos del juego (reales y seed).
+`resumen.tasaCompletado` = jugadores distintos con `nivel_fin` `completado` del último nivel (mayor `orden`) ÷ jugadores del juego, entre 0 y 1 (R-46). `jugadores`, `sesiones` y `tasaCompletado` respetan el parámetro `origen` (por defecto `todos`: reales y seed; R-48).
 
 | Método | Ruta                                  | Auth | Body / query                         | Respuesta                                                                                  |
 |--------|---------------------------------------|------|--------------------------------------|--------------------------------------------------------------------------------------------|
 | POST   | `/auth/login`                         | no   | `{ email, password }`                | `200 { token, expiraEn, admin: { email, nombre, juegosPermitidos } }` · `401 CREDENCIALES_INVALIDAS` |
 | GET    | `/auth/yo`                            | JWT  | —                                    | `200 { email, nombre, juegosPermitidos }`                                                  |
-| GET    | `/juegos`                             | JWT  | `?pagina=1&limite=20`                | `200 { datos: [{ juegoId, nombre, slug, versionActual, activo, resumen: { jugadores, sesiones, tasaCompletado } }], pagina, limite, total }` — solo juegos permitidos |
-| GET    | `/juegos/:juegoId`                    | JWT  | —                                    | `200 { juegoId, nombre, slug, versionActual, activo, catalogo, filtros: { buildVersions, plataformas } }` (sin `apiKeyHash`). `catalogo` incluye `duracionEsperadaMs` si existe. `filtros` = valores distintos de `buildVersion` y `plataforma` en `sesiones` del juego, ordenados, para llenar los selectores del dashboard. |
+| GET    | `/juegos`                             | JWT  | `?pagina=1&limite=20&origen=todos`   | `200 { datos: [{ juegoId, nombre, slug, versionActual, activo, resumen: { jugadores, sesiones, tasaCompletado } }], pagina, limite, total, origen }` — solo juegos permitidos; `origen` = `real` \| `seed` \| `todos` (default) decide qué datos cuenta el resumen |
+| GET    | `/juegos/:juegoId`                    | JWT  | —                                    | `200 { juegoId, nombre, slug, versionActual, activo, catalogo, filtros: { buildVersions, plataformas }, contieneDatosSeed }` (sin `apiKeyHash`). `contieneDatosSeed` = `true` si el juego tiene jugadores, sesiones o eventos con `origen: "seed"` (el dashboard puede avisar que hay datos de prueba). `catalogo` incluye `duracionEsperadaMs` si existe. `filtros` = valores distintos de `buildVersion` y `plataforma` en `sesiones` del juego, ordenados, para llenar los selectores del dashboard. |
 | DELETE | `/jugadores/:juegoId/:playerId`       | JWT  | —                                    | `200 { eliminados: { jugador, sesiones, eventos, logros } }` · `404 JUGADOR_NO_ENCONTRADO` (S-17) |
 | GET    | `/estadisticas/:juegoId/sesiones`     | JWT  | filtros comunes                      | Sección 10.1                                                                               |
 | GET    | `/estadisticas/:juegoId/tiempo-nivel` | JWT  | filtros comunes                      | Sección 10.2                                                                               |
@@ -565,11 +565,16 @@ Si la ruta lleva `:juegoId`: si no es UUID v4 → `400`; si no está en `juegosP
 | GET    | `/estadisticas/:juegoId/rendimiento`  | JWT  | filtros comunes                      | Sección 10.12                                                                              |
 
 **Filtros comunes** (query, todos opcionales; sin filtros = todo el histórico, S-21):
-`desde`, `hasta` (ISO 8601 UTC; rango `[desde, hasta)`), `buildVersion`, `plataforma`.
-Valores inválidos → `400 VALIDACION_FALLIDA`.
+`desde`, `hasta` (ISO 8601 UTC; rango `[desde, hasta)`), `buildVersion`, `plataforma`,
+**`origen`** (`real` \| `seed` \| `todos`; por defecto `todos`, R-48). Valores inválidos o
+`desde >= hasta` → `400 VALIDACION_FALLIDA`. El esquema está en
+`api/src/estadisticas/filtros.ts` (`esquemaFiltrosEstadisticas`).
+
+`origen` se aplica sobre el campo `origen` de `eventos`, `sesiones` y `jugadores` (§6): con
+`real` el dashboard muestra solo la ingesta del juego; con `seed`, solo los datos de prueba.
 
 **Forma de respuesta de `/estadisticas/*`:**
-`200 { juegoId, filtros: { desde, hasta, buildVersion, plataforma }, datos: … }`
+`200 { juegoId, filtros: { desde, hasta, buildVersion, plataforma, origen }, datos: … }`
 
 JWT: HS256 firmado con `JWT_SECRET`, expira en 8 h (S-13), emisor `xolos-analytics-api`, payload `{ sub: email }`. Los permisos (`juegosPermitidos`) y el estado del admin **no** van en el token: se releen de la base en cada petición, así desactivar un admin o quitarle un juego surte efecto al instante (S-42). Token ausente, inválido, de otro emisor, con `alg: none` o expirado → `401 NO_AUTENTICADO` (el mensaje distingue "expiró"). Login: mismo `401 CREDENCIALES_INVALIDAS` ("Correo o contraseña incorrectos.") para email inexistente, contraseña incorrecta o admin desactivado, con tiempo de respuesta equivalente.
 

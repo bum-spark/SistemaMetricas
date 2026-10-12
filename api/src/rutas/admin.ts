@@ -4,7 +4,7 @@ import {
   esquemaAdmin,
   esquemaDetalleJuego,
   esquemaListaJuegos,
-  esquemaPaginacion,
+  esquemaConsultaJuegos,
   esquemaParamsJuego,
   esquemaParamsJugador,
   esquemaRespuestaBorrado,
@@ -39,8 +39,8 @@ export function crearRutasAdmin(opciones: { jwtSecret: string; limiteLogin: Requ
   });
 
   router.get('/juegos', autenticar, async (req, res) => {
-    const { pagina, limite } = validar(esquemaPaginacion, req.query, 'La paginación');
-    res.json(await listarJuegos(adminAutenticado(res), pagina, limite));
+    const { pagina, limite, origen } = validar(esquemaConsultaJuegos, req.query, 'La consulta');
+    res.json(await listarJuegos(adminAutenticado(res), pagina, limite, origen));
   });
 
   router.get('/juegos/:juegoId', autenticar, async (req, res) => {
@@ -102,6 +102,12 @@ export const openApiAdmin: RutasOpenApi = {
       parameters: [
         { name: 'pagina', in: 'query', schema: { type: 'integer', minimum: 1, default: 1 } },
         { name: 'limite', in: 'query', schema: { type: 'integer', minimum: 1, maximum: 100, default: 20 } },
+        {
+          name: 'origen',
+          in: 'query',
+          description: 'Datos que cuenta el resumen: real (ingesta), seed (prueba) o todos.',
+          schema: { type: 'string', enum: ['real', 'seed', 'todos'], default: 'todos' },
+        },
       ],
       responses: { '200': ok('Lista paginada.', esquemaListaJuegos), '400': error('VALIDACION_FALLIDA'), '401': noAutenticado },
     },

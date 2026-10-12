@@ -55,10 +55,6 @@ Aquí se anota lo que **no** está definido en `CLAUDE.md` o en `docs/`.
 | S-32 | Acceso de admins: `crear-admin` sin `--juegos` da acceso a todos los juegos existentes, y `crear-juego` agrega el juego nuevo a los `juegosPermitidos` de todos los admins activos (salvo `--sin-acceso`). Coherente con "un solo rol por ahora". | Que cada acceso se asigne a mano por admin. | Scripts `crear-admin` y `crear-juego`. |
 | S-33 | Contraseña de admin: mínimo 12 caracteres, bcrypt con 12 rondas; solo se lee de `ADMIN_PASSWORD` en el `.env`. | Otra política o rondas. | `seguridad/password.ts`. |
 | S-34 | Los scripts reciben el juego con `--juego <slug>` (en lugar de un argumento posicional) para que todos usen la misma forma. | `rotar-api-key <slug>`. | Solo la línea de comandos. |
-| S-42 | El JWT solo lleva el email (`sub`); `juegosPermitidos` y `activo` se releen de la base en cada petición. Desactivar un admin o quitarle un juego surte efecto al instante (cuesta una consulta por índice por petición). | `juegosPermitidos` dentro del token (doc anterior). | Middleware `autenticarAdmin`. |
-| S-43 | El límite de login cuenta solo intentos **fallidos** (5 por IP cada 15 min); un login exitoso no consume intentos. | Contar todos los intentos. | Limitador de login. |
-| S-44 | `tasaCompletado` de `/juegos` = jugadores distintos que completaron el último nivel ÷ jugadores del juego (todos los orígenes). | Sobre sesiones; solo jugadores con algún evento. | `listarJuegos`. |
-| S-45 | `JWT_SECRET` es opcional para los scripts (no la usan) y obligatoria para la API (mínimo 32 caracteres); sin ella la API no arranca. | Obligatoria siempre (los scripts la pedirían sin usarla). | `cargarConfig` y `crearApp`. |
 
 ---
 
@@ -120,3 +116,8 @@ Aquí se anota lo que **no** está definido en `CLAUDE.md` o en `docs/`.
 | R-41 | Atlas permite `0.0.0.0/0` en Network Access porque Render (plan gratuito) no tiene IP de salida fija. Se compensa con un usuario de base de datos dedicado (`xolos_api`) con rol `readWrite` solo sobre `xolos_analytics` y contraseña aleatoria larga (el cluster es compartido con otro proyecto). Aceptado; la guía de deploy detalla la base `xolos_analytics` (colección inicial `juegos`) y el usuario con *Specific Privileges*. | S-40 | 2026-10-12 | Equipo |
 | R-42 | Una variable de entorno definida pero vacía cuenta como no definida (toma su valor por defecto o falla como obligatoria). Evita que un campo en blanco del panel de Render convierta un límite en 0. (Aceptado.) | S-41 | 2026-10-12 | Equipo |
 | R-43 | Render: no usar monitores de ping 24/7 (consumen casi las 750 h gratuitas del workspace); solo ping los días de demo. | — | 2026-10-12 | Equipo |
+| R-44 | El JWT solo lleva el email (`sub`); `juegosPermitidos` y `activo` se releen de la base en cada petición. Desactivar un admin o quitarle un juego surte efecto al instante (cuesta una consulta por índice por petición). (Aceptado.) | S-42 | 2026-10-12 | Equipo |
+| R-45 | El límite de login cuenta solo intentos **fallidos** (5 por IP cada 15 min); un login exitoso no consume intentos. (Aceptado.) | S-43 | 2026-10-12 | Equipo |
+| R-46 | `tasaCompletado` de `/juegos` = jugadores distintos que completaron el último nivel ÷ jugadores del juego, **respetando el filtro `origen`** (R-48; por defecto `todos`). | S-44 (con cambio) | 2026-10-12 | Equipo |
+| R-47 | `JWT_SECRET` es opcional para los scripts (no la usan) y obligatoria para la API (mínimo 32 caracteres); sin ella la API no arranca. (Aceptado.) | S-45 | 2026-10-12 | Equipo |
+| R-48 | **Filtro `origen`** (`real` \| `seed` \| `todos`, default `todos`) en los filtros comunes de `/estadisticas/*` y en el resumen de `GET /juegos` (jugadores, sesiones, tasaCompletado). `GET /juegos/:juegoId` devuelve `contieneDatosSeed`. | — | 2026-10-12 | Equipo |
