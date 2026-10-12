@@ -46,7 +46,7 @@ colores, tamaños o sombras escritos a mano fuera de ese archivo.
   /* Texto */
   --text-1: #E8EAEE;  /* principal */
   --text-2: #A3AAB8;  /* secundario */
-  --text-3: #7D8596;  /* apagado: etiquetas, ejes (contraste >= 4.5:1 sobre --bg-1) */
+  --text-3: #8790A2;  /* apagado: etiquetas, ejes. Contraste: 5.60:1 sobre --bg-1, 5.15:1 sobre --bg-2, 4.60:1 sobre --bg-3 */
   --text-on-accent: #14171C;
 
   /* Acento principal: brasa (la habitación en llamas) */
@@ -125,7 +125,8 @@ Los números en tablas y KPIs usan `font-variant-numeric: tabular-nums`.
 - **Breakpoints:** 640, 768, 1024, 1280.
 
 **Sidebar (orden y etiquetas):**
-Resumen · Progresión · Niveles · Muertes · Logros y exploración · Builds y rendimiento.
+Resumen · Progresión · Niveles · Muertes · Logros y exploración.
+("Builds y rendimiento" queda fuera de la entrega 1.)
 Arriba el logotipo (marca + nombre del estudio); abajo el nombre del admin y "Salir".
 Elemento activo: fondo `--accent-soft`, texto `--accent`, barra de 2 px a la izquierda.
 
@@ -156,19 +157,22 @@ nunca solo placeholder.
 
 ### Tarjeta
 Fondo `--bg-1`, borde 1px `--border-default`, radio `--radius-md`, padding 20.
-Cabecera: título (14/600) + subtítulo-pregunta (13, `--text-2`) a la izquierda; acciones
-(ayuda `?` con tooltip, exportar) a la derecha. Sin sombras. Hover en tarjetas clicables:
+Cabecera: título (14/600) + subtítulo-pregunta (13, `--text-2`) a la izquierda; a la
+derecha, ayuda `?` con tooltip. Sin sombras. Hover en tarjetas clicables:
 borde `--border-strong` y fondo `--bg-2`.
 
 ### Tarjeta KPI
 Etiqueta (12/500 mayúscula suave, `--text-3`), cifra (32/600), debajo variación o contexto
 (13, `--text-2`; verde/rojo con flecha **y** texto, nunca solo color). Ejemplo: "Duración
-mediana · 18:42 · esperado ~20:00".
+mediana · 18:42 · esperado ~20:00". El valor "esperado" sale de
+`catalogo.duracionEsperadaMs` del juego; si el juego no lo tiene, el KPI omite esa parte
+(nunca un valor fijo en el código).
 
 ### Tabs y filtros
 Tabs de texto con subrayado de 2 px `--accent` en la activa. **Barra de filtros** (fija bajo
 la barra superior): rango de fechas (con atajos: 7 días, 30 días, Todo), versión de build,
-plataforma. Los filtros viajan en la URL (`?desde=&hasta=&buildVersion=&plataforma=`) para
+plataforma. Las opciones de build y plataforma salen de `filtros: { buildVersions,
+plataformas }` de `GET /juegos/:juegoId`. Los filtros viajan en la URL (`?desde=&hasta=&buildVersion=&plataforma=`) para
 poder compartir una vista. Botón secundario "Limpiar filtros".
 
 ### Tabla
@@ -238,8 +242,8 @@ en `--success`, muerte en `--danger`, abandono en `--warning`). Eje en mm:ss.
 
 **Muertes:** barras apiladas por nivel, apilado por causa (paleta categórica).
 
-**Logros:** lista de barras horizontales con el nombre, la descripción (si el logro está
-"oculto" en el catálogo, mostrar "???" hasta que alguien lo obtenga), jugadores y %.
+**Logros:** lista de barras horizontales con el nombre, la descripción, jugadores y %.
+Se muestran todos los logros del catálogo, también los que nadie ha obtenido (0 %).
 
 **Mapa de calor de muertes** (canvas): imagen del nivel de fondo (`imagenUrl`) a 100 % de
 ancho de la tarjeta, atenuada al 60 %; encima, celdas coloreadas con escala secuencial
@@ -256,19 +260,29 @@ un aviso discreto "Falta la imagen del nivel".
 Ruta base `/juegos/:slug/...`. Todas excepto login exigen JWT (guard); si el token expira,
 redirigir a login conservando la URL de destino.
 
+**Slug → juegoId:** la API trabaja con `juegoId` y no cambia. El dashboard traduce el slug
+de la URL con `GET /juegos` (un servicio de juegos que guarda la lista en memoria y un
+guard que resuelve el slug antes de entrar a la vista; slug inexistente → vista de error).
+
+**Solo tarjetas con endpoint:** cada vista muestra únicamente las tarjetas cuyo endpoint
+ya existe en la API. No hay placeholders ni tarjetas "próximamente". Las tarjetas marcadas
+abajo como *(cuando exista)* se agregan cuando se implemente su endpoint.
+
 | Ruta                          | Contenido y endpoints                                                                 |
 |-------------------------------|---------------------------------------------------------------------------------------|
 | `/login`                      | Tarjeta centrada de 400 px: marca, email, contraseña, botón primario "Entrar". Error genérico "Correo o contraseña incorrectos" (no revelar cuál). `POST /auth/login`. |
 | `/juegos`                     | Cuadrícula de tarjetas, una por juego: nombre, versión actual, badge de estado, y 3 mini-KPIs (jugadores, sesiones, % completado). Clic entra al juego. `GET /juegos`. |
-| `/juegos/:slug` (Resumen)     | Fila de 4 KPIs (jugadores, sesiones, duración mediana vs ~esperada, % terminaron); embudo compacto (6 col); tarjeta "Dónde se pierde la gente" con el mayor abandono (6 col); últimas versiones. `/estadisticas/*/sesiones`, `embudo`, `abandono`. |
-| `/progresion`                 | Embudo completo + abandono (antes del primer nivel, dentro de cada nivel, entre niveles) + completado del tutorial si el juego tiene uno. `embudo`, `abandono`, `tutorial`. |
-| `/niveles`                    | Tiempo por nivel + reintentos por nivel; tabla resumen por nivel. `tiempo-nivel`, `reintentos`. |
-| `/muertes`                    | Muertes por nivel y causa + mapa de calor con selector de nivel. `muertes`, `mapa-calor`. |
-| `/logros`                     | Logros (%) + coleccionables encontrados vs disponibles por nivel + diálogos saltados + inactividad y pausas. `logros`, `atencion`. |
-| `/builds`                     | Tabla por versión y plataforma (sesiones, duración, % completado) + FPS, tiempos de carga y crashes. `versiones`, `rendimiento`. |
+| `/juegos/:slug` (Resumen)     | `versionActual` como badge junto al nombre del juego. Fila de 4 KPIs (jugadores, sesiones, duración mediana con "esperado" si hay `duracionEsperadaMs`, % terminaron); embudo compacto (6 col); tarjeta "Dónde se pierde la gente" (6 col) con la **mayor caída entre dos pasos del embudo**. `GET /juegos/:juegoId`, `/estadisticas/*/sesiones`, `embudo`. |
+| `/progresion`                 | Embudo completo. *(cuando exista)* abandono (antes del primer nivel, dentro de cada nivel, entre niveles) y completado del tutorial si el juego tiene uno. `embudo` · *(cuando exista)* `abandono`, `tutorial`. |
+| `/niveles`                    | Tiempo por nivel; tabla resumen por nivel. *(cuando exista)* reintentos por nivel. `tiempo-nivel` · *(cuando exista)* `reintentos`. |
+| `/muertes`                    | Muertes por nivel y causa. *(cuando exista)* mapa de calor con selector de nivel. `muertes` · *(cuando exista)* `mapa-calor`. |
+| `/logros`                     | Logros (%). *(cuando exista)* coleccionables encontrados vs disponibles por nivel, diálogos saltados, inactividad y pausas. `logros` · *(cuando exista)* `atencion`. |
 
-**Prioridad de construcción** (si falta tiempo, en este orden): login → lista de juegos →
-Resumen → Progresión → Niveles → Muertes (barras) → Logros → mapa de calor → Builds.
+"Builds y rendimiento" (`/builds`: tabla por versión y plataforma, FPS, cargas y crashes;
+endpoints `versiones` y `rendimiento`) **queda fuera de la entrega 1**.
+
+**Prioridad de construcción** (si falta tiempo, en este orden): login → juegos →
+Resumen → Progresión (embudo) → Niveles (tiempo) → Muertes (barras) → Logros → mapa de calor.
 
 **Filtros:** presentes en todas las vistas con datos, en la barra de filtros (sección 4).
 Cambiar un filtro recarga todas las gráficas de la vista, con skeleton, sin parpadeo del layout.
@@ -300,7 +314,7 @@ dashboard/src/
     shared/ui/       botón, input, select, tarjeta, kpi, tabs, badge, tabla, tooltip,
                      skeleton, estado-vacio, estado-error, toast  (prefijo xa-)
     shared/charts/   xa-chart, xa-embudo, xa-mapa-calor
-    features/        login, juegos, juego (resumen, progresion, niveles, muertes, logros, builds)
+    features/        login, juegos, juego (resumen, progresion, niveles, muertes, logros)
     i18n/es.ts
 ```
 
@@ -315,17 +329,20 @@ dashboard/src/
   vive en un solo archivo `chart-theme.ts`), IDs de catálogo en el código, estilos en línea
   para valores de diseño, librerías de componentes completas (no Angular Material ni
   Bootstrap): los componentes `xa-*` son propios y siguen esta guía.
-- Cada componente de `shared/ui` lleva una página de ejemplo en una ruta `/_ui` (solo en
-  desarrollo) mostrando todas sus variantes y estados, para revisarlos de un vistazo.
+- Los componentes de `shared/ui` se construyen **conforme los necesita cada pantalla**, no
+  todos por adelantado; cada uno con sus estados (hover, foco, deshabilitado, error).
+- *Opcional, solo si sobra tiempo:* una página de ejemplo en `/_ui` (solo en desarrollo)
+  con todas las variantes y estados de los componentes.
 
 ---
 
 ## 9. Criterios de "diseño terminado"
 
 - [ ] Todos los tokens en `tokens.css` y ningún valor de diseño fuera de él
-- [ ] Componentes `shared/ui` con todos sus estados (hover, foco, deshabilitado, error)
+- [ ] Componentes `shared/ui` usados, con todos sus estados (hover, foco, deshabilitado, error)
 - [ ] Cada vista con skeleton, vacío, error y datos
 - [ ] Login, lista de juegos y al menos Resumen, Progresión, Niveles, Muertes y Logros
+      (con las tarjetas cuyos endpoints existan; "Builds y rendimiento" fuera de la entrega 1)
 - [ ] El segundo juego (demo) se ve correcto sin cambios de código
 - [ ] Contraste y foco revisados; navegación completa con teclado
 - [ ] Revisado en 1280, 1024 y 390 px de ancho

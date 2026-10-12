@@ -288,6 +288,7 @@ propio catálogo; el frontend no cambia.
 
 | Sección           | Campos por elemento                                                                       |
 |-------------------|-------------------------------------------------------------------------------------------|
+| `duracionEsperadaMs` | **Opcional.** Entero > 0. Duración esperada de una partida; el dashboard la usa como referencia en el KPI de duración y la omite si falta. |
 | `tiposEvento`     | Lista de strings (genéricos + específicos permitidos).                                    |
 | `niveles`         | `nivelId`, `nombre`, `orden`, `descripcion`, `tieneTutorial` (bool), `imagenUrl`, `limites: { minX, maxX, minY, maxY }` (S-09). |
 | `causasMuerte`    | `causa`, `nombre`.                                                                        |
@@ -300,6 +301,8 @@ El embudo usa `orden`; "terminar el juego" = `nivel_fin` `completado` del nivel 
 ### 5.1 Catálogo de La Casa del Bosque (definitivo)
 
 En el seed se define **una sola constante** con este catálogo. Se ampliará después.
+
+**Duración esperada:** `duracionEsperadaMs: 1200000` (20 min).
 
 **Niveles** (en este orden):
 
@@ -346,6 +349,11 @@ niveles y logros, y el mismo código en la API y el dashboard. No es un juego re
 estudio. Nombre, IDs y textos son propuestos (S-27).
 
 - **Nombre:** "Faro Nocturno (demo)" · **slug:** `faro-nocturno-demo`
+- **Duración esperada:** `duracionEsperadaMs: 900000` (15 min).
+- **Datos de prueba:** `seed-datos` genera para este juego jugadores, sesiones y eventos con
+  el mismo generador que La Casa del Bosque, pero recorriendo **su** catálogo (sus
+  niveles, causas, logros y conchas). Así el dashboard muestra los dos juegos con datos
+  reales y el mismo código.
 - **Diferencias a propósito con La Casa del Bosque:** 4 niveles en lugar de 3, otras
   causas de muerte, sin tutorial, sin `flor_recogida` ni `tutorial_completado`, y 3
   coleccionables en un nivel distinto. Así el dashboard tiene que adaptarse solo al catálogo.
@@ -493,7 +501,7 @@ Si la ruta lleva `:juegoId` y ese juego no está en `juegosPermitidos` del admin
 | POST   | `/auth/login`                         | no   | `{ email, password }`                | `200 { token, expiraEn, admin: { email, nombre, juegosPermitidos } }` · `401 CREDENCIALES_INVALIDAS` |
 | GET    | `/auth/yo`                            | JWT  | —                                    | `200 { email, nombre, juegosPermitidos }`                                                  |
 | GET    | `/juegos`                             | JWT  | `?pagina=1&limite=20`                | `200 { datos: [{ juegoId, nombre, slug, versionActual, activo, resumen: { jugadores, sesiones, tasaCompletado } }], pagina, limite, total }` — solo juegos permitidos |
-| GET    | `/juegos/:juegoId`                    | JWT  | —                                    | `200 { juegoId, nombre, slug, versionActual, activo, catalogo }` (sin `apiKeyHash`)        |
+| GET    | `/juegos/:juegoId`                    | JWT  | —                                    | `200 { juegoId, nombre, slug, versionActual, activo, catalogo, filtros: { buildVersions, plataformas } }` (sin `apiKeyHash`). `catalogo` incluye `duracionEsperadaMs` si existe. `filtros` = valores distintos de `buildVersion` y `plataforma` en `sesiones` del juego, ordenados, para llenar los selectores del dashboard. |
 | DELETE | `/jugadores/:juegoId/:playerId`       | JWT  | —                                    | `200 { eliminados: { jugador, sesiones, eventos, logros } }` · `404 JUGADOR_NO_ENCONTRADO` (S-17) |
 | GET    | `/estadisticas/:juegoId/sesiones`     | JWT  | filtros comunes                      | Sección 10.1                                                                               |
 | GET    | `/estadisticas/:juegoId/tiempo-nivel` | JWT  | filtros comunes                      | Sección 10.2                                                                               |

@@ -7,7 +7,7 @@ Aquí se anota lo que **no** está definido en `CLAUDE.md` o en `docs/`.
   la columna "Impacto" dice qué habría que tocar.
 - **Resuelta:** ya se decidió. Está en la sección 4 con la fecha y la decisión.
 
-Última actualización: 2026-10-10
+Última actualización: 2026-10-11
 
 ---
 
@@ -93,3 +93,12 @@ Aquí se anota lo que **no** está definido en `CLAUDE.md` o en `docs/`.
 | R-20 | La primera estadística extra (después de las imprescindibles) es el mapa de calor. | — | 2026-10-10 | Equipo |
 | R-21 | `docs/DISENO_DASHBOARD.md` creado: es la fuente de verdad visual del dashboard (tokens, componentes, gráficas, pantallas, reglas de Angular). Desbloquea el Angular. | A-05 | 2026-10-10 | Equipo |
 | R-22 | Tema **oscuro por defecto**. El modo claro queda preparado en los tokens pero no se implementa en la entrega 1. Identidad: marca "Estudio Xolos", acento brasa y pétalo azul (ver `DISENO_DASHBOARD.md`). | A-04 (en parte: el modo claro queda para después) | 2026-10-10 | Equipo |
+| R-23 | Resumen: "Dónde se pierde la gente" usa la **mayor caída del embudo**. `abandono` queda como estadística extra después del mapa de calor. Las vistas muestran solo las tarjetas cuyo endpoint existe, sin placeholders. | — | 2026-10-11 | Equipo |
+| R-24 | `catalogo.duracionEsperadaMs` (opcional), devuelto en `GET /juegos/:juegoId`. La Casa del Bosque: 1200000; Faro Nocturno (demo): 900000. Si falta, el KPI omite "esperado". | — | 2026-10-11 | Equipo |
+| R-25 | Sin logros "ocultos": se quita del diseño y no existe campo `oculto`. | — | 2026-10-11 | Equipo |
+| R-26 | `GET /juegos/:juegoId` devuelve `filtros: { buildVersions, plataformas }` (valores distintos en `sesiones`). | — | 2026-10-11 | Equipo |
+| R-27 | El dashboard traduce el slug a `juegoId` con `GET /juegos` (servicio + guard). La API no cambia. | — | 2026-10-11 | Equipo |
+| R-28 | Sin acción "Exportar" en las tarjetas. Resumen muestra solo `versionActual` como badge (sin tarjeta de últimas versiones). | — | 2026-10-11 | Equipo |
+| R-29 | `--text-3` sube a `#8790A2`: contraste 5.60:1 sobre `--bg-1`, 5.15:1 sobre `--bg-2`, 4.60:1 sobre `--bg-3` (antes `#7D8596`: 4.46:1 y 3.99:1 en `--bg-2` y `--bg-3`). | — | 2026-10-11 | Equipo |
+| R-30 | Alcance del dashboard: galería `/_ui` opcional; componentes `shared/ui` conforme los necesite cada pantalla; "Builds y rendimiento" fuera de la entrega 1. Orden: login → juegos → Resumen → Progresión (embudo) → Niveles (tiempo) → Muertes (barras) → Logros → mapa de calor. | — | 2026-10-11 | Equipo |
+| R-31 | `MONGOMS_VERSION` fijo a una versión exacta 7.0.x para los tests. Fuentes del dashboard: `@fontsource-variable/inter`, `@fontsource-variable/space-grotesk` y `@fontsource/jetbrains-mono` (solo peso 400). | — | 2026-10-11 | Equipo |
