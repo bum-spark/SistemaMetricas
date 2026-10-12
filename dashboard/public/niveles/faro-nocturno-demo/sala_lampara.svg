@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Imagen PROVISIONAL de Sala de la lámpara (faro-nocturno-demo) para el mapa de calor (A-07).
+     viewBox = límites del catálogo × 10: x 0..60, y 0..40 (Y invertido).
+     Generada por "npm run imagenes-niveles"; se reemplaza por la captura real de Unity. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400" role="img" aria-label="Sala de la lámpara (imagen provisional)">
+  <defs>
+    <linearGradient id="fondo" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2a2614"/>
+      <stop offset="1" stop-color="#16140a"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="400" fill="url(#fondo)"/>
+  <rect x="0" y="388" width="600" height="12" fill="#4a4426"/>
+  <rect x="140" y="260" width="120" height="10" rx="3" fill="#7a6f3a"/>
+  <rect x="340" y="160" width="120" height="10" rx="3" fill="#7a6f3a"/>
+  <rect x="221.2" y="346" width="57.599999999999994" height="28" fill="#000" opacity="0.75"/>
+  <path d="M444 100 q 8 -9 16 0 q 8 -9 16 0" stroke="#0b0c10" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <text x="16" y="28" fill="#a3aab8" font-family="Inter, system-ui, sans-serif" font-size="18">Sala de la lámpara · imagen provisional</text>
+</svg>

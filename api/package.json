@@ -20,7 +20,9 @@
     "crear-juego": "tsx ../scripts/crear-juego.ts",
     "rotar-api-key": "tsx ../scripts/rotar-api-key.ts",
     "revocar-api-key": "tsx ../scripts/revocar-api-key.ts",
-    "limpiar-seed": "tsx ../scripts/limpiar-seed.ts"
+    "limpiar-seed": "tsx ../scripts/limpiar-seed.ts",
+    "seed-datos": "tsx ../scripts/seed-datos.ts",
+    "imagenes-niveles": "tsx ../scripts/imagenes-niveles.ts"
   },
   "license": "UNLICENSED",
   "dependencies": {

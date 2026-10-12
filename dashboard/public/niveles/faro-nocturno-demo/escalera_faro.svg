@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Imagen PROVISIONAL de Escalera del faro (faro-nocturno-demo) para el mapa de calor (A-07).
+     viewBox = límites del catálogo × 10: x 0..30, y 0..90 (Y invertido).
+     Generada por "npm run imagenes-niveles"; se reemplaza por la captura real de Unity. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 900" width="300" height="900" role="img" aria-label="Escalera del faro (imagen provisional)">
+  <defs>
+    <linearGradient id="fondo" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1d2028"/>
+      <stop offset="1" stop-color="#101218"/>
+    </linearGradient>
+  </defs>
+  <rect width="300" height="900" fill="url(#fondo)"/>
+  <rect x="0" y="888" width="300" height="12" fill="#454b57"/>
+  <rect x="60" y="780" width="120" height="10" rx="3" fill="#6b7280"/>
+  <rect x="165" y="660" width="120" height="10" rx="3" fill="#6b7280"/>
+  <rect x="60" y="540" width="120" height="10" rx="3" fill="#6b7280"/>
+  <rect x="165" y="420" width="120" height="10" rx="3" fill="#6b7280"/>
+  <rect x="60" y="300" width="120" height="10" rx="3" fill="#6b7280"/>
+  <rect x="165" y="180" width="120" height="10" rx="3" fill="#6b7280"/>
+  <rect x="60" y="60" width="120" height="10" rx="3" fill="#6b7280"/>
+  <rect x="126" y="586" width="48" height="28" fill="#000" opacity="0.75"/>
+  <rect x="96" y="266" width="48" height="28" fill="#000" opacity="0.75"/>
+  <path d="M194 90 q 8 -9 16 0 q 8 -9 16 0" stroke="#0b0c10" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <text x="16" y="28" fill="#a3aab8" font-family="Inter, system-ui, sans-serif" font-size="18">Escalera del faro · imagen provisional</text>
+</svg>

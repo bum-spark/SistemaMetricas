@@ -110,8 +110,15 @@ Los scripts corren en tu máquina contra Atlas. La URI **solo** va en tu `api/.e
    npm run crear-admin -- --confirmar
    ```
    Después **borra `ADMIN_PASSWORD` de tu `.env`**.
-5. El juego demo "Faro Nocturno (demo)" no se crea aquí: lo crea `seed-datos` (etapa 6)
-   con datos marcados como `seed`.
+5. **Datos de prueba para la demo (opcional):** primero sin `--confirmar` para revisar el
+   destino, luego:
+   ```bash
+   npm run seed-datos -- --confirmar
+   ```
+   Crea "Faro Nocturno (demo)" (sin API key) y llena los dos juegos con datos `origen: "seed"`
+   de los últimos 14 días. Se puede repetir (borra su seed anterior antes de insertar) y se
+   quita con `npm run limpiar-seed -- --confirmar`. El dashboard puede filtrarlos con
+   `origen=real`.
 
 ## 4. Comprobar el deploy
 

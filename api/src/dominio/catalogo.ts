@@ -17,7 +17,11 @@ export const esquemaNivel = z.object({
   orden: z.number().int().min(1),
   descripcion: z.string().default(''),
   tieneTutorial: z.boolean().default(false),
-  imagenUrl: z.url().optional(),
+  // URL absoluta o ruta servida por el dashboard (p. ej. /niveles/la-casa-del-bosque/casa_abandonada.svg).
+  imagenUrl: z
+    .string()
+    .regex(/^(https?:\/\/|\/)[^\s]*$/, 'debe ser una URL http(s) o una ruta que empiece con /')
+    .optional(),
   limites: esquemaLimites.optional(),
 });
 

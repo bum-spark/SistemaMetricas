@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Imagen PROVISIONAL de Azotea (faro-nocturno-demo) para el mapa de calor (A-07).
+     viewBox = límites del catálogo × 10: x 0..90, y 0..30 (Y invertido).
+     Generada por "npm run imagenes-niveles"; se reemplaza por la captura real de Unity. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 300" width="900" height="300" role="img" aria-label="Azotea (imagen provisional)">
+  <defs>
+    <linearGradient id="fondo" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#111833"/>
+      <stop offset="1" stop-color="#080b1a"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="300" fill="url(#fondo)"/>
+  <rect x="0" y="288" width="900" height="12" fill="#3b3f52"/>
+  <rect x="165" y="195" width="120" height="10" rx="3" fill="#5b6078"/>
+  <rect x="390" y="120" width="120" height="10" rx="3" fill="#5b6078"/>
+  <rect x="615" y="195" width="120" height="10" rx="3" fill="#5b6078"/>
+  <path d="M284 100 q 8 -9 16 0 q 8 -9 16 0" stroke="#0b0c10" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <rect x="678.8" y="256" width="62.4" height="28" fill="#000" opacity="0.75"/>
+  <text x="16" y="28" fill="#a3aab8" font-family="Inter, system-ui, sans-serif" font-size="18">Azotea · imagen provisional</text>
+</svg>

@@ -2,6 +2,10 @@ import type { DefinicionJuego } from './tipos';
 
 // Catálogo definitivo de La Casa del Bosque (ESQUEMA_EVENTOS.md §5.1, R-02).
 // Una sola constante; se ampliará después. `suelo_descubierto` sigue abierto (A-06) y no está aquí.
+// `imagenUrl` y `limites` son PROVISIONALES (A-07): imágenes SVG generadas y límites coherentes
+// con las coordenadas de seed-datos, hasta tener las capturas y los límites reales de Unity.
+
+const imagen = (nivelId: string) => `/niveles/la-casa-del-bosque/${nivelId}.svg`;
 
 const NIVELES = [
   {
@@ -10,14 +14,26 @@ const NIVELES = [
     orden: 1,
     descripcion: 'Introducción: entra al edificio y ve la cabaña. Incluye el tutorial.',
     tieneTutorial: true,
+    imagenUrl: imagen('casa_abandonada'),
+    limites: { minX: 0, maxX: 120, minY: 0, maxY: 30 },
   },
-  { nivelId: 'hospital_cuarto', nombre: 'Cuarto de hospital', orden: 2, descripcion: '', tieneTutorial: false },
+  {
+    nivelId: 'hospital_cuarto',
+    nombre: 'Cuarto de hospital',
+    orden: 2,
+    descripcion: '',
+    tieneTutorial: false,
+    imagenUrl: imagen('hospital_cuarto'),
+    limites: { minX: 0, maxX: 100, minY: 0, maxY: 30 },
+  },
   {
     nivelId: 'habitacion_llamas',
     nombre: 'Habitación en llamas',
     orden: 3,
     descripcion: 'Cuarto de los cuadros en llamas. Último nivel.',
     tieneTutorial: false,
+    imagenUrl: imagen('habitacion_llamas'),
+    limites: { minX: 0, maxX: 140, minY: 0, maxY: 40 },
   },
 ];
 

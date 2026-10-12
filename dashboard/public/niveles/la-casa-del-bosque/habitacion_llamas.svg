@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Imagen PROVISIONAL de Habitación en llamas (la-casa-del-bosque) para el mapa de calor (A-07).
+     viewBox = límites del catálogo × 10: x 0..140, y 0..40 (Y invertido).
+     Generada por "npm run imagenes-niveles"; se reemplaza por la captura real de Unity. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 400" width="1400" height="400" role="img" aria-label="Habitación en llamas (imagen provisional)">
+  <defs>
+    <linearGradient id="fondo" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2e1a12"/>
+      <stop offset="1" stop-color="#160c08"/>
+    </linearGradient>
+  </defs>
+  <rect width="1400" height="400" fill="url(#fondo)"/>
+  <rect x="0" y="388" width="1400" height="12" fill="#4b2c1d"/>
+  <rect x="173.3" y="260" width="120" height="10" rx="3" fill="#7a4426"/>
+  <rect x="406.7" y="160" width="120" height="10" rx="3" fill="#7a4426"/>
+  <rect x="640" y="260" width="120" height="10" rx="3" fill="#7a4426"/>
+  <rect x="873.3" y="160" width="120" height="10" rx="3" fill="#7a4426"/>
+  <rect x="1106.7" y="260" width="120" height="10" rx="3" fill="#7a4426"/>
+  <rect x="361.6" y="382" width="76.8" height="18" fill="#f08a3c" opacity="0.85"/>
+  <rect x="361.6" y="374" width="76.8" height="8" fill="#ffd08a" opacity="0.35"/>
+  <rect x="916.8" y="382" width="86.39999999999999" height="18" fill="#f08a3c" opacity="0.85"/>
+  <rect x="916.8" y="374" width="86.39999999999999" height="8" fill="#ffd08a" opacity="0.35"/>
+  <path d="M1196 156 v-16 a14 14 0 0 1 28 0 v16 l-5 -5 -4 5 -5 -5 -5 5 -4 -5 z" fill="#e8eaee" opacity="0.55"/>
+  <circle cx="1205" cy="137" r="2.2" fill="#14171c"/><circle cx="1215" cy="137" r="2.2" fill="#14171c"/>
+  <text x="16" y="28" fill="#a3aab8" font-family="Inter, system-ui, sans-serif" font-size="18">Habitación en llamas · imagen provisional</text>
+</svg>

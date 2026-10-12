@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Imagen PROVISIONAL de Cuarto de hospital (la-casa-del-bosque) para el mapa de calor (A-07).
+     viewBox = límites del catálogo × 10: x 0..100, y 0..30 (Y invertido).
+     Generada por "npm run imagenes-niveles"; se reemplaza por la captura real de Unity. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 300" width="1000" height="300" role="img" aria-label="Cuarto de hospital (imagen provisional)">
+  <defs>
+    <linearGradient id="fondo" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1e2a33"/>
+      <stop offset="1" stop-color="#121a20"/>
+    </linearGradient>
+  </defs>
+  <rect width="1000" height="300" fill="url(#fondo)"/>
+  <rect x="0" y="288" width="1000" height="12" fill="#3a4a56"/>
+  <rect x="140" y="195" width="120" height="10" rx="3" fill="#5d7484"/>
+  <rect x="340" y="120" width="120" height="10" rx="3" fill="#5d7484"/>
+  <rect x="540" y="195" width="120" height="10" rx="3" fill="#5d7484"/>
+  <rect x="740" y="120" width="120" height="10" rx="3" fill="#5d7484"/>
+  <path d="M296 236 v-16 a14 14 0 0 1 28 0 v16 l-5 -5 -4 5 -5 -5 -5 5 -4 -5 z" fill="#e8eaee" opacity="0.55"/>
+  <circle cx="305" cy="217" r="2.2" fill="#14171c"/><circle cx="315" cy="217" r="2.2" fill="#14171c"/>
+  <rect x="591.2" y="266" width="57.599999999999994" height="28" fill="#000" opacity="0.75"/>
+  <path d="M846 106 v-16 a14 14 0 0 1 28 0 v16 l-5 -5 -4 5 -5 -5 -5 5 -4 -5 z" fill="#e8eaee" opacity="0.55"/>
+  <circle cx="855" cy="87" r="2.2" fill="#14171c"/><circle cx="865" cy="87" r="2.2" fill="#14171c"/>
+  <text x="16" y="28" fill="#a3aab8" font-family="Inter, system-ui, sans-serif" font-size="18">Cuarto de hospital · imagen provisional</text>
+</svg>

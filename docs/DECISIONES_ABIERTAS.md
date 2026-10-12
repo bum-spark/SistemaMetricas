@@ -16,7 +16,7 @@ Aquí se anota lo que **no** está definido en `CLAUDE.md` o en `docs/`.
 | ID   | Decisión                                         | Qué bloquea                                                                       |
 |------|--------------------------------------------------|-----------------------------------------------------------------------------------|
 | A-06 | `suelo_descubierto` es un **logro**; faltan su `nivelId` y su disparador | Su entrada en el catálogo. **No está en el seed** hasta que se defina. El resto de A-06 quedó resuelto (R-02). |
-| A-07 | Imagen y límites de mundo (`minX, maxX, minY, maxY`) de cada nivel | El mapa de calor. Los entrega el equipo de Unity.                   |
+| A-07 | Imagen y límites de mundo (`minX, maxX, minY, maxY`) **reales** de cada nivel | Mientras tanto hay valores **provisionales** (S-46): SVG generados en `dashboard/public/niveles/` y límites coherentes con seed-datos. Cuando el equipo de Unity entregue capturas y límites, se reemplazan en los catálogos (`api/src/catalogos/`) y en las imágenes. |
 
 ---
 
@@ -55,6 +55,9 @@ Aquí se anota lo que **no** está definido en `CLAUDE.md` o en `docs/`.
 | S-32 | Acceso de admins: `crear-admin` sin `--juegos` da acceso a todos los juegos existentes, y `crear-juego` agrega el juego nuevo a los `juegosPermitidos` de todos los admins activos (salvo `--sin-acceso`). Coherente con "un solo rol por ahora". | Que cada acceso se asigne a mano por admin. | Scripts `crear-admin` y `crear-juego`. |
 | S-33 | Contraseña de admin: mínimo 12 caracteres, bcrypt con 12 rondas; solo se lee de `ADMIN_PASSWORD` en el `.env`. | Otra política o rondas. | `seguridad/password.ts`. |
 | S-34 | Los scripts reciben el juego con `--juego <slug>` (en lugar de un argumento posicional) para que todos usen la misma forma. | `rotar-api-key <slug>`. | Solo la línea de comandos. |
+| S-46 | Imágenes y límites **provisionales** de los niveles (A-07): un SVG por nivel generado por `npm run imagenes-niveles` en `dashboard/public/niveles/<slug>/<nivelId>.svg` (10 px por unidad de mundo, Y invertido) y límites en los catálogos coherentes con las zonas de muerte del seed. `imagenUrl` acepta rutas del dashboard (`/…`) además de URLs. | Esperar las capturas de Unity para tener mapa de calor. | Catálogos, imágenes y validación de `imagenUrl`. |
+| S-47 | `seed-datos`: semilla por defecto 42; referencia por defecto la medianoche UTC de hoy (misma semilla y mismo día = mismos datos); 300 jugadores en La Casa del Bosque y 150 en Faro; si un juego no existe lo crea **sin API key** y da acceso a los admins activos; completa `imagenUrl`/`limites` que falten en el catálogo de un juego existente. | Exigir que los juegos existan antes. | Script `seed-datos`. |
+| S-48 | Forma de los datos de prueba: embudo, zonas de muerte, ≈10 % de crashes (75 % reabre y retoma), build 1.0.0 la primera semana y 1.0.1 la segunda (90 %), pesos de plataforma y de hora del día, duraciones lognormales (perfiles en `api/src/seed/perfiles.ts`). | Otros parámetros. | Solo los datos de prueba. |
 
 ---
 

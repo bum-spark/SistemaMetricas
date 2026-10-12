@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Imagen PROVISIONAL de Casa abandonada (la-casa-del-bosque) para el mapa de calor (A-07).
+     viewBox = límites del catálogo × 10: x 0..120, y 0..30 (Y invertido).
+     Generada por "npm run imagenes-niveles"; se reemplaza por la captura real de Unity. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" width="1200" height="300" role="img" aria-label="Casa abandonada (imagen provisional)">
+  <defs>
+    <linearGradient id="fondo" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2b231d"/>
+      <stop offset="1" stop-color="#1a1511"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="300" fill="url(#fondo)"/>
+  <rect x="0" y="288" width="1200" height="12" fill="#4a3a2c"/>
+  <rect x="180" y="195" width="120" height="10" rx="3" fill="#6b5440"/>
+  <rect x="420" y="120" width="120" height="10" rx="3" fill="#6b5440"/>
+  <rect x="660" y="195" width="120" height="10" rx="3" fill="#6b5440"/>
+  <rect x="900" y="120" width="120" height="10" rx="3" fill="#6b5440"/>
+  <path d="M446 256 v-16 a14 14 0 0 1 28 0 v16 l-5 -5 -4 5 -5 -5 -5 5 -4 -5 z" fill="#e8eaee" opacity="0.55"/>
+  <circle cx="455" cy="237" r="2.2" fill="#14171c"/><circle cx="465" cy="237" r="2.2" fill="#14171c"/>
+  <rect x="753.6" y="266" width="52.8" height="28" fill="#000" opacity="0.75"/>
+  <path d="M1016 136 v-16 a14 14 0 0 1 28 0 v16 l-5 -5 -4 5 -5 -5 -5 5 -4 -5 z" fill="#e8eaee" opacity="0.55"/>
+  <circle cx="1025" cy="117" r="2.2" fill="#14171c"/><circle cx="1035" cy="117" r="2.2" fill="#14171c"/>
+  <text x="16" y="28" fill="#a3aab8" font-family="Inter, system-ui, sans-serif" font-size="18">Casa abandonada · imagen provisional</text>
+</svg>

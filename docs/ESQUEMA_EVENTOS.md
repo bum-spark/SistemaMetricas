@@ -318,7 +318,7 @@ propio catálogo; el frontend no cambia.
 |-------------------|-------------------------------------------------------------------------------------------|
 | `duracionEsperadaMs` | **Opcional.** Entero > 0. Duración esperada de una partida; el dashboard la usa como referencia en el KPI de duración y la omite si falta. |
 | `tiposEvento`     | Lista de strings (genéricos + específicos permitidos).                                    |
-| `niveles`         | `nivelId`, `nombre`, `orden`, `descripcion`, `tieneTutorial` (bool), `imagenUrl`, `limites: { minX, maxX, minY, maxY }` (S-09). |
+| `niveles`         | `nivelId`, `nombre`, `orden`, `descripcion`, `tieneTutorial` (bool), `imagenUrl` (URL `http(s)://…` o ruta del dashboard que empieza con `/`, p. ej. `/niveles/<slug>/<nivelId>.svg`), `limites: { minX, maxX, minY, maxY }` (S-09). |
 | `causasMuerte`    | `causa`, `nombre`.                                                                        |
 | `logros`          | `logroId`, `nombre`, `descripcion`, `nivelId` (opcional).                                 |
 | `coleccionables`  | `coleccionableId`, `nivelId`, `nombre`.                                                   |
@@ -340,7 +340,11 @@ En el seed se define **una sola constante** con este catálogo. Se ampliará des
 | 2       | `hospital_cuarto`   | Cuarto de hospital    |                                                                              | no              |
 | 3       | `habitacion_llamas` | Habitación en llamas  | Cuarto de los cuadros en llamas. Último nivel.                               | no              |
 
-`imagenUrl` y `limites` de cada nivel están pendientes (A-07).
+**Imágenes y límites (provisionales, A-07):** cada nivel trae `imagenUrl`
+(`/niveles/la-casa-del-bosque/<nivelId>.svg`, servida desde `dashboard/public/`) y `limites`:
+`casa_abandonada` 0–120 × 0–30, `hospital_cuarto` 0–100 × 0–30, `habitacion_llamas` 0–140 × 0–40.
+Son SVG generados (`npm run imagenes-niveles`) con los peligros dibujados donde `seed-datos`
+concentra las muertes; se reemplazan por las capturas y límites reales de Unity.
 
 **Causas de muerte:** `fantasma` (Fantasma), `lava` (Lava), `caida` (Caída).
 
@@ -381,7 +385,10 @@ estudio. Nombre, IDs y textos son propuestos (S-27).
 - **Datos de prueba:** `seed-datos` genera para este juego jugadores, sesiones y eventos con
   el mismo generador que La Casa del Bosque, pero recorriendo **su** catálogo (sus
   niveles, causas, logros y conchas). Así el dashboard muestra los dos juegos con datos
-  reales y el mismo código.
+  reales y el mismo código. Si el juego no existe, `seed-datos` lo crea **sin API key**.
+- **Imágenes y límites provisionales (A-07):** `muelle` 0–80 × 0–20, `escalera_faro` 0–30 × 0–90
+  (vertical), `sala_lampara` 0–60 × 0–40, `azotea` 0–90 × 0–30; imágenes en
+  `/niveles/faro-nocturno-demo/<nivelId>.svg`.
 - **Diferencias a propósito con La Casa del Bosque:** 4 niveles en lugar de 3, otras
   causas de muerte, sin tutorial, sin `flor_recogida` ni `tutorial_completado`, y 3
   coleccionables en un nivel distinto. Así el dashboard tiene que adaptarse solo al catálogo.
@@ -598,7 +605,8 @@ corren a mano con acceso a la base de datos (S-19). Se ejecutan desde `/api` con
 | `crear-juego --juego <slug> [--version x.y.z] [--sin-acceso]` | Crea un juego con su catálogo constante (`la-casa-del-bosque` §5.1 o `faro-nocturno-demo` §5.2). Muestra el `juegoId` y la API key **una sola vez**. Por defecto agrega el juego a `juegosPermitidos` de todos los admins activos (S-32). No sobrescribe un juego existente. |
 | `rotar-api-key --juego <slug>`   | Genera una key nueva, reemplaza el hash (la anterior deja de servir al instante) y la muestra una sola vez. También rehabilita un juego revocado. |
 | `revocar-api-key --juego <slug>` | Pone `apiKeyHash: null`. El juego deja de poder mandar datos; los datos guardados se conservan.               |
-| `seed-datos`             | Genera jugadores, sesiones y eventos de prueba que llenan el dashboard, todos con `origen: "seed"`.            |
+| `seed-datos [--semilla n] [--jugadores n] [--referencia AAAA-MM-DD]` | Datos de prueba realistas para La Casa del Bosque (300 jugadores por defecto) y Faro Nocturno (demo) (la mitad), todos con `origen: "seed"` (ver "seed-datos" abajo). |
+| `imagenes-niveles`       | Regenera las imágenes provisionales de los niveles en `dashboard/public/niveles/` (no toca la base). |
 | `limpiar-seed [--juego <slug>]` | Borra todo lo que tenga `origen: "seed"` (y los logros de esos jugadores); con `--juego`, solo de ese juego. Muestra cuántos documentos eliminó por colección. |
 
 **API key:**
@@ -608,6 +616,30 @@ corren a mano con acceso a la base de datos (S-19). Se ejecutan desde `/api` con
   bcrypt porque la key es aleatoria y larga, y así se puede buscar por índice; S-19.)
 - La key en claro no se guarda en ningún lado del sistema. Si se pierde, se rota.
 - Cada juego tiene su propia key: revocar una no afecta a los demás.
+
+### seed-datos (etapa 6)
+
+- **Determinista:** misma `--semilla` (por defecto 42) y misma `--referencia` (por defecto la
+  medianoche UTC de hoy) producen exactamente los mismos documentos (incluidos `eventoId`,
+  `playerId` y `sessionId`). Los datos cubren los **14 días anteriores** a la referencia.
+- **Idempotente:** antes de insertar borra el seed anterior de cada juego (como `limpiar-seed
+  --juego`). Nunca toca datos con `origen: "real"` ni la API key de un juego existente.
+- **Directo a la base** (sin HTTP), con los mismos tipos y campos que acepta la ingesta
+  (`eventoId`, `secuencia`, `timestamp`, `recibidoEn`…); un test pasa cada evento generado por
+  `validarEvento`. Las sesiones llevan `inicio`, `fin` (null si hubo crash), `ultimoEventoEn` y
+  `ultimoRecibidoEn` (R-34); los logros obtenidos se insertan una vez por jugador.
+- **Forma realista** (perfiles en `api/src/seed/perfiles.ts`, comprobada por tests):
+  - Embudo de La Casa del Bosque ≈ 100 % → 70 % → 45 % → 30 % terminan; Faro ≈ 100 → 72 → 52 → 38 → 27 %.
+  - Muertes concentradas en 2–3 zonas por nivel (≈ 90 % cerca de una zona, 10 % dispersas).
+  - ≈ 10 % de sesiones con crash (sin `sesion_fin`; a veces con `error` fatal); el 75 % de
+    esos jugadores reabre el juego y retoma el nivel.
+  - Dos builds: 1.0.0 (primera semana) y 1.0.1 (segunda semana), con la 1.0.1 mejor
+    (menos muertes y más jugadores que terminan).
+  - Plataformas variadas (windows, android, webgl, macos, linux, ios) y hora del día con más
+    juego por la tarde/noche.
+  - Duración de sesión con mediana cercana a `duracionEsperadaMs` y cola larga (lognormal).
+- Imprime el host y la base, exige `--confirmar` si la URI no es local y al final muestra el
+  resumen por juego (insertados, embudo, crashes, mediana, builds).
 
 ---
 
