@@ -2,6 +2,14 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 
 // MongoDB 7.0+ es obligatorio por $median (R-17). Versión exacta para que todos
 // los equipos prueben contra lo mismo; se puede cambiar con MONGOMS_VERSION.
+//
+// Nota sobre la conexión (ver bdPrueba.ts): los tests conectan pasando
+// `runtimeAdapters: { os }`. El driver `mongodb` 7 carga el módulo `os` con un
+// import() dinámico, y dentro del sandbox CommonJS de Jest ese import falla en
+// silencio: el handshake sale sin metadatos (`client.driver`) y el servidor rechaza
+// la conexión ("Missing required sub-document 'driver'"). Pasarle `os` directamente
+// (opción pública del driver) lo evita. En producción NO hace falta: fuera de Jest el
+// import() funciona (verificado conectando la API compilada a MongoDB 7.0.43).
 export const VERSION_MONGO_TESTS = '7.0.43';
 
 export default async function globalSetup(): Promise<void> {

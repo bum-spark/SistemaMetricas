@@ -5,7 +5,7 @@
   "description": "API de la plataforma de métricas multi-juego",
   "main": "dist/server.js",
   "engines": {
-    "node": ">=22"
+    "node": "22.22.0"
   },
   "scripts": {
     "dev": "tsx watch src/server.ts",
