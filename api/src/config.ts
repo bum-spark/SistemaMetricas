@@ -68,8 +68,14 @@ export class ConfigInvalidaError extends Error {
   }
 }
 
+// Una variable definida pero vacía (p. ej. un campo en blanco en el panel del hosting)
+// cuenta como no definida: toma su valor por defecto o falla como obligatoria (S-41).
+function sinVacias(entorno: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
+  return Object.fromEntries(Object.entries(entorno).filter(([, valor]) => valor !== undefined && valor.trim() !== ''));
+}
+
 export function cargarConfig(entorno: NodeJS.ProcessEnv = process.env): Config {
-  const resultado = esquemaEntorno.safeParse(entorno);
+  const resultado = esquemaEntorno.safeParse(sinVacias(entorno));
   if (!resultado.success) {
     throw new ConfigInvalidaError(
       resultado.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`),

@@ -15,7 +15,6 @@ Aquí se anota lo que **no** está definido en `CLAUDE.md` o en `docs/`.
 
 | ID   | Decisión                                         | Qué bloquea                                                                       |
 |------|--------------------------------------------------|-----------------------------------------------------------------------------------|
-| A-03 | Hosting de la API: Render o Railway              | El deploy (día 4–5), la URL "producción" en Postman y el valor de `trust proxy` (S-23). |
 | A-06 | `suelo_descubierto` es un **logro**; faltan su `nivelId` y su disparador | Su entrada en el catálogo. **No está en el seed** hasta que se defina. El resto de A-06 quedó resuelto (R-02). |
 | A-07 | Imagen y límites de mundo (`minX, maxX, minY, maxY`) de cada nivel | El mapa de calor. Los entrega el equipo de Unity.                   |
 
@@ -56,6 +55,8 @@ Aquí se anota lo que **no** está definido en `CLAUDE.md` o en `docs/`.
 | S-32 | Acceso de admins: `crear-admin` sin `--juegos` da acceso a todos los juegos existentes, y `crear-juego` agrega el juego nuevo a los `juegosPermitidos` de todos los admins activos (salvo `--sin-acceso`). Coherente con "un solo rol por ahora". | Que cada acceso se asigne a mano por admin. | Scripts `crear-admin` y `crear-juego`. |
 | S-33 | Contraseña de admin: mínimo 12 caracteres, bcrypt con 12 rondas; solo se lee de `ADMIN_PASSWORD` en el `.env`. | Otra política o rondas. | `seguridad/password.ts`. |
 | S-34 | Los scripts reciben el juego con `--juego <slug>` (en lugar de un argumento posicional) para que todos usen la misma forma. | `rotar-api-key <slug>`. | Solo la línea de comandos. |
+| S-40 | Atlas permite `0.0.0.0/0` en Network Access porque Render (plan gratuito) no tiene IP de salida fija. Se compensa con un usuario de base de datos dedicado (`xolos_api`) con rol `readWrite` solo sobre `xolos_analytics` y contraseña aleatoria larga (el cluster es compartido con otro proyecto). | Plan de Render con IP fija y lista blanca; Atlas Private Endpoint. | Seguridad de red de la base; pasos de `docs/DEPLOY.md`. |
+| S-41 | Una variable de entorno definida pero vacía cuenta como no definida (toma su valor por defecto o falla como obligatoria). Evita que un campo en blanco del panel de Render convierta un límite en 0. | Tratar "" como valor. | `cargarConfig`. |
 
 ---
 
@@ -113,3 +114,4 @@ Aquí se anota lo que **no** está definido en `CLAUDE.md` o en `docs/`.
 | R-37 | `sesiones.inicio`/`fin` toman el `timestamp` del primer `sesion_inicio`/`sesion_fin` recibido (si llegan varios, gana el primero); `jugadores.ultimaVez` se actualiza con la hora del servidor en cada lote aceptado. (Aceptado.) | S-37 | 2026-10-12 | Equipo |
 | R-38 | Los límites de rate limit y `TRUST_PROXY` son configurables por variable de entorno (defaults = valores de producción: 300/IP, 1000/key, 600 público, 1 salto). (Aceptado.) | S-38 | 2026-10-12 | Equipo |
 | R-39 | La API key se valida contra la base en cada petición (búsqueda por índice del hash), sin caché en memoria. (Aceptado.) | S-39 | 2026-10-12 | Equipo |
+| R-40 | Hosting de la API: **Render** (Blueprint `render.yaml`, servicio web Node en `/api`, health check `/api/v1/salud`, Node 22.22.0 por `engines`). Guía en `docs/DEPLOY.md`. | A-03 | 2026-10-12 | Equipo |

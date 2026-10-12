@@ -84,7 +84,7 @@ Al arrancar el juego, el cliente llama `POST /api/v1/sesiones` con `juegoId`, `p
   `logro` crea un registro en `logros` (una vez por jugador).
 - Errores de **toda la petición** (no llegan a validar eventos): API key inválida (401),
   body que no es objeto ni arreglo o lote vacío (400), más de 100 eventos (400), body mayor
-  a 100 KB (413), rate limit (429) (S-04, S-11, S-35).
+  a 100 KB (413), rate limit (429) (S-04, S-11, R-35).
 - **Reintentos del SDK:**
 
   | Resultado de la petición                         | ¿Reintenta?                                      |
@@ -253,7 +253,7 @@ Termina un intento. **Cada muerte cierra el intento** y reaparecer abre uno nuev
 
 | Campo     | Tipo    | Oblig. | Notas                                                          |
 |-----------|---------|:------:|----------------------------------------------------------------|
-| `codigo`  | string  | sí     | Identificador corto del error (1–64 caracteres, S-36).         |
+| `codigo`  | string  | sí     | Identificador corto del error (1–64 caracteres, R-36).         |
 | `mensaje` | string  | sí     | Máx. 500 caracteres. Sin datos personales ni rutas de usuario. |
 | `fatal`   | boolean | sí     | `true` si provocó el cierre (crash).                           |
 

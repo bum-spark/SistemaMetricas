@@ -67,6 +67,15 @@ describe('cargarConfig', () => {
     ).toThrow('MONGODB_DB: la URI apunta a la base "otro_proyecto" pero MONGODB_DB es "xolos_analytics"');
   });
 
+  it('una variable vacía cuenta como no definida (campos en blanco del panel de Render)', () => {
+    expect(cargarConfig({ ...BASE, RATE_LIMIT_INGESTA_IP: '', TRUST_PROXY: '  ', APP_NAME: '' })).toMatchObject({
+      appName: 'Estudio Xolos',
+      trustProxy: 1,
+      limites: { ingestaPorIp: 300 },
+    });
+    expect(() => cargarConfig({ ...BASE, MONGODB_DB: '' })).toThrow(/MONGODB_DB: es obligatoria/);
+  });
+
   it('rechaza una URI que no es de MongoDB', () => {
     expect(() => cargarConfig({ ...BASE, MONGODB_URI: 'postgres://x' })).toThrow(/MONGODB_URI/);
   });

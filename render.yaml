@@ -1,0 +1,36 @@
+# Blueprint de Render para la API de métricas (docs/DEPLOY.md).
+# Ningún valor de variable vive aquí: todas son `sync: false` y se escriben en el panel de Render.
+# Node 22.22.0 lo toma Render de `engines.node` en api/package.json.
+services:
+  - type: web
+    name: xolos-analytics-api
+    runtime: node
+    plan: free
+    rootDir: api
+    # Dependencias de desarrollo para compilar TypeScript; sin descargar el MongoDB de los tests;
+    # al final se quitan las de desarrollo para que la imagen pese menos.
+    buildCommand: MONGOMS_DISABLE_POSTINSTALL=1 npm ci --include=dev && npm run build && npm prune --omit=dev
+    startCommand: npm start
+    healthCheckPath: /api/v1/salud
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        sync: false
+      - key: APP_NAME
+        sync: false
+      - key: MONGODB_URI
+        sync: false
+      - key: MONGODB_DB
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
+      - key: TRUST_PROXY
+        sync: false
+      - key: RATE_LIMIT_INGESTA_IP
+        sync: false
+      - key: RATE_LIMIT_INGESTA_KEY
+        sync: false
+      - key: RATE_LIMIT_PUBLICO_IP
+        sync: false

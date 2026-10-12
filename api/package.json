@@ -15,6 +15,7 @@
     "lint": "eslint .",
     "test": "jest",
     "postman": "newman run ../postman/coleccion.postman_collection.json -e ../postman/entorno-local.postman_environment.json",
+    "postman:produccion": "newman run ../postman/coleccion.postman_collection.json -e ../postman/entorno-produccion.postman_environment.json --folder Salud",
     "crear-admin": "tsx ../scripts/crear-admin.ts",
     "crear-juego": "tsx ../scripts/crear-juego.ts",
     "rotar-api-key": "tsx ../scripts/rotar-api-key.ts",

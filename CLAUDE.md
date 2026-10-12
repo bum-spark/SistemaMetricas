@@ -46,7 +46,7 @@ configuración `APP_NAME` (valor por defecto "Estudio Xolos"); nunca escribirlo 
 /api            Express + Mongoose
 /dashboard      Angular
 /postman        colección y entornos exportados (local y producción)
-/docs           ESQUEMA_EVENTOS.md, DECISIONES_ABIERTAS.md, ARQUITECTURA.md,
+/docs           ESQUEMA_EVENTOS.md, DECISIONES_ABIERTAS.md, ARQUITECTURA.md, DEPLOY.md,
                 DISENO_DASHBOARD.md (fuente de verdad visual del dashboard)
 /scripts        seed de admin y de datos de prueba, prueba de carga
 CLAUDE.md
@@ -170,4 +170,5 @@ de prioridad, gana lo que demuestre esos cuatro puntos.
 - [ ] Prueba de carga sencilla con script en `/scripts` y resultados en el README
 
 ## 11. Decisiones abiertas (el usuario las resuelve; no las asumas)
-- Proveedor final de hosting de la API
+- Ninguna de las de arriba por ahora. Las abiertas actuales (A-xx) y los supuestos (S-xx)
+  están en `docs/DECISIONES_ABIERTAS.md`.
