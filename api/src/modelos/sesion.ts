@@ -1,5 +1,5 @@
 import { model, Schema, type InferSchemaType } from 'mongoose';
-import { PLATAFORMAS } from '../dominio/constantes';
+import { ORIGENES, PLATAFORMAS } from '../dominio/constantes';
 import { campoUuid, opcionesEsquema } from './comun';
 
 const esquemaSesion = new Schema(
@@ -15,6 +15,8 @@ const esquemaSesion = new Schema(
     fin: { type: Date, default: null },
     // timestamp máximo recibido; base del fin inferido (ESQUEMA_EVENTOS.md §1.4).
     ultimoEventoEn: { type: Date, required: true },
+    // 'real' (ingesta) o 'seed' (datos de prueba). Lo pone el servidor, nunca el cliente.
+    origen: { type: String, required: true, enum: ORIGENES, default: 'real' },
   },
   opcionesEsquema('sesiones'),
 );

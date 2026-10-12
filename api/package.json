@@ -13,7 +13,8 @@
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "test": "jest"
+    "test": "jest",
+    "limpiar-seed": "tsx ../scripts/limpiar-seed.ts"
   },
   "license": "UNLICENSED",
   "dependencies": {

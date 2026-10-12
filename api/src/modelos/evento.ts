@@ -1,5 +1,5 @@
 import { model, Schema, type InferSchemaType } from 'mongoose';
-import { PLATAFORMAS, TIPOS_EVENTO, VERSIONES_ESQUEMA } from '../dominio/constantes';
+import { ORIGENES, PLATAFORMAS, TIPOS_EVENTO, VERSIONES_ESQUEMA } from '../dominio/constantes';
 import { campoUuid, opcionesEsquema } from './comun';
 
 // Campos comunes de ESQUEMA_EVENTOS.md §2. La validación estricta de cada evento
@@ -18,6 +18,8 @@ const esquemaEvento = new Schema(
     data: { type: Schema.Types.Mixed, required: true, default: {} },
     versionEsquema: { type: Number, required: true, enum: VERSIONES_ESQUEMA },
     recibidoEn: { type: Date, required: true },
+    // 'real' (ingesta) o 'seed' (datos de prueba). Lo pone el servidor, nunca el cliente.
+    origen: { type: String, required: true, enum: ORIGENES, default: 'real' },
   },
   { ...opcionesEsquema('eventos'), minimize: false },
 );

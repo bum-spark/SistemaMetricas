@@ -131,8 +131,10 @@ Al arrancar el juego, el cliente llama `POST /api/v1/sesiones` con `juegoId`, `p
 | `data`           | objeto                | sí     | Puede ser `{}`. Su contenido se valida según `tipo` (secciones 3 y 4).                       |
 | `versionEsquema` | entero                | sí     | Por ahora solo `1`.                                                                          |
 
-**Campo que agrega el servidor:** `recibidoEn` (ISO 8601 UTC, hora del servidor). El cliente
-no lo manda; si lo manda, el evento se rechaza.
+**Campos que agrega el servidor** (el cliente no los manda; si manda alguno, el evento se
+rechaza por la validación estricta):
+- `recibidoEn`: ISO 8601 UTC, hora del servidor.
+- `origen`: la ingesta real siempre guarda `"real"` (sección 6, R-32).
 
 **`secuencia` (orden dentro de la sesión)**
 - El cliente la empieza en 1 con el primer evento de cada sesión (normalmente
@@ -413,6 +415,7 @@ campos `...Id`. Fechas en UTC.
 | `cuentaId`       | null            | Reservado para vincular cuenta del foro.        |
 | `primeraVez`     | Date            |                                                |
 | `ultimaVez`      | Date            |                                                |
+| `origen`         | `"real"` \| `"seed"` | Default `"real"`. Ver "Campo `origen`" al final de esta sección. |
 
 Índices: `{ juegoId: 1, playerId: 1 }` único · `{ juegoId: 1, primeraVez: 1 }`.
 
@@ -429,6 +432,7 @@ campos `...Id`. Fechas en UTC.
 | `inicio`         | Date \| null    | `timestamp` de `sesion_inicio`.                           |
 | `fin`            | Date \| null    | `timestamp` de `sesion_fin`.                              |
 | `ultimoEventoEn` | Date            | `timestamp` máximo recibido; base del fin inferido.       |
+| `origen`         | `"real"` \| `"seed"` | Default `"real"`.                                      |
 
 `duracionMs` y `finInferido` se calculan al consultar (sección 1.4).
 
@@ -436,7 +440,7 @@ campos `...Id`. Fechas en UTC.
 `{ juegoId: 1, playerId: 1 }` · `{ juegoId: 1, buildVersion: 1, plataforma: 1 }`.
 
 ### `eventos`
-Los campos de la sección 2 más `recibidoEn`.
+Los campos de la sección 2 más `recibidoEn` y `origen` (`"real"` \| `"seed"`, default `"real"`).
 
 Índices:
 - `{ juegoId: 1, eventoId: 1 }` **único** — descarta duplicados.
@@ -470,6 +474,21 @@ Los campos de la sección 2 más `recibidoEn`.
 | `ultimoLogin`      | Date \| null |                                               |
 
 Índices: `{ email: 1 }` único.
+
+### Campo `origen` (R-32)
+
+`jugadores`, `sesiones` y `eventos` llevan `origen`: `"real"` | `"seed"`, default `"real"`.
+
+- **Ingesta real** (`POST /sesiones`, `POST /eventos`): siempre guarda `"real"`. El cliente
+  no puede mandar ese campo (la validación estricta rechaza el evento).
+- **`seed-datos`**: marca con `"seed"` todo lo que crea. Los datos del juego demo
+  "Faro Nocturno (demo)" son siempre `"seed"`.
+- **`limpiar-seed`** (sección 8): borra todo lo que tenga `origen: "seed"` (opcionalmente solo
+  de un juego) y los logros obtenidos por esos jugadores. Los documentos de `juegos` no se
+  tocan.
+- `logros` (obtenidos) no lleva `origen`: se identifica por el jugador.
+- No se agregó índice nuevo: el borrado por juego usa el prefijo `juegoId` de los índices
+  existentes y el borrado global es una operación ocasional.
 
 ---
 
@@ -530,7 +549,14 @@ JWT: expira en 8 h (S-13); payload `{ sub: email, juegosPermitidos }`.
 ## 8. Alta de juegos, API keys y admins (scripts)
 
 No hay endpoints para crear juegos ni admins: se hace con scripts en `/scripts` que se
-corren a mano con acceso a la base de datos (S-19).
+corren a mano con acceso a la base de datos (S-19). Se ejecutan desde `/api` con
+`npm run <script> -- <opciones>`.
+
+**Reglas de todos los scripts:**
+- Antes de escribir imprimen el host de la base de datos, **sin credenciales**.
+- Si la URI no es local (`localhost`, `127.0.0.1`, `::1`), exigen `--confirmar`.
+- Ningún secreto en los logs (contraseñas, URI completa, API keys); los mensajes de error
+  se censuran. La API key se muestra **una sola vez**.
 
 | Script                   | Qué hace                                                                                                      |
 |--------------------------|---------------------------------------------------------------------------------------------------------------|
@@ -538,7 +564,8 @@ corren a mano con acceso a la base de datos (S-19).
 | `crear-juego`            | Crea un juego con su catálogo (para La Casa del Bosque, la constante de la sección 5.1). Genera la API key y la **muestra una sola vez** en consola. |
 | `rotar-api-key <slug>`   | Genera una key nueva, reemplaza el hash (la anterior deja de servir al instante) y la muestra una sola vez.    |
 | `revocar-api-key <slug>` | Pone `apiKeyHash: null`. El juego deja de poder mandar datos; los datos guardados se conservan.               |
-| `seed-datos`             | Genera jugadores, sesiones y eventos de prueba que llenan el dashboard.                                        |
+| `seed-datos`             | Genera jugadores, sesiones y eventos de prueba que llenan el dashboard, todos con `origen: "seed"`.            |
+| `limpiar-seed [--juego <slug>]` | Borra todo lo que tenga `origen: "seed"` (y los logros de esos jugadores); con `--juego`, solo de ese juego. Muestra cuántos documentos eliminó por colección. |
 
 **API key:**
 - Formato: prefijo `ak_` + 32 bytes aleatorios en base64url (generados con `crypto.randomBytes`).
