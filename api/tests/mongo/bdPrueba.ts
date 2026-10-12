@@ -3,6 +3,9 @@ import os from 'node:os';
 import mongoose from 'mongoose';
 import { asegurarIndices } from '../../src/modelos';
 
+// Tiempo de los hooks de conexión y limpieza (además del testTimeout global).
+const TIEMPO_HOOK_MS = 120_000;
+
 // Cada archivo de tests usa su propia base de datos dentro del servidor en memoria.
 export function usarBdPrueba(): void {
   beforeAll(async () => {
@@ -17,16 +20,17 @@ export function usarBdPrueba(): void {
       // Jest: los metadatos del handshake quedan vacíos y el servidor rechaza la conexión.
       // Se le pasa el módulo directamente (opción pública del driver). En producción no hace falta.
       runtimeAdapters: { os },
+      serverSelectionTimeoutMS: 60_000,
     });
     await asegurarIndices();
-  });
+  }, TIEMPO_HOOK_MS);
 
   afterEach(async () => {
     await Promise.all(Object.values(mongoose.connection.collections).map((coleccion) => coleccion.deleteMany({})));
-  });
+  }, TIEMPO_HOOK_MS);
 
   afterAll(async () => {
     await mongoose.connection.dropDatabase();
     await mongoose.disconnect();
-  });
+  }, TIEMPO_HOOK_MS);
 }

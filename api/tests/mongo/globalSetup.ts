@@ -16,6 +16,8 @@ export default async function globalSetup(): Promise<void> {
   process.env.MONGOMS_VERSION ??= VERSION_MONGO_TESTS;
   const servidor = await MongoMemoryServer.create({
     binary: { version: process.env.MONGOMS_VERSION },
+    // Arrancar mongod puede tardar en una máquina lenta (por defecto, 10 s).
+    instance: { launchTimeout: 60_000 },
   });
   (globalThis as { __MONGO_SERVIDOR__?: MongoMemoryServer }).__MONGO_SERVIDOR__ = servidor;
   // Los workers de Jest heredan las variables de entorno definidas aquí.

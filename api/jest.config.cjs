@@ -9,6 +9,8 @@ module.exports = {
   globalSetup: '<rootDir>/tests/mongo/globalSetup.ts',
   globalTeardown: '<rootDir>/tests/mongo/globalTeardown.ts',
   clearMocks: true,
-  // La primera corrida descarga el binario de MongoDB.
-  testTimeout: 30000,
+  // Tiempo máximo por test Y por hook (en Jest, testTimeout también rige beforeAll/afterEach…;
+  // no existe una opción hookTimeout aparte). Holgado para máquinas lentas: las pruebas con
+  // MongoDB en memoria pueden tardar varios segundos si el equipo está cargado.
+  testTimeout: 120000,
 };
