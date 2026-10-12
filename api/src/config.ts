@@ -15,6 +15,9 @@ const esquemaEntorno = z.object({
   // Único lugar donde vive el nombre del estudio: valor por defecto de APP_NAME.
   APP_NAME: z.string().trim().min(1).default('Estudio Xolos'),
   CORS_ORIGIN: listaSeparadaPorComas.default(['http://localhost:4200']),
+  MONGODB_URI: z
+    .string({ error: 'es obligatoria' })
+    .regex(/^mongodb(\+srv)?:\/\//, 'debe empezar con mongodb:// o mongodb+srv://'),
 });
 
 export interface Config {
@@ -22,6 +25,7 @@ export interface Config {
   puerto: number;
   appName: string;
   corsOrigenes: string[];
+  mongoUri: string;
 }
 
 export class ConfigInvalidaError extends Error {
@@ -44,5 +48,6 @@ export function cargarConfig(entorno: NodeJS.ProcessEnv = process.env): Config {
     puerto: env.PORT,
     appName: env.APP_NAME,
     corsOrigenes: env.CORS_ORIGIN,
+    mongoUri: env.MONGODB_URI,
   };
 }
