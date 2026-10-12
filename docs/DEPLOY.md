@@ -70,7 +70,7 @@ usuario, con permiso solo sobre esa base** (R-41).
    node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
    ```
    `PORT` no se configura: Render la define sola. Una variable vacía cuenta como no
-   definida (toma el valor por defecto; S-41).
+   definida (toma el valor por defecto; R-42).
 3. **Apply / Deploy**. El build hace `npm ci` (sin descargar el MongoDB de los tests),
    compila TypeScript y quita las dependencias de desarrollo. En los logs debe aparecer:
    ```
