@@ -1,0 +1,15 @@
+# Dependencias y builds
+node_modules/
+dist/
+coverage/
+.angular/
+
+# Variables de entorno (nunca al repo; solo .env.example)
+.env
+.env.*
+!.env.example
+
+# Sistema / editor
+.DS_Store
+Thumbs.db
+*.log

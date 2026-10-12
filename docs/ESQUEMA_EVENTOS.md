@@ -563,8 +563,10 @@ Formato uniforme:
 | 403  | `JUEGO_NO_COINCIDE`        | En `/sesiones`, `juegoId` distinto al de la key (S-01).      |
 | 404  | `JUEGO_NO_ENCONTRADO`      | `:juegoId` no existe.                                        |
 | 404  | `JUGADOR_NO_ENCONTRADO`    | Borrado de un `playerId` que no existe.                      |
+| 404  | `RUTA_NO_ENCONTRADA`       | La ruta o el método no existen.                              |
 | 413  | `PAYLOAD_DEMASIADO_GRANDE` | Body mayor a 100 KB (S-04, S-11).                            |
 | 429  | `LIMITE_EXCEDIDO`          | Rate limit (sección 1.5).                                    |
+| 500  | `ERROR_INTERNO`            | Error inesperado. El mensaje es genérico; el detalle solo va al log del servidor. |
 
 ### 9.2 Rechazos por evento (dentro de `rechazados` en `POST /eventos`)
 
