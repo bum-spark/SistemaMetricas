@@ -39,7 +39,6 @@ export async function crearSesion(juego: JuegoAutenticado, datos: SolicitudSesio
     buildVersion: datos.buildVersion,
     plataforma: datos.plataforma,
     creadaEn: ahora,
-    ultimoEventoEn: ahora,
     origen: 'real',
   });
   return { estado: 201, cuerpo: { sessionId } };
@@ -164,7 +163,10 @@ async function actualizarSesionesYJugadores(juegoId: string, eventos: EventoVali
 
   const operaciones: AnyBulkWriteOperation[] = [];
   for (const [sessionId, { maximo, inicio, fin }] of porSesion) {
-    operaciones.push({ updateOne: { filter: { juegoId, sessionId }, update: { $max: { ultimoEventoEn: maximo } } } });
+    // Reloj del cliente (duración) y reloj del servidor (¿terminó?) por separado (R-34).
+    operaciones.push({
+      updateOne: { filter: { juegoId, sessionId }, update: { $max: { ultimoEventoEn: maximo, ultimoRecibidoEn: ahora } } },
+    });
     // inicio y fin: se queda el primero que llegó.
     if (inicio) {
       operaciones.push({ updateOne: { filter: { juegoId, sessionId, inicio: null }, update: { $set: { inicio } } } });

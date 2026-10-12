@@ -61,7 +61,9 @@ describe('POST /api/v1/sesiones', () => {
     expect(jugador).toMatchObject({ consentimiento: true, origen: 'real', cuentaId: null });
     const sesion = await SesionModelo.findOne({ sessionId: res.body.sessionId }).lean();
     expect(sesion).toMatchObject({ juegoId: juego.juegoId, playerId: datos.playerId, plataforma: 'windows', origen: 'real', inicio: null, fin: null });
-    expect(sesion?.ultimoEventoEn).toEqual(sesion?.creadaEn);
+    // Sin eventos todavía: los dos relojes en null (R-34).
+    expect(sesion?.ultimoEventoEn).toBeNull();
+    expect(sesion?.ultimoRecibidoEn).toBeNull();
   });
 
   it('genera un sessionId nuevo en cada arranque y conserva primeraVez del jugador', async () => {

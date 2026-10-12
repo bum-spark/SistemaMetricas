@@ -32,13 +32,15 @@ describe('POST /api/v1/eventos: lote válido', () => {
     expect(guardados[4]?.data).toEqual({ nivelId: 'casa_abandonada', intento: 1, causa: 'fantasma', x: 12.5, y: -3.2 });
   });
 
-  it('actualiza la sesión: inicio, fin y ultimoEventoEn con los timestamps del cliente', async () => {
+  it('actualiza la sesión: inicio, fin y ultimoEventoEn con el reloj del cliente; ultimoRecibidoEn con el del servidor', async () => {
     const lote = loteEjemplo(ctx);
+    const antes = Date.now();
     await enviar(lote);
     const sesion = await SesionModelo.findOne({ sessionId: ctx.sessionId }).lean();
     expect(sesion?.inicio?.toISOString()).toBe(lote[0]!.timestamp);
     expect(sesion?.fin?.toISOString()).toBe(lote[10]!.timestamp);
-    expect(sesion!.ultimoEventoEn.getTime()).toBeGreaterThanOrEqual(new Date(lote[10]!.timestamp).getTime());
+    expect(sesion?.ultimoEventoEn?.toISOString()).toBe(lote[10]!.timestamp);
+    expect(sesion!.ultimoRecibidoEn!.getTime()).toBeGreaterThanOrEqual(antes);
   });
 
   it('registra los logros (una vez por jugador)', async () => {

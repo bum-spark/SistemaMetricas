@@ -13,8 +13,13 @@ const esquemaSesion = new Schema(
     // timestamp de sesion_inicio / sesion_fin.
     inicio: { type: Date, default: null },
     fin: { type: Date, default: null },
-    // timestamp máximo recibido; base del fin inferido (ESQUEMA_EVENTOS.md §1.4).
-    ultimoEventoEn: { type: Date, required: true },
+    // Dos relojes separados (ESQUEMA_EVENTOS.md §1.4, R-34):
+    // - ultimoEventoEn: máximo `timestamp` del CLIENTE recibido. null hasta el primer evento.
+    //   Solo para el fin inferido y la duración (misma escala de tiempo que `inicio`).
+    ultimoEventoEn: { type: Date, default: null },
+    // - ultimoRecibidoEn: hora del SERVIDOR de la última ingesta con eventos de la sesión.
+    //   Solo para decidir si la sesión ya terminó (30 min sin recibir eventos, S-05).
+    ultimoRecibidoEn: { type: Date, default: null },
     // 'real' (ingesta) o 'seed' (datos de prueba). Lo pone el servidor, nunca el cliente.
     origen: { type: String, required: true, enum: ORIGENES, default: 'real' },
   },

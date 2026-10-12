@@ -99,13 +99,26 @@ Al arrancar el juego, el cliente llama `POST /api/v1/sesiones` con `juegoId`, `p
   ignoran). Los valores del backoff (espera inicial, máximo, número de intentos) los define
   el SDK en la entrega 2.
 
-### 1.4 Fin de sesión
-- Con `sesion_fin`: la sesión guarda `fin` = `timestamp` de ese evento.
-- Sin `sesion_fin` (crash o cierre forzado): la API guarda en cada ingesta el
-  `ultimoEventoEn` de la sesión (empieza en `creadaEn`, la hora del servidor al crearla). Al consultar, una sesión sin `fin` y sin eventos en los
-  últimos **30 minutos** se considera terminada, con fin = `ultimoEventoEn` y
-  `finInferido: true`. Las sesiones con menos de 30 min sin eventos se consideran activas y
-  no entran en las métricas de duración (S-05).
+### 1.4 Fin de sesión (dos relojes, R-34)
+
+La sesión guarda dos relojes por separado, y cada uno se usa para una sola cosa:
+
+| Campo | Reloj | Se actualiza | Se usa para |
+|---|---|---|---|
+| `inicio`, `fin` | cliente | `timestamp` del primer `sesion_inicio` / `sesion_fin` | duración |
+| `ultimoEventoEn` | cliente | máximo `timestamp` recibido; `null` hasta el primer evento | fin inferido y duración |
+| `ultimoRecibidoEn` | servidor | hora del servidor en cada ingesta con eventos de la sesión; `null` hasta el primero | decidir si la sesión ya terminó |
+
+- **¿Terminó?** (reloj del servidor): tiene `fin`, o no se recibieron eventos en los
+  últimos **30 minutos** (`ultimoRecibidoEn`, S-05). Si no, está activa y no entra en las
+  métricas de duración.
+- **¿Cuánto duró?** (reloj del cliente): `(fin ?? ultimoEventoEn) − inicio`. Sin `fin`, la
+  sesión queda con `finInferido: true` (crash o cierre forzado).
+- Nunca se mezclan: un reloj del dispositivo atrasado o adelantado no altera la duración
+  (todo sale de timestamps del juego) ni cierra sesiones activas (eso lo decide el servidor).
+  `creadaEn` no se usa como respaldo de `inicio`.
+- **No entran en las métricas de duración** las sesiones sin `inicio` (no llegó
+  `sesion_inicio`), sin eventos (`ultimoEventoEn` null) o con una duración negativa.
 
 ### 1.5 Rate limit y CORS
 - **Por IP:** 300 peticiones/min por IP a los endpoints de ingesta. Es alto porque varios
@@ -444,7 +457,8 @@ campos `...Id`. Fechas en UTC.
 | `creadaEn`       | Date            | Hora del servidor al crear la sesión.                     |
 | `inicio`         | Date \| null    | `timestamp` de `sesion_inicio`.                           |
 | `fin`            | Date \| null    | `timestamp` de `sesion_fin`.                              |
-| `ultimoEventoEn` | Date            | `timestamp` máximo recibido; base del fin inferido.       |
+| `ultimoEventoEn` | Date \| null    | Reloj del **cliente**: máximo `timestamp` recibido; `null` hasta el primer evento. Solo para fin inferido y duración. |
+| `ultimoRecibidoEn` | Date \| null  | Reloj del **servidor**: hora de la última ingesta con eventos; `null` hasta la primera. Solo para decidir si terminó (S-05). |
 | `origen`         | `"real"` \| `"seed"` | Default `"real"`.                                      |
 
 `duracionMs` y `finInferido` se calculan al consultar (sección 1.4).
@@ -652,7 +666,7 @@ niveles o el total de coleccionables, se toma de `juegos.catalogo`.
 
 | #     | Métrica (CLAUDE.md §8)         | Eventos y campos                                                   |
 |-------|--------------------------------|--------------------------------------------------------------------|
-| 10.1  | Sesiones y duración            | `sesiones` (`inicio`, `fin`, `ultimoEventoEn`)                     |
+| 10.1  | Sesiones y duración            | `sesiones` (`inicio`, `fin`, `ultimoEventoEn`, `ultimoRecibidoEn`) |
 | 10.2  | Tiempo por nivel (por intento) | `nivel_fin.duracionMs`, `nivelId`, `intento`                       |
 | 10.3  | Embudo de progresión           | `nivel_inicio`, `nivel_fin` `completado` + `catalogo.niveles.orden`|
 | 10.4  | Muertes por nivel y causa      | `muerte.nivelId`, `muerte.causa`                                   |
@@ -666,16 +680,22 @@ niveles o el total de coleccionables, se toma de `juegos.catalogo`.
 | 10.12 | Rendimiento                    | `rendimiento`, `error` con `fatal: true`, sesiones con fin inferido |
 
 ### 10.1 Sesiones y duración
-Sobre `sesiones`. Compara contra los ~20 min esperados.
+Sobre `sesiones`. Compara contra `catalogo.duracionEsperadaMs`. Las etapas de "sesión
+terminada y su duración" están implementadas en `api/src/estadisticas/duracionSesiones.ts`
+(`etapasSesionesTerminadas`) y las reutilizan 10.1, 10.8 y 10.12. El rango de fechas se
+aplica sobre `inicio` (reloj del cliente, como el resto de las métricas).
 
 ```js
-const limite = new Date(Date.now() - 30 * 60 * 1000); // S-05
+const limite = new Date(Date.now() - 30 * 60 * 1000); // S-05, reloj del servidor
 db.sesiones.aggregate([
-  { $match: { juegoId, creadaEn: { $gte: desde, $lt: hasta }, buildVersion, plataforma } },
-  { $match: { $or: [ { fin: { $ne: null } }, { ultimoEventoEn: { $lt: limite } } ] } }, // solo terminadas
+  { $match: { juegoId, inicio: { $gte: desde, $lt: hasta }, buildVersion, plataforma } },
+  // etapasSesionesTerminadas(ahora):
+  { $match: { inicio: { $ne: null }, ultimoEventoEn: { $ne: null } } },                    // sin inicio o sin eventos: fuera
+  { $match: { $or: [ { fin: { $ne: null } }, { ultimoRecibidoEn: { $lt: limite } } ] } },   // ¿terminó? (servidor)
   { $addFields: {
       finInferido: { $eq: ["$fin", null] },
-      duracionMs: { $subtract: [ { $ifNull: ["$fin", "$ultimoEventoEn"] }, { $ifNull: ["$inicio", "$creadaEn"] } ] } } },
+      duracionMs: { $subtract: [ { $ifNull: ["$fin", "$ultimoEventoEn"] }, "$inicio" ] } } }, // ¿cuánto duró? (cliente)
+  { $match: { duracionMs: { $gte: 0 } } },
   { $facet: {
       totales: [ { $group: { _id: null, sesiones: { $sum: 1 },
                    jugadores: { $addToSet: "$playerId" },
@@ -799,7 +819,7 @@ db.eventos.aggregate([
   // solo sesiones terminadas
   { $lookup: { from: "sesiones", localField: "_id", foreignField: "sessionId", as: "sesion" } },
   { $unwind: "$sesion" },
-  { $match: { $or: [ { "sesion.fin": { $ne: null } }, { "sesion.ultimoEventoEn": { $lt: limite } } ] } },
+  { $match: { $or: [ { "sesion.fin": { $ne: null } }, { "sesion.ultimoRecibidoEn": { $lt: limite } } ] } }, // reloj del servidor (R-34)
   { $addFields: {
       completoNivel: { $and: [ { $eq: ["$ultimoTipo", "nivel_fin"] }, { $eq: ["$ultimoResultado", "completado"] } ] } } },
   { $match: { $nor: [ { completoNivel: true, ultimoNivel: ultimoNivelId } ] } },   // terminaron el juego
