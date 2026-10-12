@@ -14,10 +14,15 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "jest",
+    "crear-admin": "tsx ../scripts/crear-admin.ts",
+    "crear-juego": "tsx ../scripts/crear-juego.ts",
+    "rotar-api-key": "tsx ../scripts/rotar-api-key.ts",
+    "revocar-api-key": "tsx ../scripts/revocar-api-key.ts",
     "limpiar-seed": "tsx ../scripts/limpiar-seed.ts"
   },
   "license": "UNLICENSED",
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "express": "^5.3.0",
     "helmet": "^8.3.0",

@@ -560,10 +560,10 @@ corren a mano con acceso a la base de datos (S-19). Se ejecutan desde `/api` con
 
 | Script                   | Qué hace                                                                                                      |
 |--------------------------|---------------------------------------------------------------------------------------------------------------|
-| `crear-admin`            | Crea el primer admin con `ADMIN_EMAIL`, `ADMIN_PASSWORD` y `ADMIN_NOMBRE` del `.env`. Hashea con bcrypt. No hace nada si el email ya existe. |
-| `crear-juego`            | Crea un juego con su catálogo (para La Casa del Bosque, la constante de la sección 5.1). Genera la API key y la **muestra una sola vez** en consola. |
-| `rotar-api-key <slug>`   | Genera una key nueva, reemplaza el hash (la anterior deja de servir al instante) y la muestra una sola vez.    |
-| `revocar-api-key <slug>` | Pone `apiKeyHash: null`. El juego deja de poder mandar datos; los datos guardados se conservan.               |
+| `crear-admin [--juegos s1,s2]` | Crea el primer admin con `ADMIN_EMAIL`, `ADMIN_PASSWORD` (mín. 12 caracteres) y `ADMIN_NOMBRE` del `.env`; la contraseña nunca se pasa por línea de comandos. Hashea con bcrypt (12 rondas). Sin `--juegos`, acceso a todos los juegos existentes (S-32). No hace nada si el email ya existe. |
+| `crear-juego --juego <slug> [--version x.y.z] [--sin-acceso]` | Crea un juego con su catálogo constante (`la-casa-del-bosque` §5.1 o `faro-nocturno-demo` §5.2). Muestra el `juegoId` y la API key **una sola vez**. Por defecto agrega el juego a `juegosPermitidos` de todos los admins activos (S-32). No sobrescribe un juego existente. |
+| `rotar-api-key --juego <slug>`   | Genera una key nueva, reemplaza el hash (la anterior deja de servir al instante) y la muestra una sola vez. También rehabilita un juego revocado. |
+| `revocar-api-key --juego <slug>` | Pone `apiKeyHash: null`. El juego deja de poder mandar datos; los datos guardados se conservan.               |
 | `seed-datos`             | Genera jugadores, sesiones y eventos de prueba que llenan el dashboard, todos con `origen: "seed"`.            |
 | `limpiar-seed [--juego <slug>]` | Borra todo lo que tenga `origen: "seed"` (y los logros de esos jugadores); con `--juego`, solo de ese juego. Muestra cuántos documentos eliminó por colección. |
 

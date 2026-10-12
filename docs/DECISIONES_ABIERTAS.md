@@ -53,6 +53,9 @@ Aquí se anota lo que **no** está definido en `CLAUDE.md` o en `docs/`.
 | S-29 | OpenAPI 3.1 armado con la conversión nativa de zod 4 a JSON Schema (`z.toJSONSchema`) y servido con Swagger UI; `/api/v1/docs` es público, sin auth. | Librería `zod-to-openapi`; proteger `/docs` con JWT. | Una dependencia y un middleware. |
 | S-30 | Volumen de referencia 1x: ~100 jugadores/día, ~150 eventos por sesión, ~15 000 eventos/día (base de "Cómo crece" en `ARQUITECTURA.md`). | Otras cifras. | Solo el texto de `ARQUITECTURA.md`. |
 | S-31 | La prueba de carga corre contra la API **local** conectada a Atlas, con el límite por IP subido por variable de entorno (desde una sola máquina, 300/min cortaría la prueba). Una segunda corrida con los límites normales comprueba que aparece el 429. No se prueba contra producción (plan gratuito, arranques en frío). | Probar contra producción. | Script y sección del README. |
+| S-32 | Acceso de admins: `crear-admin` sin `--juegos` da acceso a todos los juegos existentes, y `crear-juego` agrega el juego nuevo a los `juegosPermitidos` de todos los admins activos (salvo `--sin-acceso`). Coherente con "un solo rol por ahora". | Que cada acceso se asigne a mano por admin. | Scripts `crear-admin` y `crear-juego`. |
+| S-33 | Contraseña de admin: mínimo 12 caracteres, bcrypt con 12 rondas; solo se lee de `ADMIN_PASSWORD` en el `.env`. | Otra política o rondas. | `seguridad/password.ts`. |
+| S-34 | Los scripts reciben el juego con `--juego <slug>` (en lugar de un argumento posicional) para que todos usen la misma forma. | `rotar-api-key <slug>`. | Solo la línea de comandos. |
 
 ---
 
