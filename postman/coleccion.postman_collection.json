@@ -1,0 +1,817 @@
+{
+  "info": {
+    "name": "API de métricas — Estudio Xolos",
+    "description": "Colección de la API de métricas (entrega 1). Contrato completo en docs/ESQUEMA_EVENTOS.md; documentación interactiva en {{baseUrl}}/docs.\n\nAntes de correrla: crea el juego con `npm run crear-juego -- --juego la-casa-del-bosque` (desde /api) y copia el juegoId y la API key al entorno. Corre las carpetas en orden: 'Crear sesión' guarda playerId y sessionId para los eventos.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Salud",
+      "item": [
+        {
+          "name": "Salud",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/salud",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "salud"
+              ]
+            },
+            "description": "Sin autenticación. La usa el health check del hosting."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 { estado: \"ok\" }', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json()).to.eql({ estado: 'ok' });",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Ingesta — sesiones",
+      "item": [
+        {
+          "name": "Crear sesión (con consentimiento)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Api-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/sesiones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sesiones"
+              ]
+            },
+            "description": "Crea (o actualiza) el jugador y una sesión nueva. Guarda sessionId en el entorno.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"juegoId\": \"{{juegoId}}\",\n  \"playerId\": \"{{playerId}}\",\n  \"buildVersion\": \"1.0.0\",\n  \"plataforma\": \"windows\",\n  \"consentimiento\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Un jugador anónimo nuevo por corrida (en Unity sale de PlayerPrefs).",
+                  "pm.environment.set('playerId', pm.variables.replaceIn('{{$guid}}'));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 con sessionId UUID v4', () => {",
+                  "  pm.response.to.have.status(201);",
+                  "  const sessionId = pm.response.json().sessionId;",
+                  "  pm.expect(sessionId).to.match(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);",
+                  "  pm.environment.set('sessionId', sessionId);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sesión sin consentimiento",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Api-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/sesiones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sesiones"
+              ]
+            },
+            "description": "Sin consentimiento no se guarda nada: 200 con sessionId null.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"juegoId\": \"{{juegoId}}\",\n  \"playerId\": \"{{$guid}}\",\n  \"buildVersion\": \"1.0.0\",\n  \"plataforma\": \"android\",\n  \"consentimiento\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 con sessionId null', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json()).to.eql({ sessionId: null, consentimiento: false });",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sesión con juegoId de otro juego (403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Api-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/sesiones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sesiones"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"juegoId\": \"{{$guid}}\",\n  \"playerId\": \"{{$guid}}\",\n  \"buildVersion\": \"1.0.0\",\n  \"plataforma\": \"windows\",\n  \"consentimiento\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403 JUEGO_NO_COINCIDE', () => {",
+                  "  pm.response.to.have.status(403);",
+                  "  pm.expect(pm.response.json().error.codigo).to.eql('JUEGO_NO_COINCIDE');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sesión con cuerpo inválido (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Api-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/sesiones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sesiones"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"juegoId\": \"{{juegoId}}\",\n  \"playerId\": \"no-es-uuid\",\n  \"buildVersion\": \"1.0.0\",\n  \"plataforma\": \"switch\",\n  \"consentimiento\": true,\n  \"origen\": \"seed\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 VALIDACION_FALLIDA con detalles', () => {",
+                  "  pm.response.to.have.status(400);",
+                  "  const error = pm.response.json().error;",
+                  "  pm.expect(error.codigo).to.eql('VALIDACION_FALLIDA');",
+                  "  pm.expect(error.detalles.length).to.be.at.least(3);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sin API key (401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/sesiones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sesiones"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"juegoId\": \"{{juegoId}}\",\n  \"playerId\": \"{{$guid}}\",\n  \"buildVersion\": \"1.0.0\",\n  \"plataforma\": \"windows\",\n  \"consentimiento\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('401 API_KEY_INVALIDA', () => {",
+                  "  pm.response.to.have.status(401);",
+                  "  pm.expect(pm.response.json().error.codigo).to.eql('API_KEY_INVALIDA');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Ingesta — eventos",
+      "item": [
+        {
+          "name": "Lote válido (partida de ejemplo, 11 eventos)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Api-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/eventos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "eventos"
+              ]
+            },
+            "description": "La partida corta de ESQUEMA_EVENTOS.md §11. Requiere haber corrido 'Crear sesión'.",
+            "body": {
+              "mode": "raw",
+              "raw": "{{loteEventos}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Arma eventos con los campos comunes de ESQUEMA_EVENTOS.md §2 (UUID v4 de {{$guid}}).",
+                  "const uuid = () => pm.variables.replaceIn('{{$guid}}');",
+                  "const base = Date.now() - 60 * 1000;",
+                  "let secuencia = 0;",
+                  "const evento = (tipo, data, extra) => Object.assign({",
+                  "  eventoId: uuid(),",
+                  "  juegoId: pm.environment.get('juegoId'),",
+                  "  playerId: pm.environment.get('playerId'),",
+                  "  sessionId: pm.environment.get('sessionId'),",
+                  "  secuencia: ++secuencia,",
+                  "  timestamp: new Date(base + secuencia * 1000).toISOString(),",
+                  "  buildVersion: '1.0.0',",
+                  "  plataforma: 'windows',",
+                  "  versionEsquema: 1,",
+                  "  tipo: tipo,",
+                  "  data: data || {}",
+                  "}, extra || {});",
+                  "",
+                  "const lote = [",
+                  "  evento('sesion_inicio'),",
+                  "  evento('nivel_inicio', { nivelId: 'casa_abandonada', intento: 1 }),",
+                  "  evento('tutorial_completado', { duracionMs: 55000 }),",
+                  "  evento('logro', { logroId: 'tutorial_superado' }),",
+                  "  evento('muerte', { nivelId: 'casa_abandonada', intento: 1, causa: 'fantasma', x: 12.5, y: -3.2 }),",
+                  "  evento('nivel_fin', { nivelId: 'casa_abandonada', intento: 1, resultado: 'muerte', duracionMs: 95000 }),",
+                  "  evento('nivel_inicio', { nivelId: 'casa_abandonada', intento: 2 }),",
+                  "  evento('flor_recogida', { nivelId: 'casa_abandonada', duracionMs: 150000 }),",
+                  "  evento('nivel_fin', { nivelId: 'casa_abandonada', intento: 2, resultado: 'completado', duracionMs: 150000 }),",
+                  "  evento('logro', { logroId: 'casa_abandonada_completada' }),",
+                  "  evento('sesion_fin', { motivo: 'menu_salir' })",
+                  "];",
+                  "// Se guarda para reenviarlo tal cual en 'Reenviar el mismo lote'.",
+                  "pm.environment.set('loteEventos', JSON.stringify(lote));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 con los 11 aceptados y sin rechazos', () => {",
+                  "  pm.response.to.have.status(201);",
+                  "  pm.expect(pm.response.json()).to.eql({ aceptados: 11, rechazados: [] });",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reenviar el mismo lote (duplicados)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Api-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/eventos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "eventos"
+              ]
+            },
+            "description": "Simula un reintento por fallo de red: los eventoId ya existen, se ignoran y cuentan como aceptados.",
+            "body": {
+              "mode": "raw",
+              "raw": "{{loteEventos}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201: los duplicados cuentan como aceptados', () => {",
+                  "  pm.response.to.have.status(201);",
+                  "  pm.expect(pm.response.json()).to.eql({ aceptados: 11, rechazados: [] });",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Lote con un evento inválido (aceptación parcial)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Api-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/eventos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "eventos"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{{loteParcial}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Arma eventos con los campos comunes de ESQUEMA_EVENTOS.md §2 (UUID v4 de {{$guid}}).",
+                  "const uuid = () => pm.variables.replaceIn('{{$guid}}');",
+                  "const base = Date.now() - 60 * 1000;",
+                  "let secuencia = 0;",
+                  "const evento = (tipo, data, extra) => Object.assign({",
+                  "  eventoId: uuid(),",
+                  "  juegoId: pm.environment.get('juegoId'),",
+                  "  playerId: pm.environment.get('playerId'),",
+                  "  sessionId: pm.environment.get('sessionId'),",
+                  "  secuencia: ++secuencia,",
+                  "  timestamp: new Date(base + secuencia * 1000).toISOString(),",
+                  "  buildVersion: '1.0.0',",
+                  "  plataforma: 'windows',",
+                  "  versionEsquema: 1,",
+                  "  tipo: tipo,",
+                  "  data: data || {}",
+                  "}, extra || {});",
+                  "",
+                  "pm.environment.set('loteParcial', JSON.stringify([",
+                  "  evento('pausa', { duracionMs: 3000 }),",
+                  "  evento('muerte', { nivelId: 'casa_abandonada', intento: 1, causa: 'agua', x: 1, y: 2 }),",
+                  "  evento('inactividad', { duracionMs: 60000, nivelId: 'casa_abandonada' })",
+                  "]));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201: 2 aceptados y el índice 1 rechazado', () => {",
+                  "  pm.response.to.have.status(201);",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r.aceptados).to.eql(2);",
+                  "  pm.expect(r.rechazados).to.have.lengthOf(1);",
+                  "  pm.expect(r.rechazados[0]).to.include({ indice: 1, codigo: 'VALIDACION_FALLIDA' });",
+                  "  pm.expect(r.rechazados[0].mensaje).to.include('agua');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Tipo no registrado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Api-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/eventos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "eventos"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{{loteTipo}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Arma eventos con los campos comunes de ESQUEMA_EVENTOS.md §2 (UUID v4 de {{$guid}}).",
+                  "const uuid = () => pm.variables.replaceIn('{{$guid}}');",
+                  "const base = Date.now() - 60 * 1000;",
+                  "let secuencia = 0;",
+                  "const evento = (tipo, data, extra) => Object.assign({",
+                  "  eventoId: uuid(),",
+                  "  juegoId: pm.environment.get('juegoId'),",
+                  "  playerId: pm.environment.get('playerId'),",
+                  "  sessionId: pm.environment.get('sessionId'),",
+                  "  secuencia: ++secuencia,",
+                  "  timestamp: new Date(base + secuencia * 1000).toISOString(),",
+                  "  buildVersion: '1.0.0',",
+                  "  plataforma: 'windows',",
+                  "  versionEsquema: 1,",
+                  "  tipo: tipo,",
+                  "  data: data || {}",
+                  "}, extra || {});",
+                  "",
+                  "pm.environment.set('loteTipo', JSON.stringify(evento('palanca_activada', {})));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 con TIPO_NO_REGISTRADO', () => {",
+                  "  pm.response.to.have.status(201);",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r.aceptados).to.eql(0);",
+                  "  pm.expect(r.rechazados[0].codigo).to.eql('TIPO_NO_REGISTRADO');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cliente manda origen (rechazado)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Api-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/eventos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "eventos"
+              ]
+            },
+            "description": "origen y recibidoEn los pone el servidor; si el cliente los manda, el evento se rechaza.",
+            "body": {
+              "mode": "raw",
+              "raw": "{{loteOrigen}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Arma eventos con los campos comunes de ESQUEMA_EVENTOS.md §2 (UUID v4 de {{$guid}}).",
+                  "const uuid = () => pm.variables.replaceIn('{{$guid}}');",
+                  "const base = Date.now() - 60 * 1000;",
+                  "let secuencia = 0;",
+                  "const evento = (tipo, data, extra) => Object.assign({",
+                  "  eventoId: uuid(),",
+                  "  juegoId: pm.environment.get('juegoId'),",
+                  "  playerId: pm.environment.get('playerId'),",
+                  "  sessionId: pm.environment.get('sessionId'),",
+                  "  secuencia: ++secuencia,",
+                  "  timestamp: new Date(base + secuencia * 1000).toISOString(),",
+                  "  buildVersion: '1.0.0',",
+                  "  plataforma: 'windows',",
+                  "  versionEsquema: 1,",
+                  "  tipo: tipo,",
+                  "  data: data || {}",
+                  "}, extra || {});",
+                  "",
+                  "pm.environment.set('loteOrigen', JSON.stringify([evento('sesion_inicio', {}, { origen: 'seed' })]));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 con VALIDACION_FALLIDA por campo desconocido', () => {",
+                  "  pm.response.to.have.status(201);",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r.aceptados).to.eql(0);",
+                  "  pm.expect(r.rechazados[0].codigo).to.eql('VALIDACION_FALLIDA');",
+                  "  pm.expect(r.rechazados[0].mensaje).to.include('origen');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Lote de más de 100 eventos (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Api-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/eventos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "eventos"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{{loteGrande}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Arma eventos con los campos comunes de ESQUEMA_EVENTOS.md §2 (UUID v4 de {{$guid}}).",
+                  "const uuid = () => pm.variables.replaceIn('{{$guid}}');",
+                  "const base = Date.now() - 60 * 1000;",
+                  "let secuencia = 0;",
+                  "const evento = (tipo, data, extra) => Object.assign({",
+                  "  eventoId: uuid(),",
+                  "  juegoId: pm.environment.get('juegoId'),",
+                  "  playerId: pm.environment.get('playerId'),",
+                  "  sessionId: pm.environment.get('sessionId'),",
+                  "  secuencia: ++secuencia,",
+                  "  timestamp: new Date(base + secuencia * 1000).toISOString(),",
+                  "  buildVersion: '1.0.0',",
+                  "  plataforma: 'windows',",
+                  "  versionEsquema: 1,",
+                  "  tipo: tipo,",
+                  "  data: data || {}",
+                  "}, extra || {});",
+                  "",
+                  "const lote = [];",
+                  "for (let i = 0; i < 101; i++) { lote.push(evento('pausa', { duracionMs: 1 })); }",
+                  "pm.environment.set('loteGrande', JSON.stringify(lote));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 LOTE_DEMASIADO_GRANDE', () => {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().error.codigo).to.eql('LOTE_DEMASIADO_GRANDE');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Lote vacío (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Api-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/eventos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "eventos"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "[]",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 VALIDACION_FALLIDA', () => {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().error.codigo).to.eql('VALIDACION_FALLIDA');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

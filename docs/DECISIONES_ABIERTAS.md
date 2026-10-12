@@ -56,6 +56,11 @@ Aquí se anota lo que **no** está definido en `CLAUDE.md` o en `docs/`.
 | S-32 | Acceso de admins: `crear-admin` sin `--juegos` da acceso a todos los juegos existentes, y `crear-juego` agrega el juego nuevo a los `juegosPermitidos` de todos los admins activos (salvo `--sin-acceso`). Coherente con "un solo rol por ahora". | Que cada acceso se asigne a mano por admin. | Scripts `crear-admin` y `crear-juego`. |
 | S-33 | Contraseña de admin: mínimo 12 caracteres, bcrypt con 12 rondas; solo se lee de `ADMIN_PASSWORD` en el `.env`. | Otra política o rondas. | `seguridad/password.ts`. |
 | S-34 | Los scripts reciben el juego con `--juego <slug>` (en lugar de un argumento posicional) para que todos usen la misma forma. | `rotar-api-key <slug>`. | Solo la línea de comandos. |
+| S-35 | Un lote vacío (`[]`) se responde con 400 `VALIDACION_FALLIDA` en lugar de `201 { aceptados: 0 }`. | Aceptarlo con 201. | Una validación. |
+| S-36 | En el evento `error`, `codigo` tiene de 1 a 64 caracteres ("identificador corto" sin límite definido). | Otro límite. | Esquema de `error`. |
+| S-37 | `sesiones.inicio`/`fin` toman el `timestamp` del primer `sesion_inicio`/`sesion_fin` recibido (si llegan varios, gana el primero); `jugadores.ultimaVez` se actualiza con la hora del servidor en cada lote aceptado. | Último en llegar; `ultimaVez` con el timestamp del cliente. | Servicio de ingesta. |
+| S-38 | Los límites de rate limit y `TRUST_PROXY` son configurables por variable de entorno (defaults = valores de producción: 300/IP, 1000/key, 600 público, 1 salto). | Valores fijos en el código. | Solo configuración. |
+| S-39 | La API key se valida contra la base en cada petición (búsqueda por índice del hash), sin caché en memoria. | Caché corta por key (más rápido, pero una revocación tarda en surtir efecto). | Middleware de API key; rendimiento a 10x. |
 
 ---
 

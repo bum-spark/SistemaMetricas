@@ -27,6 +27,13 @@ const esquemaEntorno = z
     MONGODB_DB: z
       .string({ error: 'es obligatoria (ej. xolos_analytics)' })
       .regex(PATRON_NOMBRE_BD, 'solo letras, números, guion y guion bajo (máx. 63)'),
+    // Saltos de proxy delante de la API (Render/Railway = 1). Necesario para leer la IP
+    // real del jugador en el rate limit (R-05, S-23). 0 = sin proxy.
+    TRUST_PROXY: z.coerce.number().int().min(0).max(5).default(1),
+    // Límites por minuto (R-05, R-10, S-26). Configurables para la prueba de carga (S-31).
+    RATE_LIMIT_INGESTA_IP: z.coerce.number().int().min(1).default(300),
+    RATE_LIMIT_INGESTA_KEY: z.coerce.number().int().min(1).default(1000),
+    RATE_LIMIT_PUBLICO_IP: z.coerce.number().int().min(1).default(600),
   })
   .superRefine((env, ctx) => {
     const enUri = baseDeUri(env.MONGODB_URI);
@@ -46,6 +53,12 @@ export interface Config {
   corsOrigenes: string[];
   mongoUri: string;
   mongoDb: string;
+  trustProxy: number;
+  limites: {
+    ingestaPorIp: number;
+    ingestaPorKey: number;
+    publicoPorIp: number;
+  };
 }
 
 export class ConfigInvalidaError extends Error {
@@ -70,5 +83,11 @@ export function cargarConfig(entorno: NodeJS.ProcessEnv = process.env): Config {
     corsOrigenes: env.CORS_ORIGIN,
     mongoUri: env.MONGODB_URI,
     mongoDb: env.MONGODB_DB,
+    trustProxy: env.TRUST_PROXY,
+    limites: {
+      ingestaPorIp: env.RATE_LIMIT_INGESTA_IP,
+      ingestaPorKey: env.RATE_LIMIT_INGESTA_KEY,
+      publicoPorIp: env.RATE_LIMIT_PUBLICO_IP,
+    },
   };
 }

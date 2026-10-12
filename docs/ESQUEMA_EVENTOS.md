@@ -72,10 +72,19 @@ Al arrancar el juego, el cliente llama `POST /api/v1/sesiones` con `juegoId`, `p
   La respuesta es **201 aunque `aceptados` sea 0** (todos rechazados): la petición en sí
   fue válida; el detalle va en `rechazados`.
 - **Duplicados:** si llega un `eventoId` que ya existe para ese juego, se ignora sin error
-  y **cuenta como aceptado**.
+  y **cuenta como aceptado**. Lo mismo si el `eventoId` se repite dentro del mismo lote: se
+  guarda una vez y cuenta las dos.
+- **Orden de validación de cada evento:** forma común (campos, tipos, campos desconocidos)
+  → `juegoId` de la key → `tipo` en el catálogo → ventana de `timestamp` → `data` del tipo
+  → IDs de `data` en el catálogo → consentimiento del jugador → sesión. El primer problema
+  encontrado es el que se reporta. Los mensajes de validación salen en español.
+- **Efectos de un evento aceptado** (idempotentes: un reenvío no cambia nada):
+  `sesiones.ultimoEventoEn` = máximo `timestamp`; `inicio`/`fin` = `timestamp` del primer
+  `sesion_inicio`/`sesion_fin` recibido; `jugadores.ultimaVez` = hora del servidor; cada
+  `logro` crea un registro en `logros` (una vez por jugador).
 - Errores de **toda la petición** (no llegan a validar eventos): API key inválida (401),
-  body que no es objeto ni arreglo (400), más de 100 eventos (400), body mayor a 100 KB
-  (413), rate limit (429) (S-04, S-11).
+  body que no es objeto ni arreglo o lote vacío (400), más de 100 eventos (400), body mayor
+  a 100 KB (413), rate limit (429) (S-04, S-11, S-35).
 - **Reintentos del SDK:**
 
   | Resultado de la petición                         | ¿Reintenta?                                      |
@@ -93,7 +102,7 @@ Al arrancar el juego, el cliente llama `POST /api/v1/sesiones` con `juegoId`, `p
 ### 1.4 Fin de sesión
 - Con `sesion_fin`: la sesión guarda `fin` = `timestamp` de ese evento.
 - Sin `sesion_fin` (crash o cierre forzado): la API guarda en cada ingesta el
-  `ultimoEventoEn` de la sesión. Al consultar, una sesión sin `fin` y sin eventos en los
+  `ultimoEventoEn` de la sesión (empieza en `creadaEn`, la hora del servidor al crearla). Al consultar, una sesión sin `fin` y sin eventos en los
   últimos **30 minutos** se considera terminada, con fin = `ultimoEventoEn` y
   `finInferido: true`. Las sesiones con menos de 30 min sin eventos se consideran activas y
   no entran en las métricas de duración (S-05).
@@ -107,6 +116,10 @@ Al arrancar el juego, el cliente llama `POST /api/v1/sesiones` con `juegoId`, `p
 - **Por API key:** tope alto de **1000 peticiones/min por key**, como protección si una key
   se filtra o un build tiene un bug que manda en bucle.
 - **Login de admin:** 5 intentos cada 15 min por IP (S-18).
+- **Configuración:** los límites y los saltos de proxy se leen de `RATE_LIMIT_INGESTA_IP`,
+  `RATE_LIMIT_INGESTA_KEY`, `RATE_LIMIT_PUBLICO_IP` y `TRUST_PROXY` (ver `.env.example`);
+  los valores por defecto son los de producción. Solo se cambian para la prueba de carga o
+  en local (`TRUST_PROXY=0`).
 - **`GET /salud` y `GET /docs`:** sin el rate limit de ingesta ni el de login, para que el monitoreo del
   hosting pueda consultarlo seguido. Solo lleva un límite laxo de 600 peticiones/min por
   IP, para que no se pueda usar para saturar el servidor (S-26).
@@ -227,7 +240,7 @@ Termina un intento. **Cada muerte cierra el intento** y reaparecer abre uno nuev
 
 | Campo     | Tipo    | Oblig. | Notas                                                          |
 |-----------|---------|:------:|----------------------------------------------------------------|
-| `codigo`  | string  | sí     | Identificador corto del error.                                 |
+| `codigo`  | string  | sí     | Identificador corto del error (1–64 caracteres, S-36).         |
 | `mensaje` | string  | sí     | Máx. 500 caracteres. Sin datos personales ni rutas de usuario. |
 | `fatal`   | boolean | sí     | `true` si provocó el cierre (crash).                           |
 
@@ -589,7 +602,7 @@ Formato uniforme:
 
 | HTTP | `codigo`                   | Cuándo                                                       |
 |:----:|----------------------------|--------------------------------------------------------------|
-| 400  | `VALIDACION_FALLIDA`       | Body o query mal formados (no es objeto/arreglo, falta campo en `/sesiones`, filtro inválido). |
+| 400  | `VALIDACION_FALLIDA`       | Body o query mal formados (JSON roto, no es objeto/arreglo, lote vacío, campo inválido en `/sesiones`, filtro inválido). |
 | 400  | `LOTE_DEMASIADO_GRANDE`    | Más de 100 eventos (S-04).                                   |
 | 401  | `API_KEY_INVALIDA`         | Falta la `X-Api-Key`, no existe, fue revocada o el juego está inactivo. |
 | 401  | `NO_AUTENTICADO`           | Falta el JWT, es inválido o expiró.                          |

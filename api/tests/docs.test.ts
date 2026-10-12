@@ -37,3 +37,28 @@ describe('documentación OpenAPI', () => {
     expect(res.text).toContain('swagger-ui');
   });
 });
+
+describe('OpenAPI de la ingesta', () => {
+  it('documenta POST /sesiones y POST /eventos con la API key como seguridad', async () => {
+    const { app } = crearAppDePrueba();
+    const { body } = await request(app).get('/api/v1/docs/openapi.json');
+    expect(body.components.securitySchemes.ApiKey).toEqual(expect.objectContaining({ type: 'apiKey', in: 'header', name: 'X-Api-Key' }));
+    for (const ruta of ['/sesiones', '/eventos']) {
+      expect(body.paths[ruta].post.security).toEqual([{ ApiKey: [] }]);
+    }
+    expect(body.paths['/sesiones'].post.requestBody.content['application/json'].schema).toEqual({ $ref: '#/components/schemas/SolicitudSesion' });
+    expect(Object.keys(body.paths['/sesiones'].post.responses as object).sort()).toEqual(['200', '201', '400', '401', '403', '413', '429']);
+  });
+
+  it('el esquema Evento tiene una variante por cada tipo, generada desde zod', async () => {
+    const { app } = crearAppDePrueba();
+    const { body } = await request(app).get('/api/v1/docs/openapi.json');
+    const evento = body.components.schemas.Evento;
+    const variantes = (evento.oneOf ?? evento.anyOf) as { properties: { tipo: { const: string } } }[];
+    expect(variantes).toHaveLength(14);
+    expect(variantes.map((v) => v.properties.tipo.const)).toContain('flor_recogida');
+    const muerte = variantes.find((v) => v.properties.tipo.const === 'muerte') as unknown as { properties: { data: { required: string[] } } };
+    expect(muerte.properties.data.required).toEqual(expect.arrayContaining(['nivelId', 'intento', 'causa', 'x', 'y']));
+    expect(body.components.schemas.RespuestaEventos.properties.rechazados.items.properties.codigo.enum).toContain('SIN_CONSENTIMIENTO');
+  });
+});

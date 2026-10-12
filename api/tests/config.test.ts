@@ -13,7 +13,17 @@ describe('cargarConfig', () => {
       corsOrigenes: ['http://localhost:4200'],
       mongoUri: URI,
       mongoDb: 'xolos_analytics',
+      trustProxy: 1,
+      limites: { ingestaPorIp: 300, ingestaPorKey: 1000, publicoPorIp: 600 },
     });
+  });
+
+  it('permite ajustar trust proxy y los límites (prueba de carga)', () => {
+    expect(cargarConfig({ ...BASE, TRUST_PROXY: '0', RATE_LIMIT_INGESTA_IP: '100000' })).toMatchObject({
+      trustProxy: 0,
+      limites: { ingestaPorIp: 100000 },
+    });
+    expect(() => cargarConfig({ ...BASE, RATE_LIMIT_INGESTA_IP: '0' })).toThrow(/RATE_LIMIT_INGESTA_IP/);
   });
 
   it('lee y convierte las variables de entorno', () => {
