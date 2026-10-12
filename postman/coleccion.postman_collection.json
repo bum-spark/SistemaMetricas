@@ -1228,6 +1228,302 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Estadísticas",
+      "item": [
+        {
+          "name": "Sesiones y duración",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/estadisticas/{{juegoId}}/sesiones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estadisticas",
+                "{{juegoId}}",
+                "sesiones"
+              ]
+            },
+            "description": "§10.1. Requiere el token de 'Login'. Para ver datos, corre antes `npm run seed-datos`."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 con totales e histograma de 9 grupos', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r.filtros.origen).to.eql('todos');",
+                  "  pm.expect(r.datos).to.include.keys('sesiones', 'jugadores', 'promedioMs', 'medianaMs', 'inferidas', 'distribucion');",
+                  "  pm.expect(r.datos.distribucion).to.have.lengthOf(9);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Tiempo por nivel",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/estadisticas/{{juegoId}}/tiempo-nivel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estadisticas",
+                "{{juegoId}}",
+                "tiempo-nivel"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 con un elemento por nivel y los tres resultados', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  const datos = pm.response.json().datos;",
+                  "  pm.expect(datos).to.be.an('array').that.is.not.empty;",
+                  "  datos.forEach((n) => pm.expect(n).to.include.keys('nivelId', 'completado', 'muerte', 'abandono'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Embudo",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/estadisticas/{{juegoId}}/embudo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estadisticas",
+                "{{juegoId}}",
+                "embudo"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200: un paso por nivel más \"terminaron\", jugadores no crecientes', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  const datos = pm.response.json().datos;",
+                  "  pm.expect(datos[datos.length - 1].paso).to.eql('terminaron');",
+                  "  for (let i = 1; i < datos.length - 1; i++) { pm.expect(datos[i].jugadores).to.be.at.most(datos[i - 1].jugadores); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Muertes por nivel y causa",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/estadisticas/{{juegoId}}/muertes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estadisticas",
+                "{{juegoId}}",
+                "muertes"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 con muertes por nivel y causa', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.response.json().datos.forEach((m) => pm.expect(m).to.include.keys('nivelId', 'causa', 'muertes', 'jugadores', 'muertesPorJugador'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logros",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/estadisticas/{{juegoId}}/logros",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estadisticas",
+                "{{juegoId}}",
+                "logros"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 con todos los logros del catálogo y su porcentaje', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  const datos = pm.response.json().datos;",
+                  "  pm.expect(datos).to.be.an('array').that.is.not.empty;",
+                  "  datos.forEach((l) => { pm.expect(l.porcentaje).to.be.within(0, 100); });",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Embudo solo datos seed y build 1.0.1",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/estadisticas/{{juegoId}}/embudo?origen=seed&buildVersion=1.0.1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estadisticas",
+                "{{juegoId}}",
+                "embudo"
+              ],
+              "query": [
+                {
+                  "key": "origen",
+                  "value": "seed"
+                },
+                {
+                  "key": "buildVersion",
+                  "value": "1.0.1"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 y devuelve los filtros aplicados', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().filtros).to.include({ origen: 'seed', buildVersion: '1.0.1' });",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Filtro inválido (400)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/estadisticas/{{juegoId}}/sesiones?plataforma=switch",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estadisticas",
+                "{{juegoId}}",
+                "sesiones"
+              ],
+              "query": [
+                {
+                  "key": "plataforma",
+                  "value": "switch"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 VALIDACION_FALLIDA', () => {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().error.codigo).to.eql('VALIDACION_FALLIDA');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
     }
   ]
 }

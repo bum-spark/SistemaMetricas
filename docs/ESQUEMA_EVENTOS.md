@@ -470,8 +470,11 @@ campos `...Id`. Fechas en UTC.
 
 `duracionMs` y `finInferido` se calculan al consultar (sección 1.4).
 
-Índices: `{ sessionId: 1 }` único · `{ juegoId: 1, creadaEn: 1 }` ·
+Índices: `{ sessionId: 1 }` único · `{ juegoId: 1, inicio: 1 }` ·
 `{ juegoId: 1, playerId: 1 }` · `{ juegoId: 1, buildVersion: 1, plataforma: 1 }`.
+(`{ juegoId, inicio }` reemplazó a `{ juegoId, creadaEn }` en la etapa 7: el rango de fechas de
+las estadísticas de sesiones filtra por `inicio` y el `explain()` mostraba que el índice anterior
+solo servía por el prefijo `juegoId`; R-49.)
 
 ### `eventos`
 Los campos de la sección 2 más `recibidoEn` y `origen` (`"real"` \| `"seed"`, default `"real"`).
@@ -748,6 +751,9 @@ db.sesiones.aggregate([
 ])
 ```
 `datos`: `{ sesiones, jugadores, promedioMs, medianaMs, inferidas, distribucion: [{ desdeMs, sesiones }] }`
+- `promedioMs` y `medianaMs`: enteros en ms, `null` si no hay sesiones terminadas.
+- `distribucion`: siempre los 9 grupos (`desdeMs` = 0, 5, 10, 15, 20, 25, 30, 45 y 60 min), con
+  0 en los vacíos; el último incluye todo lo que dura 60 min o más.
 
 ### 10.2 Tiempo por nivel (por intento)
 
@@ -760,7 +766,7 @@ db.eventos.aggregate([
               medianaMs: { $median: { input: "$data.duracionMs", method: "approximate" } } } }
 ])
 ```
-`datos`: por `nivelId` (en orden del catálogo): `{ nivelId, completado: {intentos, promedioMs, medianaMs}, muerte: {…}, abandono: {…} }`.
+`datos`: un elemento por nivel del catálogo, en su `orden`: `{ nivelId, completado: {intentos, promedioMs, medianaMs}, muerte: {…}, abandono: {…} }`; un resultado sin intentos da `{ intentos: 0, promedioMs: null, medianaMs: null }`.
 El tiempo del intento que completó el nivel es el que responde "¿qué nivel está largo?".
 
 ### 10.3 Embudo de progresión
@@ -775,7 +781,7 @@ db.eventos.aggregate([
 ])
 ```
 `ultimoNivelId` = nivel con el `orden` más alto. El servicio ordena los pasos con el catálogo.
-`datos`: `[{ paso: "casa_abandonada", jugadores }, { paso: "hospital_cuarto", … }, { paso: "habitacion_llamas", … }, { paso: "terminaron", … }]`, cada uno con `porcentaje` respecto al primero.
+`datos`: `[{ paso: "casa_abandonada", jugadores, porcentaje }, …, { paso: "terminaron", jugadores, porcentaje }]`: un paso por nivel del catálogo (en su `orden`, aunque tenga 0) más `terminaron`. `porcentaje` = respecto al primer paso, 0–100 con un decimal (0 si el primero es 0).
 
 ### 10.4 Muertes por nivel y causa
 
@@ -787,7 +793,7 @@ db.eventos.aggregate([
   { $project: { muertes: 1, jugadores: { $size: "$jugadores" } } }
 ])
 ```
-`datos`: `[{ nivelId, causa, muertes, jugadores, muertesPorJugador }]`.
+`datos`: `[{ nivelId, causa, muertes, jugadores, muertesPorJugador }]`, solo combinaciones con muertes, ordenadas por `orden` del nivel y por la posición de la causa en el catálogo (para asignar colores estables). `jugadores` = jugadores distintos que murieron así; `muertesPorJugador` = muertes ÷ jugadores, con dos decimales.
 
 ### 10.5 Logros (% de jugadores)
 Se calcula desde `eventos` (no desde `logros`) para que funcionen los filtros de versión y
@@ -802,8 +808,38 @@ db.eventos.aggregate([
 // denominador: jugadores distintos con al menos un evento en F (S-22)
 db.eventos.distinct("playerId", F).length
 ```
-`datos`: un elemento por cada logro del catálogo (aunque nadie lo tenga):
-`[{ logroId, nombre, jugadores, porcentaje }]`.
+`datos`: un elemento por cada logro del catálogo, en su orden (aunque nadie lo tenga):
+`[{ logroId, nombre, jugadores, porcentaje }]`; `porcentaje` 0–100 con un decimal.
+
+#### Implementación, precisión y rendimiento (etapa 7)
+
+- Código: `api/src/estadisticas/imprescindibles.ts` (10.1–10.5), con los filtros de
+  `contexto.ts` (`filtroEventos` = F, `filtroSesiones`) y la ruta genérica
+  `api/src/rutas/estadisticas.ts`. Las sesiones terminadas usan `etapasSesionesTerminadas` (R-34).
+- **Medianas:** `$median` con `method: "approximate"`. En MongoDB 7.0 devuelve la **mediana
+  inferior exacta** (el elemento en la posición ⌈n/2⌉) hasta ~1000 valores por grupo; por
+  encima usa t-digest (error medido: 0.004 % con 5000 valores).
+- **Tests de valores exactos:** un "oráculo" en JS plano (`api/tests/estadisticas/oraculo.ts`)
+  calcula cada métrica desde los documentos del seed (semilla fija) sin MongoDB; cada endpoint
+  debe coincidir exactamente, con y sin filtros, para los dos catálogos y en casos borde.
+- **`explain()` con el seed completo** (300 + 150 jugadores, ~9 500 eventos, MongoDB 7.0.43
+  local): ninguna consulta hace `COLLSCAN`; todas usan `IXSCAN` (eventos: `{ juegoId, tipo,
+  timestamp }` o `{ juegoId, tipo, buildVersion }`; sesiones: `{ juegoId, inicio }` o
+  `{ juegoId, buildVersion, plataforma }`); docs examinados ≈ claves examinadas; la más lenta
+  tardó 21 ms en el servidor (embudo sin filtros).
+- **Tiempo por HTTP** (API local, 20 peticiones después de una en frío, mediana / máximo):
+
+  | Endpoint | Filtros | 1.ª | Mediana | Máximo |
+  |---|---|---:|---:|---:|
+  | sesiones | — | 19.8 ms | 10.5 ms | 15.3 ms |
+  | tiempo-nivel | — | 12.2 ms | 12.5 ms | 14.6 ms |
+  | embudo | — | 16.8 ms | 16.3 ms | 17.5 ms |
+  | muertes | — | 8.9 ms | 9.7 ms | 11.7 ms |
+  | logros | — | 10.8 ms | 10.3 ms | 11.6 ms |
+  | embudo | build + plataforma | 16.8 ms | 10.4 ms | 15.4 ms |
+  | sesiones | rango 3 días | 7.7 ms | 7.6 ms | 8.8 ms |
+
+  Con Atlas M0 y Render hay que sumar la latencia de red (y el arranque en frío del plan gratuito).
 
 ### 10.6 Mapa de calor de muertes
 

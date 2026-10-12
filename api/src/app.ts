@@ -8,6 +8,7 @@ import { crearLimitadores } from './middlewares/limites';
 import { crearManejadorErrores, rutaNoEncontrada } from './middlewares/manejoErrores';
 import { crearDocumentoOpenApi } from './openapi/documento';
 import { crearRutasAdmin } from './rutas/admin';
+import { crearRutasEstadisticas } from './rutas/estadisticas';
 import { crearRutasIngesta } from './rutas/ingesta';
 import { crearRutasSalud } from './rutas/salud';
 
@@ -36,6 +37,7 @@ export function crearApp(config: Config, opciones: OpcionesApp = {}): Express {
   v1.use(crearRutasSalud());
   v1.use(crearRutasIngesta(limitadores));
   v1.use(crearRutasAdmin({ jwtSecret: config.jwtSecret, limiteLogin: limitadores.loginPorIp }));
+  v1.use(crearRutasEstadisticas(config.jwtSecret));
 
   const documento = crearDocumentoOpenApi(config);
   v1.get('/docs/openapi.json', (_req, res) => {

@@ -23,7 +23,7 @@ const ESPERADOS: Record<string, IndiceEsperado[]> = {
   ],
   sesiones: [
     { llaves: { sessionId: 1 }, unico: true },
-    { llaves: { juegoId: 1, creadaEn: 1 } },
+    { llaves: { juegoId: 1, inicio: 1 } },
     { llaves: { juegoId: 1, playerId: 1 } },
     { llaves: { juegoId: 1, buildVersion: 1, plataforma: 1 } },
   ],

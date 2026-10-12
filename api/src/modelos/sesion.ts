@@ -26,7 +26,9 @@ const esquemaSesion = new Schema(
   opcionesEsquema('sesiones'),
 );
 
-esquemaSesion.index({ juegoId: 1, creadaEn: 1 });
+// Rango de fechas de las estadísticas de sesiones (filtra por `inicio`, reloj del cliente, R-34).
+// Reemplaza a { juegoId, creadaEn }, que ninguna consulta usa desde R-34 (R-49).
+esquemaSesion.index({ juegoId: 1, inicio: 1 });
 esquemaSesion.index({ juegoId: 1, playerId: 1 });
 esquemaSesion.index({ juegoId: 1, buildVersion: 1, plataforma: 1 });
 

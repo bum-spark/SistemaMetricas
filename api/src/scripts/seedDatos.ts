@@ -78,7 +78,7 @@ async function insertarPorLotes<T>(insertar: (lote: T[]) => Promise<unknown>, do
   }
 }
 
-async function insertar(datos: DatosSeed): Promise<void> {
+export async function insertarDatosSeed(datos: DatosSeed): Promise<void> {
   await insertarPorLotes((l) => JugadorModelo.insertMany(l), datos.jugadores);
   await insertarPorLotes((l) => SesionModelo.insertMany(l), datos.sesiones);
   await insertarPorLotes((l) => EventoModelo.insertMany(l), datos.eventos);
@@ -90,7 +90,7 @@ async function sembrarJuego(perfil: PerfilJuego, opciones: OpcionesSeed, jugador
   const { juegoId, catalogo, creado } = await asegurarJuego(def);
   const borrados = await limpiarSeed({ juegoSlug: perfil.slug });
   const datos = generarDatosSeed({ juegoId, catalogo, perfil, semilla: opciones.semilla, referencia: opciones.referencia, jugadores });
-  await insertar(datos);
+  await insertarDatosSeed(datos);
   return {
     slug: perfil.slug,
     juegoCreado: creado,

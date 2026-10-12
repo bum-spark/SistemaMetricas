@@ -7,7 +7,9 @@ import { asegurarIndices } from '../../src/modelos';
 const TIEMPO_HOOK_MS = 120_000;
 
 // Cada archivo de tests usa su propia base de datos dentro del servidor en memoria.
-export function usarBdPrueba(): void {
+// Con { limpiarEntreTests: false } los datos se conservan durante todo el archivo
+// (para tests de solo lectura que siembran una vez en beforeAll).
+export function usarBdPrueba(opciones: { limpiarEntreTests?: boolean } = {}): void {
   beforeAll(async () => {
     const uri = process.env.MONGO_URI_TESTS;
     if (!uri) {
@@ -25,9 +27,11 @@ export function usarBdPrueba(): void {
     await asegurarIndices();
   }, TIEMPO_HOOK_MS);
 
-  afterEach(async () => {
-    await Promise.all(Object.values(mongoose.connection.collections).map((coleccion) => coleccion.deleteMany({})));
-  }, TIEMPO_HOOK_MS);
+  if (opciones.limpiarEntreTests !== false) {
+    afterEach(async () => {
+      await Promise.all(Object.values(mongoose.connection.collections).map((coleccion) => coleccion.deleteMany({})));
+    }, TIEMPO_HOOK_MS);
+  }
 
   afterAll(async () => {
     await mongoose.connection.dropDatabase();
