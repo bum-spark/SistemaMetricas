@@ -1,9 +1,10 @@
 import { parseArgs, type ParseArgsOptionsConfig } from 'node:util';
 import { cargarConfig, ConfigInvalidaError } from '../config';
 import { conectarBd, desconectarBd } from '../db';
+import { censurar, esUriLocal, hostsDeUri } from '../mongoUri';
 
 // Base común de los scripts de /scripts. Reglas:
-// - Antes de escribir se imprime el host de la base de datos, SIN credenciales.
+// - Antes de escribir se imprime el host y el nombre de la base de datos, SIN credenciales.
 // - Si la URI no es local, hace falta --confirmar.
 // - Ningún secreto (contraseñas, URI completa, API keys) va a los logs; la API key
 //   solo se muestra una vez, con mostrarSecretoUnaVez().
@@ -15,39 +16,13 @@ export class ErrorScript extends Error {
   }
 }
 
-const HOSTS_LOCALES = new Set(['localhost', '127.0.0.1', '::1', '[::1]']);
+// Utilidades de URI compartidas con la configuración; se reexportan para los scripts.
+export { censurar, esUriLocal, hostsDeUri } from '../mongoUri';
 
-// "mongodb+srv://usuario:clave@cluster0.x.mongodb.net/metricas?..." → ["cluster0.x.mongodb.net"]
-export function hostsDeUri(uri: string): string[] {
-  const sinEsquema = uri.replace(/^mongodb(\+srv)?:\/\//, '');
-  const sinCredenciales = sinEsquema.includes('@') ? sinEsquema.slice(sinEsquema.lastIndexOf('@') + 1) : sinEsquema;
-  const autoridad = sinCredenciales.split(/[/?]/)[0] ?? '';
-  return autoridad
-    .split(',')
-    .map((host) => host.trim())
-    .filter((host) => host.length > 0);
-}
-
-function sinPuerto(host: string): string {
-  if (host.startsWith('[')) {
-    return host.slice(0, host.indexOf(']') + 1);
-  }
-  return host.split(':')[0] ?? host;
-}
-
-export function esUriLocal(uri: string): boolean {
-  const hosts = hostsDeUri(uri);
-  return hosts.length > 0 && hosts.every((host) => HOSTS_LOCALES.has(sinPuerto(host)));
-}
-
-// Quita credenciales de cualquier texto que pueda contener una URI.
-export function censurar(texto: string): string {
-  return texto.replace(/\/\/[^@/\s]+@/g, '//***:***@');
-}
-
-export function verificarDestino(uri: string, confirmar: boolean, log: (linea: string) => void): void {
+export function verificarDestino(uri: string, baseDatos: string, confirmar: boolean, log: (linea: string) => void): void {
   const local = esUriLocal(uri);
-  log(`Base de datos: ${hostsDeUri(uri).join(', ') || '(host desconocido)'}${local ? ' (local)' : ' (REMOTA)'}`);
+  const hosts = hostsDeUri(uri).join(', ') || '(host desconocido)';
+  log(`Base de datos: ${baseDatos} en ${hosts}${local ? ' (local)' : ' (REMOTA)'}`);
   if (!local && !confirmar) {
     throw new ErrorScript('La base de datos no es local. Vuelve a ejecutar con --confirmar si de verdad quieres escribir en ella.');
   }
@@ -112,8 +87,8 @@ export async function ejecutarScript(
     }
     const args = leerArgs(argv, opciones);
     const config = cargarConfig();
-    verificarDestino(config.mongoUri, args.confirmar === true, log);
-    await conectarBd(config.mongoUri);
+    verificarDestino(config.mongoUri, config.mongoDb, args.confirmar === true, log);
+    await conectarBd(config.mongoUri, config.mongoDb);
     conectado = true;
     await cuerpo({ args, log });
   } catch (err) {

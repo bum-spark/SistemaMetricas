@@ -11,7 +11,7 @@ try {
 
 async function iniciar(): Promise<void> {
   const config = cargarConfig();
-  await conectarBd(config.mongoUri);
+  await conectarBd(config.mongoUri, config.mongoDb);
   const app = crearApp(config);
   app.listen(config.puerto, () => {
     console.log(`[${config.appName}] API escuchando en el puerto ${config.puerto} (${config.entorno})`);

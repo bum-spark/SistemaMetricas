@@ -386,7 +386,7 @@ encendida: completa la azotea), `coleccionista` (Coleccionista: encuentra las 3 
 
 ## 6. Colecciones e índices
 
-Una sola base de datos. Los `_id` de Mongo no se exponen; las llaves de negocio son los
+Una sola base de datos, **explícita**: su nombre viene de `MONGODB_DB` (obligatoria, sin valor por defecto) y se pasa a la conexión como `dbName`, porque el cluster de Atlas puede ser compartido con otros proyectos (R-33). Los `_id` de Mongo no se exponen; las llaves de negocio son los
 campos `...Id`. Fechas en UTC.
 
 ### `juegos`
@@ -553,7 +553,7 @@ corren a mano con acceso a la base de datos (S-19). Se ejecutan desde `/api` con
 `npm run <script> -- <opciones>`.
 
 **Reglas de todos los scripts:**
-- Antes de escribir imprimen el host de la base de datos, **sin credenciales**.
+- Antes de escribir imprimen el host y el **nombre de la base de datos** (`MONGODB_DB`), **sin credenciales**.
 - Si la URI no es local (`localhost`, `127.0.0.1`, `::1`), exigen `--confirmar`.
 - Ningún secreto en los logs (contraseñas, URI completa, API keys); los mensajes de error
   se censuran. La API key se muestra **una sola vez**.

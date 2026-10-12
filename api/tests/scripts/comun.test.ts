@@ -32,21 +32,21 @@ describe('esUriLocal', () => {
 describe('verificarDestino', () => {
   it('imprime el host sin credenciales y deja pasar una base local', () => {
     const lineas: string[] = [];
-    verificarDestino('mongodb://localhost:27017/metricas', false, (l) => lineas.push(l));
-    expect(lineas).toEqual(['Base de datos: localhost:27017 (local)']);
+    verificarDestino('mongodb://localhost:27017', 'xolos_analytics', false, (l) => lineas.push(l));
+    expect(lineas).toEqual(['Base de datos: xolos_analytics en localhost:27017 (local)']);
   });
 
   it('exige --confirmar para una base remota', () => {
     const lineas: string[] = [];
-    const uri = 'mongodb+srv://admin:SuperSecreta@cluster0.mongodb.net/metricas';
-    expect(() => verificarDestino(uri, false, (l) => lineas.push(l))).toThrow(ErrorScript);
-    expect(() => verificarDestino(uri, false, () => undefined)).toThrow(/--confirmar/);
-    expect(lineas[0]).toBe('Base de datos: cluster0.mongodb.net (REMOTA)');
+    const uri = 'mongodb+srv://admin:SuperSecreta@cluster0.mongodb.net/';
+    expect(() => verificarDestino(uri, 'xolos_analytics', false, (l) => lineas.push(l))).toThrow(ErrorScript);
+    expect(() => verificarDestino(uri, 'xolos_analytics', false, () => undefined)).toThrow(/--confirmar/);
+    expect(lineas[0]).toBe('Base de datos: xolos_analytics en cluster0.mongodb.net (REMOTA)');
     expect(lineas.join()).not.toMatch(/SuperSecreta|admin/);
   });
 
   it('con --confirmar deja pasar una base remota', () => {
-    expect(() => verificarDestino('mongodb+srv://u:p@cluster0.mongodb.net/m', true, () => undefined)).not.toThrow();
+    expect(() => verificarDestino('mongodb+srv://u:p@cluster0.mongodb.net/', 'xolos_analytics', true, () => undefined)).not.toThrow();
   });
 });
 
