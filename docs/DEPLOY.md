@@ -17,22 +17,34 @@ Guía paso a paso para publicar la API. La configuración del servicio está en
   las estadísticas usan `$median`.
 - En tu computadora: Node **22.22.0** y `npm install` hecho en `/api`.
 
-## 1. Atlas: usuario y acceso de red
+## 1. Atlas: base, usuario y acceso de red
 
-El cluster es compartido con otro proyecto, así que la API usa **su propio usuario, con
-permiso solo sobre su base**.
+El cluster es compartido con otro proyecto, así que la API usa **su propia base y su propio
+usuario, con permiso solo sobre esa base** (R-41).
 
-1. **Database Access → Add New Database User**
-   - Usuario: por ejemplo `xolos_api`. Contraseña larga y aleatoria (usa "Autogenerate").
-   - *Database User Privileges* → *Specific Privileges* → rol **`readWrite`** sobre la base
-     **`xolos_analytics`** (nada más). Así la API no puede leer ni tocar el otro proyecto.
-2. **Network Access**: Render (plan gratuito) no tiene IP de salida fija, así que hay que
-   permitir `0.0.0.0/0`. El riesgo queda acotado porque el usuario solo tiene `readWrite`
-   en `xolos_analytics` y una contraseña fuerte (S-40). Si después se usa un plan con IP fija,
-   se reemplaza por esas IPs.
-3. **Connect → Drivers**: copia la cadena `mongodb+srv://...` y **quítale el nombre de base**
-   de la ruta (debe terminar en `.mongodb.net/?retryWrites=true&w=majority`). La base se
-   indica aparte con `MONGODB_DB`; si la URI trae otra, la API no arranca (R-33).
+1. **Crear la base** (Data Explorer / *Browse Collections* → **Create Database**):
+   - *Database name*: **`xolos_analytics`**.
+   - *Collection name* (Atlas pide una colección inicial): **`juegos`**.
+   - Las demás colecciones (`jugadores`, `sesiones`, `eventos`, `logros`, `admins`) y todos
+     los índices los crea la API sola al arrancar; no hace falta crearlos a mano.
+2. **Crear el usuario** (Security → **Database Access → Add New Database User**):
+   - *Authentication Method*: **Password**.
+   - Usuario: por ejemplo `xolos_api`. Contraseña: botón **Autogenerate Secure Password**
+     (cópiala a tu gestor de contraseñas; no la pegues en ningún chat).
+   - *Database User Privileges*: **no** elijas un rol integrado como "Read and write to any
+     database". Abre **Specific Privileges → Add Specific Privilege** y pon:
+     - Role: **`readWrite`**
+     - Database: **`xolos_analytics`**
+     - Collection: vacío (toda la base)
+   - Así la API no puede leer ni tocar la base del otro proyecto.
+3. **Network Access → Add IP Address → Allow access from anywhere** (`0.0.0.0/0`).
+   Render (plan gratuito) no tiene IP de salida fija. El riesgo queda acotado porque el
+   usuario solo tiene `readWrite` en `xolos_analytics` y una contraseña aleatoria larga
+   (R-41). Si después se usa un plan con IP fija, se reemplaza por esas IPs.
+4. **Connect → Drivers**: copia la cadena `mongodb+srv://...` y **quítale el nombre de base**
+   de la ruta (debe terminar en `.mongodb.net/?retryWrites=true&w=majority`) y pon la contraseña del
+   usuario `xolos_api`. La base se indica aparte con `MONGODB_DB`; si la URI trae otra, la API
+   no arranca (R-33).
 
 ## 2. Render: crear el servicio
 
@@ -44,10 +56,10 @@ permiso solo sobre su base**.
    |---|---|---|
    | `NODE_ENV` | `production` | no |
    | `APP_NAME` | `Estudio Xolos` | no |
-   | `MONGODB_URI` | la cadena del paso 1.3 (sin nombre de base) | **sí** |
+   | `MONGODB_URI` | la cadena del paso 1.4 (sin nombre de base) | **sí** |
    | `MONGODB_DB` | `xolos_analytics` | no |
    | `JWT_SECRET` | 48 bytes aleatorios (ver abajo); se usa desde la etapa 5 (login) | **sí** |
-   | `CORS_ORIGIN` | el dominio del dashboard cuando exista; por ahora `http://localhost:4200` | no |
+   | `CORS_ORIGIN` | **provisionalmente `http://localhost:4200`**; cuando el dashboard esté publicado, cámbialo por su dominio (p. ej. `https://xolos-dashboard.netlify.app`) y vuelve a desplegar | no |
    | `TRUST_PROXY` | `1` | no |
    | `RATE_LIMIT_INGESTA_IP` | `300` (o vacío = 300) | no |
    | `RATE_LIMIT_INGESTA_KEY` | `1000` (o vacío = 1000) | no |
@@ -73,7 +85,7 @@ Los scripts corren en tu máquina contra Atlas. La URI **solo** va en tu `api/.e
 
 1. En `api/.env` (crea el archivo a partir de `api/.env.example` si no existe):
    ```dotenv
-   MONGODB_URI=<la misma cadena del paso 1.3>
+   MONGODB_URI=<la misma cadena del paso 1.4>
    MONGODB_DB=xolos_analytics
    ADMIN_EMAIL=<tu correo>
    ADMIN_PASSWORD=<mínimo 12 caracteres>
@@ -104,6 +116,11 @@ Los scripts corren en tu máquina contra Atlas. La URI **solo** va en tu `api/.e
 
 La primera petición después de un rato puede tardar ~1 minuto (el plan gratuito "duerme").
 
+> ⚠️ **No uses un monitor de ping 24/7** (UptimeRobot, cron-job.org, etc.) para mantener el
+> servicio despierto: consume casi todas las **750 horas gratuitas al mes del workspace** de
+> Render, que comparten todos tus servicios. Solo haz ping (abrir `/api/v1/salud`) **los días
+> de demo**, unos minutos antes de presentar.
+
 1. Salud:
    ```bash
    curl https://<tu-servicio>.onrender.com/api/v1/salud
@@ -131,9 +148,9 @@ La primera petición después de un rato puede tardar ~1 minuto (el plan gratuit
 | Síntoma (en los logs de Render o en el script) | Causa probable |
 |---|---|
 | `Configuración inválida: - MONGODB_DB: es obligatoria` | Falta la variable en Render o en tu `.env`. |
-| `la URI apunta a la base "X" pero MONGODB_DB es "xolos_analytics"` | La URI trae un nombre de base: quítalo (paso 1.3). |
-| `Server selection timed out` / el deploy se queda reiniciando | Atlas no permite la IP: revisa Network Access (paso 1.2). |
+| `la URI apunta a la base "X" pero MONGODB_DB es "xolos_analytics"` | La URI trae un nombre de base: quítalo (paso 1.4). |
+| `Server selection timed out` / el deploy se queda reiniciando | Atlas no permite la IP: revisa Network Access (paso 1.3). |
 | `bad auth : authentication failed` | Usuario o contraseña de Atlas incorrectos en la URI (si la contraseña tiene `@`, `:` o `/`, debe ir codificada). |
-| `not authorized on xolos_analytics` | El usuario no tiene `readWrite` sobre `xolos_analytics` (paso 1.1). |
+| `not authorized on xolos_analytics` | El usuario no tiene `readWrite` sobre `xolos_analytics` (paso 1.2). |
 | El script dice `La base de datos no es local...` | Es lo esperado sin `--confirmar` (paso 3.2). |
 | La primera petición tarda ~1 min | El servicio gratuito estaba dormido; las siguientes son rápidas. |
