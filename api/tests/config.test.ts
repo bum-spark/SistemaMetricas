@@ -14,8 +14,14 @@ describe('cargarConfig', () => {
       mongoUri: URI,
       mongoDb: 'xolos_analytics',
       trustProxy: 1,
-      limites: { ingestaPorIp: 300, ingestaPorKey: 1000, publicoPorIp: 600 },
+      limites: { ingestaPorIp: 300, ingestaPorKey: 1000, publicoPorIp: 600, loginPorIp: 5 },
+      jwtSecret: undefined,
     });
+  });
+
+  it('JWT_SECRET es opcional para los scripts pero, si viene, debe tener al menos 32 caracteres', () => {
+    expect(cargarConfig({ ...BASE, JWT_SECRET: 'x'.repeat(32) }).jwtSecret).toBe('x'.repeat(32));
+    expect(() => cargarConfig({ ...BASE, JWT_SECRET: 'corto' })).toThrow(/JWT_SECRET: debe tener al menos 32/);
   });
 
   it('permite ajustar trust proxy y los límites (prueba de carga)', () => {

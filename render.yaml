@@ -34,3 +34,5 @@ services:
         sync: false
       - key: RATE_LIMIT_PUBLICO_IP
         sync: false
+      - key: RATE_LIMIT_LOGIN_IP
+        sync: false

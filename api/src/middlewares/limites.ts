@@ -23,6 +23,7 @@ export interface Limitadores {
   ingestaPorIp: RequestHandler;
   ingestaPorKey: RequestHandler;
   publicoPorIp: RequestHandler;
+  loginPorIp: RequestHandler;
 }
 
 export function crearLimitadores(config: Config): Limitadores {
@@ -38,5 +39,12 @@ export function crearLimitadores(config: Config): Limitadores {
     }),
     // /salud y /docs: límite laxo (S-26).
     publicoPorIp: rateLimit({ ...responder429, limit: config.limites.publicoPorIp }),
+    // Login: intentos FALLIDOS por IP en 15 min (S-18); los exitosos no cuentan.
+    loginPorIp: rateLimit({
+      ...responder429,
+      windowMs: 15 * 60_000,
+      limit: config.limites.loginPorIp,
+      skipSuccessfulRequests: true,
+    }),
   };
 }

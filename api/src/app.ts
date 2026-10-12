@@ -2,11 +2,12 @@ import cors from 'cors';
 import express, { type Express } from 'express';
 import helmet from 'helmet';
 import swaggerUi from 'swagger-ui-express';
-import type { Config } from './config';
+import { ConfigInvalidaError, type Config } from './config';
 import './dominio/zodEs';
 import { crearLimitadores } from './middlewares/limites';
 import { crearManejadorErrores, rutaNoEncontrada } from './middlewares/manejoErrores';
 import { crearDocumentoOpenApi } from './openapi/documento';
+import { crearRutasAdmin } from './rutas/admin';
 import { crearRutasIngesta } from './rutas/ingesta';
 import { crearRutasSalud } from './rutas/salud';
 
@@ -15,6 +16,10 @@ export interface OpcionesApp {
 }
 
 export function crearApp(config: Config, opciones: OpcionesApp = {}): Express {
+  // Los scripts no necesitan JWT_SECRET; la API sí (firma los tokens del dashboard).
+  if (!config.jwtSecret) {
+    throw new ConfigInvalidaError(['JWT_SECRET: es obligatoria para la API (mínimo 32 caracteres)']);
+  }
   const app = express();
   const registrarError = opciones.registrarError ?? ((err: unknown) => console.error(err));
 
@@ -30,6 +35,7 @@ export function crearApp(config: Config, opciones: OpcionesApp = {}): Express {
   v1.use(['/salud', '/docs'], limitadores.publicoPorIp);
   v1.use(crearRutasSalud());
   v1.use(crearRutasIngesta(limitadores));
+  v1.use(crearRutasAdmin({ jwtSecret: config.jwtSecret, limiteLogin: limitadores.loginPorIp }));
 
   const documento = crearDocumentoOpenApi(config);
   v1.get('/docs/openapi.json', (_req, res) => {

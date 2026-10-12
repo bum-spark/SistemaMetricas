@@ -55,6 +55,10 @@ Aquí se anota lo que **no** está definido en `CLAUDE.md` o en `docs/`.
 | S-32 | Acceso de admins: `crear-admin` sin `--juegos` da acceso a todos los juegos existentes, y `crear-juego` agrega el juego nuevo a los `juegosPermitidos` de todos los admins activos (salvo `--sin-acceso`). Coherente con "un solo rol por ahora". | Que cada acceso se asigne a mano por admin. | Scripts `crear-admin` y `crear-juego`. |
 | S-33 | Contraseña de admin: mínimo 12 caracteres, bcrypt con 12 rondas; solo se lee de `ADMIN_PASSWORD` en el `.env`. | Otra política o rondas. | `seguridad/password.ts`. |
 | S-34 | Los scripts reciben el juego con `--juego <slug>` (en lugar de un argumento posicional) para que todos usen la misma forma. | `rotar-api-key <slug>`. | Solo la línea de comandos. |
+| S-42 | El JWT solo lleva el email (`sub`); `juegosPermitidos` y `activo` se releen de la base en cada petición. Desactivar un admin o quitarle un juego surte efecto al instante (cuesta una consulta por índice por petición). | `juegosPermitidos` dentro del token (doc anterior). | Middleware `autenticarAdmin`. |
+| S-43 | El límite de login cuenta solo intentos **fallidos** (5 por IP cada 15 min); un login exitoso no consume intentos. | Contar todos los intentos. | Limitador de login. |
+| S-44 | `tasaCompletado` de `/juegos` = jugadores distintos que completaron el último nivel ÷ jugadores del juego (todos los orígenes). | Sobre sesiones; solo jugadores con algún evento. | `listarJuegos`. |
+| S-45 | `JWT_SECRET` es opcional para los scripts (no la usan) y obligatoria para la API (mínimo 32 caracteres); sin ella la API no arranca. | Obligatoria siempre (los scripts la pedirían sin usarla). | `cargarConfig` y `crearApp`. |
 
 ---
 

@@ -1,4 +1,5 @@
 import type { Config } from '../config';
+import { openApiAdmin } from '../rutas/admin';
 import { openApiIngesta } from '../rutas/ingesta';
 import { openApiSalud } from '../rutas/salud';
 import { generarComponentes, type RutasOpenApi } from './registro';
@@ -6,7 +7,7 @@ import { generarComponentes, type RutasOpenApi } from './registro';
 import '../errores';
 
 // Cada módulo de rutas agrega aquí su fragmento de `paths`.
-const fragmentos: RutasOpenApi[] = [openApiSalud, openApiIngesta];
+const fragmentos: RutasOpenApi[] = [openApiSalud, openApiIngesta, openApiAdmin];
 
 export function crearDocumentoOpenApi(config: Config): Record<string, unknown> {
   return {
@@ -24,6 +25,7 @@ export function crearDocumentoOpenApi(config: Config): Record<string, unknown> {
       schemas: generarComponentes(),
       securitySchemes: {
         ApiKey: { type: 'apiKey', in: 'header', name: 'X-Api-Key', description: 'API key del juego (una por juego).' },
+        BearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', description: 'Token de /auth/login (expira en 8 h).' },
       },
     },
   };

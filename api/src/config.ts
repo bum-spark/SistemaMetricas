@@ -34,6 +34,11 @@ const esquemaEntorno = z
     RATE_LIMIT_INGESTA_IP: z.coerce.number().int().min(1).default(300),
     RATE_LIMIT_INGESTA_KEY: z.coerce.number().int().min(1).default(1000),
     RATE_LIMIT_PUBLICO_IP: z.coerce.number().int().min(1).default(600),
+    // Intentos fallidos de login por IP en 15 min (S-18).
+    RATE_LIMIT_LOGIN_IP: z.coerce.number().int().min(1).default(5),
+    // Firma de los JWT del dashboard. Opcional aquí porque los scripts no la usan;
+    // la API no arranca sin ella (crearApp). Mínimo 32 caracteres.
+    JWT_SECRET: z.string().min(32, 'debe tener al menos 32 caracteres').optional(),
   })
   .superRefine((env, ctx) => {
     const enUri = baseDeUri(env.MONGODB_URI);
@@ -58,7 +63,9 @@ export interface Config {
     ingestaPorIp: number;
     ingestaPorKey: number;
     publicoPorIp: number;
+    loginPorIp: number;
   };
+  jwtSecret: string | undefined;
 }
 
 export class ConfigInvalidaError extends Error {
@@ -94,6 +101,8 @@ export function cargarConfig(entorno: NodeJS.ProcessEnv = process.env): Config {
       ingestaPorIp: env.RATE_LIMIT_INGESTA_IP,
       ingestaPorKey: env.RATE_LIMIT_INGESTA_KEY,
       publicoPorIp: env.RATE_LIMIT_PUBLICO_IP,
+      loginPorIp: env.RATE_LIMIT_LOGIN_IP,
     },
+    jwtSecret: env.JWT_SECRET,
   };
 }

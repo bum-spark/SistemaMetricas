@@ -58,12 +58,13 @@ usuario, con permiso solo sobre esa base** (R-41).
    | `APP_NAME` | `Estudio Xolos` | no |
    | `MONGODB_URI` | la cadena del paso 1.4 (sin nombre de base) | **sí** |
    | `MONGODB_DB` | `xolos_analytics` | no |
-   | `JWT_SECRET` | 48 bytes aleatorios (ver abajo); se usa desde la etapa 5 (login) | **sí** |
+   | `JWT_SECRET` | 48 bytes aleatorios (ver abajo). **Obligatoria**: sin ella (o con menos de 32 caracteres) la API no arranca | **sí** |
    | `CORS_ORIGIN` | **provisionalmente `http://localhost:4200`**; cuando el dashboard esté publicado, cámbialo por su dominio (p. ej. `https://xolos-dashboard.netlify.app`) y vuelve a desplegar | no |
    | `TRUST_PROXY` | `1` | no |
    | `RATE_LIMIT_INGESTA_IP` | `300` (o vacío = 300) | no |
    | `RATE_LIMIT_INGESTA_KEY` | `1000` (o vacío = 1000) | no |
    | `RATE_LIMIT_PUBLICO_IP` | `600` (o vacío = 600) | no |
+   | `RATE_LIMIT_LOGIN_IP` | `5` (o vacío = 5): intentos fallidos de login por IP cada 15 min | no |
 
    Para generar `JWT_SECRET` en tu computadora:
    ```bash
@@ -137,9 +138,11 @@ La primera petición después de un rato puede tardar ~1 minuto (el plan gratuit
    cd api
    npm run postman:produccion -- --env-var baseUrl=https://<tu-servicio>.onrender.com/api/v1
    ```
-   La colección completa **sí crea datos con `origen: "real"`** (un jugador de prueba y sus
-   eventos). Córrela contra producción solo si aceptas esos datos; el borrado de jugador
-   (etapa 5) permite quitarlos después.
+   La colección completa crea un jugador de prueba con `origen: "real"` y al final lo borra
+   (carpeta "Administración" → "Borrar el jugador de prueba"). Necesita también `adminEmail` y
+   `adminPassword`: cárgalos en el entorno de Postman de tu computadora (no en el repositorio)
+   y córrela desde la app de Postman. Si se interrumpe antes del borrado, quedará ese jugador;
+   bórralo con el request "Borrar el jugador de prueba".
 5. Para compartir el resultado conmigo, pega solo: la respuesta de `/salud`, el resumen de
    Newman y la salida de los scripts **reemplazando la API key por `ak_***`**.
 

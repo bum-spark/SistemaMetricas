@@ -128,7 +128,7 @@ La sesión guarda dos relojes por separado, y cada uno se usa para una sola cosa
   **no se guarda** en la base de datos.
 - **Por API key:** tope alto de **1000 peticiones/min por key**, como protección si una key
   se filtra o un build tiene un bug que manda en bucle.
-- **Login de admin:** 5 intentos cada 15 min por IP (S-18).
+- **Login de admin:** 5 intentos **fallidos** cada 15 min por IP (S-18, S-43); los exitosos no cuentan. Configurable con `RATE_LIMIT_LOGIN_IP`.
 - **Configuración:** los límites y los saltos de proxy se leen de `RATE_LIMIT_INGESTA_IP`,
   `RATE_LIMIT_INGESTA_KEY`, `RATE_LIMIT_PUBLICO_IP` y `TRUST_PROXY` (ver `.env.example`);
   los valores por defecto son los de producción. Solo se cambian para la prueba de carga o
@@ -540,7 +540,9 @@ Todos con prefijo `/api/v1`. Errores con el formato de la sección 9.
 
 ### 7.2 Administración (la usa el dashboard) — auth: `Authorization: Bearer <JWT>`
 
-Si la ruta lleva `:juegoId` y ese juego no está en `juegosPermitidos` del admin → `403 SIN_PERMISO`.
+Si la ruta lleva `:juegoId`: si no es UUID v4 → `400`; si no está en `juegosPermitidos` del admin → `403 SIN_PERMISO`; si está permitido pero ya no existe → `404`.
+
+`resumen.tasaCompletado` = jugadores distintos con `nivel_fin` `completado` del último nivel (mayor `orden`) ÷ jugadores del juego, entre 0 y 1 (S-44). `jugadores` y `sesiones` cuentan todos los documentos del juego (reales y seed).
 
 | Método | Ruta                                  | Auth | Body / query                         | Respuesta                                                                                  |
 |--------|---------------------------------------|------|--------------------------------------|--------------------------------------------------------------------------------------------|
@@ -569,7 +571,7 @@ Valores inválidos → `400 VALIDACION_FALLIDA`.
 **Forma de respuesta de `/estadisticas/*`:**
 `200 { juegoId, filtros: { desde, hasta, buildVersion, plataforma }, datos: … }`
 
-JWT: expira en 8 h (S-13); payload `{ sub: email, juegosPermitidos }`.
+JWT: HS256 firmado con `JWT_SECRET`, expira en 8 h (S-13), emisor `xolos-analytics-api`, payload `{ sub: email }`. Los permisos (`juegosPermitidos`) y el estado del admin **no** van en el token: se releen de la base en cada petición, así desactivar un admin o quitarle un juego surte efecto al instante (S-42). Token ausente, inválido, de otro emisor, con `alg: none` o expirado → `401 NO_AUTENTICADO` (el mensaje distingue "expiró"). Login: mismo `401 CREDENCIALES_INVALIDAS` ("Correo o contraseña incorrectos.") para email inexistente, contraseña incorrecta o admin desactivado, con tiempo de respuesta equivalente.
 
 ---
 
