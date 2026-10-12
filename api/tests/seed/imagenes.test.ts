@@ -25,9 +25,7 @@ describe('imágenes provisionales de los niveles (A-07)', () => {
     const archivo = path.join(CARPETA_PUBLICA, ...n.catalogoNivel.imagenUrl!.split('/').filter(Boolean));
     expect(existsSync(archivo)).toBe(true);
     // Sin importar el fin de línea con que git haga checkout (CRLF en Windows).
-    expect(readFileSync(archivo, 'utf8').replace(/
-/g, '
-')).toBe(svgDeNivel(n.slug, n.catalogo, n.nivel));
+    expect(readFileSync(archivo, 'utf8').replace(/\r\n/g, '\n')).toBe(svgDeNivel(n.slug, n.catalogo, n.nivel));
   });
 
   it.each(niveles.map((n) => [`${n.slug}/${n.nivel.nivelId}`, n]))('%s: el viewBox coincide con los límites del catálogo (×10)', (_nombre, n) => {
