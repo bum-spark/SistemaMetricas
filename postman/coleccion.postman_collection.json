@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "API de métricas — Estudio Xolos",
-    "description": "Colección de la API de métricas (entrega 1). Contrato completo en docs/ESQUEMA_EVENTOS.md; documentación interactiva en {{baseUrl}}/docs.\n\nAntes de correrla: crea el juego con `npm run crear-juego -- --juego la-casa-del-bosque` (desde /api) y copia el juegoId y la API key al entorno. Corre las carpetas en orden: 'Crear sesión' guarda playerId y sessionId para los eventos.",
+    "description": "Colección de la API de métricas (entrega 1). Contrato completo en docs/ESQUEMA_EVENTOS.md; documentación interactiva en {{baseUrl}}/docs.\n\nAntes de correrla: crea el juego con `npm run crear-juego -- --juego la-casa-del-bosque` (desde /api) y copia el juegoId y la API key al entorno. Corre las carpetas en orden: 'Crear sesión' guarda playerId y sessionId para los eventos.\n\nDesde la terminal (en /api): `npm run postman -- --env-var juegoId=<juegoId> --env-var apiKey=<apiKey>` (agrega `--env-var baseUrl=...` si la API no está en http://localhost:3000/api/v1).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
