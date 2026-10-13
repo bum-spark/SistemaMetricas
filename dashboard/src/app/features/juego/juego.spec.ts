@@ -52,9 +52,25 @@ describe('Juego (/juegos/:slug)', () => {
     await m.asentar();
     expect(m.router.url).toBe('/juegos/juego-uno?plataforma=android');
 
-    m.el.querySelector<HTMLButtonElement>('button.limpiar')!.click();
+    const origen = m.el.querySelector<HTMLSelectElement>('#filtro-origen')!;
+    origen.value = 'seed';
+    origen.dispatchEvent(new Event('change'));
+    await m.asentar();
+    expect(m.router.url).toBe('/juegos/juego-uno?plataforma=android&origen=seed');
+
+    const limpiar = m.el.querySelector<HTMLButtonElement>('.limpiar__boton')!;
+    expect(limpiar.getAttribute('aria-label')).toBe(ES.filtros.limpiar);
+    limpiar.click();
     await m.asentar();
     expect(m.router.url).toBe('/juegos/juego-uno');
+    expect(limpiar.disabled).toBe(true);
+  });
+
+  it('cada control de la barra tiene nombre accesible', async () => {
+    const m = await montarVistaJuego(Vista);
+    for (const id of ['filtro-desde', 'filtro-hasta', 'filtro-build', 'filtro-plataforma', 'filtro-origen']) {
+      expect(m.el.querySelector('#' + id)?.getAttribute('aria-label')).toBeTruthy();
+    }
   });
 
   it('el atajo "7 días" pone desde = hoy - 6 días (UTC) y queda marcado', async () => {
@@ -62,7 +78,7 @@ describe('Juego (/juegos/:slug)', () => {
     vi.setSystemTime(new Date('2026-10-12T15:00:00Z'));
     try {
       const m = await montarVistaJuego(Vista);
-      const atajo = [...m.el.querySelectorAll<HTMLButtonElement>('.atajo')].find((b) => b.textContent === ES.filtros.dias7)!;
+      const atajo = [...m.el.querySelectorAll<HTMLButtonElement>('.segmento')].find((b) => b.textContent === ES.filtros.dias7)!;
       atajo.click();
       await m.asentar();
       expect(m.router.url).toBe('/juegos/juego-uno?desde=2026-10-06');

@@ -77,6 +77,7 @@ export interface FiltrosApi {
   hasta?: string;
   buildVersion?: string;
   plataforma?: string;
+  origen?: 'real' | 'seed';
 }
 
 export interface RespuestaEstadistica<T> {

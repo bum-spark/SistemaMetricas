@@ -2,16 +2,23 @@ import { ParamMap, Params } from '@angular/router';
 import { FiltrosApi } from '../../core/api/tipos';
 
 // Filtros de las vistas de un juego. La URL es la única fuente de verdad (DISENO_DASHBOARD.md §4
-// y §8): ?desde=AAAA-MM-DD&hasta=AAAA-MM-DD&buildVersion=&plataforma=. Las fechas son días UTC,
-// igual que la API; "hasta" incluye ese día completo.
+// y §8): ?desde=AAAA-MM-DD&hasta=AAAA-MM-DD&buildVersion=&plataforma=&origen=. Las fechas son
+// días UTC, igual que la API; "hasta" incluye ese día completo. `origen` null = todos.
+export type OrigenDatos = 'real' | 'seed';
+
 export interface FiltrosVista {
   desde: string | null;
   hasta: string | null;
   buildVersion: string | null;
   plataforma: string | null;
+  origen: OrigenDatos | null;
 }
 
-export const FILTROS_VACIOS: FiltrosVista = { desde: null, hasta: null, buildVersion: null, plataforma: null };
+export const FILTROS_VACIOS: FiltrosVista = { desde: null, hasta: null, buildVersion: null, plataforma: null, origen: null };
+
+function origenValido(valor: string | null): OrigenDatos | null {
+  return valor === 'real' || valor === 'seed' ? valor : null;
+}
 
 const DIA = /^\d{4}-\d{2}-\d{2}$/;
 const MS_DIA = 24 * 60 * 60 * 1000;
@@ -26,12 +33,13 @@ export function filtrosDeUrl(params: ParamMap): FiltrosVista {
     hasta: diaValido(params.get('hasta')),
     buildVersion: params.get('buildVersion') || null,
     plataforma: params.get('plataforma') || null,
+    origen: origenValido(params.get('origen')),
   };
 }
 
 // Para router.navigate: null quita el parámetro de la URL.
 export function filtrosAUrl(f: FiltrosVista): Params {
-  return { desde: f.desde, hasta: f.hasta, buildVersion: f.buildVersion, plataforma: f.plataforma };
+  return { desde: f.desde, hasta: f.hasta, buildVersion: f.buildVersion, plataforma: f.plataforma, origen: f.origen };
 }
 
 export function filtrosAApi(f: FiltrosVista): FiltrosApi {
@@ -47,6 +55,9 @@ export function filtrosAApi(f: FiltrosVista): FiltrosApi {
   }
   if (f.plataforma) {
     api.plataforma = f.plataforma;
+  }
+  if (f.origen) {
+    api.origen = f.origen;
   }
   return api;
 }
@@ -65,5 +76,7 @@ export function desdeUltimosDias(dias: number, ahora = new Date()): string {
 }
 
 export function filtrosIguales(a: FiltrosVista, b: FiltrosVista): boolean {
-  return a.desde === b.desde && a.hasta === b.hasta && a.buildVersion === b.buildVersion && a.plataforma === b.plataforma;
+  return (
+    a.desde === b.desde && a.hasta === b.hasta && a.buildVersion === b.buildVersion && a.plataforma === b.plataforma && a.origen === b.origen
+  );
 }

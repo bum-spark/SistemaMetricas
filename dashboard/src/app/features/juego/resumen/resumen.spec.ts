@@ -50,6 +50,7 @@ describe('Resumen (/juegos/:slug)', () => {
     expect(req.request.params.get('hasta')).toBe('2026-10-08T00:00:00.000Z');
     expect(req.request.params.get('plataforma')).toBe('android');
     expect(req.request.params.has('buildVersion')).toBe(false);
+    expect(req.request.params.has('origen')).toBe(false);
     peticion(m, 'embudo');
   });
 
