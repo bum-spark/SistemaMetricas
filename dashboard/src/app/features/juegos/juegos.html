@@ -1,0 +1,70 @@
+<header class="encabezado">
+  <h1 class="titulo">{{ textos.titulo }}</h1>
+  <p class="subtitulo">{{ textos.subtitulo }}</p>
+</header>
+
+<div aria-live="polite" [attr.aria-busy]="servicio.estado() === 'cargando'">
+  @switch (servicio.estado()) {
+    @case ('error') {
+      <xa-estado-error [titulo]="textos.errorTitulo" (reintentar)="reintentar()" />
+    }
+    @case ('listo') {
+      @if (servicio.juegos().length === 0) {
+        <xa-estado-vacio [titulo]="textos.vacioTitulo" [ayuda]="textos.vacioAyuda" />
+      } @else {
+        <ul class="cuadricula">
+          @for (juego of servicio.juegos(); track juego.juegoId) {
+            <li class="celda">
+              <a class="tarjeta" [routerLink]="['/juegos', juego.slug]">
+                <div class="tarjeta__cabecera">
+                  <xa-logo-juego [nombre]="juego.nombre" [logoUrl]="juego.logoUrl" tamano="tarjeta" [decorativo]="true" />
+                  <div class="tarjeta__identidad">
+                    <h2 class="tarjeta__nombre">{{ juego.nombre }}</h2>
+                    <div class="tarjeta__meta">
+                      <span class="tarjeta__version">{{ textos.version(juego.versionActual) }}</span>
+                      <xa-badge [tono]="juego.activo ? 'success' : 'neutro'">
+                        {{ juego.activo ? textos.activo : textos.inactivo }}
+                      </xa-badge>
+                    </div>
+                  </div>
+                </div>
+                <dl class="kpis">
+                  <div class="kpi">
+                    <dt>{{ textos.jugadores }}</dt>
+                    <dd class="cifras">{{ entero(juego.resumen.jugadores) }}</dd>
+                  </div>
+                  <div class="kpi">
+                    <dt>{{ textos.sesiones }}</dt>
+                    <dd class="cifras">{{ entero(juego.resumen.sesiones) }}</dd>
+                  </div>
+                  <div class="kpi">
+                    <dt>{{ textos.completado }}</dt>
+                    <dd class="cifras">{{ fraccion(juego.resumen.tasaCompletado) }}</dd>
+                  </div>
+                </dl>
+              </a>
+            </li>
+          }
+        </ul>
+      }
+    }
+    @default {
+      <ul class="cuadricula">
+        @for (n of esqueletos; track n) {
+          <li class="celda">
+            <div class="tarjeta tarjeta--esqueleto">
+              <div class="tarjeta__cabecera">
+                <xa-skeleton class="esqueleto-logo" />
+                <div class="tarjeta__identidad">
+                  <xa-skeleton class="esqueleto-linea" />
+                  <xa-skeleton class="esqueleto-linea esqueleto-linea--corta" />
+                </div>
+              </div>
+              <xa-skeleton class="esqueleto-kpis" />
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  }
+</div>

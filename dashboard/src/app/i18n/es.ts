@@ -3,6 +3,8 @@ export const ES = {
   marca: {
     analytics: 'Analytics',
     logoEstudio: (appName: string) => `Logo de ${appName}`,
+    logoJuego: (nombre: string) => `Logo de ${nombre}`,
+    irAJuegos: 'Ir a la lista de juegos',
   },
   login: {
     tituloPagina: 'Iniciar sesión',
@@ -21,5 +23,43 @@ export const ES = {
   },
   api: {
     despertando: 'El servidor se está despertando, puede tardar un minuto.',
+  },
+  marco: {
+    navegacion: 'Secciones del juego',
+    abrirMenu: 'Abrir menú',
+    cerrarMenu: 'Cerrar menú',
+    salir: 'Salir',
+    secciones: {
+      resumen: 'Resumen',
+      progresion: 'Progresión',
+      niveles: 'Niveles',
+      muertes: 'Muertes',
+      logros: 'Logros y exploración',
+    },
+  },
+  selector: {
+    etiqueta: 'Juego',
+    elegir: 'Elige un juego',
+    todos: 'Todos los juegos',
+    cambiar: (nombre: string) => `Juego actual: ${nombre}. Cambiar de juego`,
+  },
+  juegos: {
+    titulo: 'Juegos',
+    subtitulo: '¿Cómo va cada juego del estudio?',
+    version: (v: string) => `v${v}`,
+    activo: 'Activo',
+    inactivo: 'Inactivo',
+    jugadores: 'Jugadores',
+    sesiones: 'Sesiones',
+    completado: 'Completado',
+    abrir: (nombre: string) => `Abrir ${nombre}`,
+    vacioTitulo: 'No tienes juegos asignados',
+    vacioAyuda: 'Pide a un administrador que te dé acceso a un juego o registra uno con el script crear-juego.',
+    errorTitulo: 'No se pudo cargar la lista de juegos',
+  },
+  estados: {
+    errorTitulo: 'No se pudieron cargar los datos',
+    errorAyuda: 'Revisa tu conexión e inténtalo otra vez.',
+    reintentar: 'Reintentar',
   },
 } as const;

@@ -15,3 +15,23 @@ export interface RespuestaLogin {
   expiraEn: string;
   admin: Admin;
 }
+
+export type Origen = 'real' | 'seed' | 'todos';
+
+export interface ResumenJuego {
+  juegoId: string;
+  nombre: string;
+  slug: string;
+  logoUrl: string | null;
+  versionActual: string;
+  activo: boolean;
+  resumen: { jugadores: number; sesiones: number; tasaCompletado: number };
+}
+
+export interface ListaJuegos {
+  datos: ResumenJuego[];
+  pagina: number;
+  limite: number;
+  total: number;
+  origen: Origen;
+}

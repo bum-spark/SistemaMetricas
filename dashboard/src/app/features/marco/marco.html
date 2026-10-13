@@ -1,0 +1,62 @@
+<div class="marco" [class.marco--menu-abierto]="menuAbierto()">
+  <aside class="sidebar" id="marco-sidebar">
+    <a class="sidebar__marca" routerLink="/juegos" [attr.title]="textosMarca.irAJuegos">
+      <xa-marca class="marca-completa" variante="sidebar" />
+      <xa-marca class="marca-icono" variante="icono" />
+    </a>
+
+    @if (slug()) {
+      <nav class="sidebar__nav" [attr.aria-label]="textos.navegacion">
+        <ul>
+          @for (seccion of secciones; track seccion.ruta) {
+            <li>
+              <a
+                class="nav-item"
+                [routerLink]="rutaSeccion(seccion)"
+                routerLinkActive="nav-item--activo"
+                [routerLinkActiveOptions]="{ exact: !seccion.ruta }"
+                ariaCurrentWhenActive="page"
+                [attr.title]="seccion.etiqueta"
+              >
+                <lucide-icon [img]="seccion.icono" [size]="20" [strokeWidth]="1.75" aria-hidden="true" />
+                <span class="nav-item__texto">{{ seccion.etiqueta }}</span>
+              </a>
+            </li>
+          }
+        </ul>
+      </nav>
+    }
+
+    <div class="sidebar__usuario">
+      @if (admin(); as a) {
+        <span class="sidebar__admin" [attr.title]="a.email">{{ a.nombre }}</span>
+      }
+      <button type="button" class="nav-item nav-item--boton" [attr.title]="textos.salir" (click)="salir()">
+        <lucide-icon [img]="iconos.salir" [size]="20" [strokeWidth]="1.75" aria-hidden="true" />
+        <span class="nav-item__texto">{{ textos.salir }}</span>
+      </button>
+    </div>
+  </aside>
+
+  <div class="velo" aria-hidden="true" (click)="menuAbierto.set(false)"></div>
+
+  <div class="principal">
+    <header class="topbar">
+      <button
+        type="button"
+        class="topbar__menu"
+        aria-controls="marco-sidebar"
+        [attr.aria-expanded]="menuAbierto()"
+        [attr.aria-label]="menuAbierto() ? textos.cerrarMenu : textos.abrirMenu"
+        (click)="menuAbierto.set(!menuAbierto())"
+      >
+        <lucide-icon [img]="menuAbierto() ? iconos.cerrar : iconos.menu" [size]="20" [strokeWidth]="1.75" aria-hidden="true" />
+      </button>
+      <xa-selector-juego [slug]="slug()" />
+    </header>
+
+    <main class="contenido">
+      <router-outlet />
+    </main>
+  </div>
+</div>

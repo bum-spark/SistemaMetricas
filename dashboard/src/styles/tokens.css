@@ -104,6 +104,7 @@
   --icono-control: 16px;
   --icono-nav: 20px;
   --opacidad-deshabilitado: 0.45;
+  --opacidad-atenuado: 0.6;     /* imagen del mapa de calor (§5) y velo del menú móvil */
   --padding-tarjeta: 20px;
   --tactil-min: 40px;
 
