@@ -265,6 +265,22 @@ guardados durante la ingesta):
 - Son números de un equipo de desarrollo con MongoDB local. Render (plan gratuito) y Atlas M0
   agregan latencia de red y tienen menos CPU.
 
+## Seguridad y dependencias
+
+- **Secretos:** solo en `api/.env` (local) y en el panel de Render. El `.gitignore` ignora
+  `.env` y `.env.*` (menos `.env.example`), `node_modules/`, `dist/` y la configuración real
+  del SDK (`xolos-metricas.json`, en cualquier carpeta); el ejemplo
+  `sdk-unity/Configuracion/xolos-metricas.example.json` sí se versiona, sin valores.
+- **`npm audit --omit=dev`** (dependencias que llegan a producción): **0 vulnerabilidades** en
+  `api/` y en `dashboard/` (revisado el 2026-10-13).
+- **Dependencias de desarrollo:** el dashboard tiene 0. En la API, las altas y la crítica vienen
+  todas de **newman** (solo corre en local contra la colección propia) y hay moderadas de
+  newman y de autocannon (prueba de carga, local). La "corrección" de npm baja newman a una
+  versión mayor antigua, así que se dejan documentadas (S-65). Render instala y luego quita
+  las dependencias de desarrollo (`npm prune --omit=dev`), así que no llegan a producción.
+- **Dashboard:** CSP estricta (`script-src 'self'`, `connect-src` solo la API), HSTS,
+  `X-Frame-Options: DENY` y demás cabeceras en `dashboard/vercel.json` (S-60).
+
 ## Capturas del dashboard
 
 Con los datos del seed (semilla 42), verificadas con la misma CSP de producción.
