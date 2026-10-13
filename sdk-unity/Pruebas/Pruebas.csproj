@@ -1,0 +1,19 @@
+<!--
+  Pruebas del núcleo del SDK fuera de Unity (sin paquetes NuGet). Desde sdk-unity/:
+    dotnet run (con la opción project apuntando a Pruebas)               = pruebas unitarias
+    dotnet run (igual) e2e URL_BASE JUEGO_ID API_KEY                      = partida contra una API local
+  Ver docs/SDK_UNITY.md, sección "Pruebas".
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <InvariantGlobalization>false</InvariantGlobalization>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\Runtime\Nucleo\**\*.cs" Link="Nucleo\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>

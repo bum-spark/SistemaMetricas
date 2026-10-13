@@ -1,0 +1,8 @@
+{
+  "name": "com.estudioxolos.metricas",
+  "version": "1.0.0",
+  "displayName": "Métricas — Estudio Xolos",
+  "description": "Cliente de la plataforma de métricas de Estudio Xolos: sesión, eventos en lotes y reintentos. Ver docs/SDK_UNITY.md.",
+  "unity": "2021.3",
+  "author": { "name": "Estudio Xolos" }
+}

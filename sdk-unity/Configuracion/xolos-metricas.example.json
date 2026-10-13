@@ -1,0 +1,10 @@
+{
+  "urlBase": "http://localhost:3000/api/v1",
+  "juegoId": "",
+  "apiKey": "",
+  "buildVersion": "",
+  "plataforma": "",
+  "tamanoLote": 20,
+  "intervaloEnvioSegundos": 10,
+  "timeoutSegundos": 60
+}
