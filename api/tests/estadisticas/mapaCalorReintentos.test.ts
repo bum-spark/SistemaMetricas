@@ -110,13 +110,33 @@ describe('GET /estadisticas/:juegoId/reintentos', () => {
     expect(await promedio('1.0.1')).toBeLessThan(await promedio('1.0.0'));
   });
 
-  it('sin datos: cada nivel con sesiones 0 y valores null', async () => {
+  it('sin datos: cada nivel con sesiones 0, valores null y los 4 grupos de la distribución en 0', async () => {
     const res = await get(faro.juegoId, 'reintentos', { origen: 'real' });
+    const vacia = [
+      { minimo: 1, maximo: 1, sesiones: 0 },
+      { minimo: 2, maximo: 3, sesiones: 0 },
+      { minimo: 4, maximo: 6, sesiones: 0 },
+      { minimo: 7, maximo: null, sesiones: 0 },
+    ];
     expect(res.body.datos[0]).toEqual({
       nivelId: 'muelle',
-      pasaron: { sesiones: 0, promedioIntentos: null, maxIntentos: null },
-      seRindieron: { sesiones: 0, promedioIntentos: null, maxIntentos: null },
+      pasaron: { sesiones: 0, promedioIntentos: null, maxIntentos: null, distribucion: vacia },
+      seRindieron: { sesiones: 0, promedioIntentos: null, maxIntentos: null, distribucion: vacia },
     });
+  });
+
+  it('la distribución suma las sesiones de cada grupo y usa los límites 1, 2–3, 4–6 y 7+', async () => {
+    const datos = (await get(casa.juegoId, 'reintentos')).body.datos as {
+      pasaron: { sesiones: number; distribucion: { minimo: number; maximo: number | null; sesiones: number }[] };
+      seRindieron: { sesiones: number; distribucion: { sesiones: number }[] };
+    }[];
+    for (const nivel of datos) {
+      expect(nivel.pasaron.distribucion.map((g) => [g.minimo, g.maximo])).toEqual([[1, 1], [2, 3], [4, 6], [7, null]]);
+      expect(nivel.pasaron.distribucion.reduce((s, g) => s + g.sesiones, 0)).toBe(nivel.pasaron.sesiones);
+      expect(nivel.seRindieron.distribucion.reduce((s, g) => s + g.sesiones, 0)).toBe(nivel.seRindieron.sesiones);
+    }
+    // El seed tiene sesiones que pasan a la primera.
+    expect(datos[0]!.pasaron.distribucion[0]!.sesiones).toBeGreaterThan(0);
   });
 });
 
