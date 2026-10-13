@@ -179,7 +179,7 @@ de entorno que configurar en Vercel.
    22.x), aunque el proyecto diga 24.x. Vercel usa npm 10 con Node 22: instala sin problema el
    `package-lock.json` (generado con npm 11, S-54) porque `npm ci` no recalcula el árbol.
 3. **Deploy**. En los logs debe aparecer `Application bundle generation complete`. Anota el
-   dominio de producción, p. ej. `https://xolos-analytics.vercel.app` (Settings → Domains).
+   dominio de producción (Settings → Domains). En este proyecto: `https://sistemametricas-dashboard.vercel.app`.
 4. Cada push a `main` publica una versión nueva; las otras ramas generan *previews* con otra
    URL (esas no están en `CORS_ORIGIN`, así que no podrán hablar con la API; es lo esperado).
 
@@ -190,7 +190,7 @@ La API solo responde al navegador si el origen está en `CORS_ORIGIN`. Se mantie
 
 1. Render → servicio `xolos-analytics-api` → **Environment** → `CORS_ORIGIN` → valor:
    ```text
-   https://xolos-analytics.vercel.app,http://localhost:4200
+   https://sistemametricas-dashboard.vercel.app,http://localhost:4200
    ```
    (con tu dominio real de Vercel). Reglas: esquema + dominio, **sin `/` final ni ruta**,
    separados por coma; los espacios se ignoran. Si un origen está mal escrito la API no
@@ -198,8 +198,8 @@ La API solo responde al navegador si el origen está en `CORS_ORIGIN`. Se mantie
 2. **Save Changes** (Render vuelve a desplegar solo). Espera a ver `API escuchando...`.
 3. Comprueba desde tu computadora (no necesita credenciales):
    ```bash
-   curl -s -o /dev/null -D - -H "Origin: https://xolos-analytics.vercel.app" https://xolos-analytics-api.onrender.com/api/v1/salud | grep -i access-control-allow-origin
-   # access-control-allow-origin: https://xolos-analytics.vercel.app
+   curl -s -o /dev/null -D - -H "Origin: https://sistemametricas-dashboard.vercel.app" https://xolos-analytics-api.onrender.com/api/v1/salud | grep -i access-control-allow-origin
+   # access-control-allow-origin: https://sistemametricas-dashboard.vercel.app
    ```
 4. Abre el dashboard publicado, entra con tu admin y revisa la lista de juegos y el Resumen.
 

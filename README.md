@@ -208,7 +208,7 @@ variables de tu terminal o en el entorno de Postman de tu computadora, nunca en 
 | API | https://xolos-analytics-api.onrender.com/api/v1 |
 | Salud | https://xolos-analytics-api.onrender.com/api/v1/salud |
 | Documentación (Swagger / OpenAPI) | https://xolos-analytics-api.onrender.com/api/v1/docs |
-| Dashboard | Dominio de Vercel: *pendiente de publicar* (pasos en [`docs/DEPLOY.md`](docs/DEPLOY.md) §5) |
+| Dashboard | https://sistemametricas-dashboard.vercel.app |
 
 La API usa el plan gratuito de Render: después de un rato sin uso tarda ~1 minuto en
 despertar. Antes de una demo, abre `/salud` unos minutos antes.
