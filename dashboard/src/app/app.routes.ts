@@ -18,7 +18,10 @@ export const routes: Routes = [
       {
         path: 'juegos/:slug',
         loadComponent: () => import('./features/juego/juego').then((m) => m.Juego),
-        children: [{ path: '', loadComponent: () => import('./features/juego/resumen/resumen').then((m) => m.Resumen) }],
+        children: [
+          { path: '', loadComponent: () => import('./features/juego/resumen/resumen').then((m) => m.Resumen) },
+          { path: 'progresion', loadComponent: () => import('./features/juego/progresion/progresion').then((m) => m.Progresion) },
+        ],
       },
     ],
   },

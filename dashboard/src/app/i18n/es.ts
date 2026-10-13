@@ -125,6 +125,23 @@ export const ES = {
     cargadoHace: (minutos: number) =>
       minutos < 1 ? 'Datos cargados hace menos de 1 min' : minutos < 60 ? `Datos cargados hace ${minutos} min` : `Datos cargados hace ${Math.floor(minutos / 60)} h`,
   },
+  progresion: {
+    titulo: 'Progresión',
+    pregunta: '¿Dónde se pierde la gente?',
+    embudoTitulo: 'Embudo de progresión',
+    embudoPregunta: '¿Cuántos jugadores llegan a cada nivel y cuántos terminan?',
+    embudoAyuda: 'Jugadores distintos que empezaron cada nivel (en el orden del catálogo) y que completaron el último. Las insignias marcan la caída más grande y la severidad de cada caída.',
+    tablaTitulo: 'Detalle por paso',
+    tablaPregunta: '¿Qué tanto se pierde entre un paso y el siguiente?',
+    paso: 'Paso',
+    jugadores: 'Jugadores',
+    delInicio: '% del inicio',
+    delAnterior: '% del paso anterior',
+    caida: 'Caída',
+    diagnostico: 'Diagnóstico',
+    perdidos: (n: string) => `${n} jugadores`,
+    altEmbudo: (inicio: string, fin: string, pct: string) => `Embudo: empiezan ${inicio} jugadores y terminan ${fin} (${pct}).`,
+  },
   insignias: {
     critica: 'Crítica',
     alta: 'Alta',

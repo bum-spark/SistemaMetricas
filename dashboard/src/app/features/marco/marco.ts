@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { LayoutDashboard, LogOut, LucideAngularModule, LucideIconData, Menu, X } from 'lucide-angular';
+import { Funnel, LayoutDashboard, LogOut, LucideAngularModule, LucideIconData, Menu, X } from 'lucide-angular';
 import { filter, map } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { JuegosService } from '../../core/juegos/juegos.service';
@@ -18,8 +18,11 @@ interface Seccion {
 // Secciones de un juego, en el orden de DISENO_DASHBOARD.md §3. La ruta es relativa a
 // /juegos/:slug. Solo se listan las pantallas ya construidas: cada una se agrega aquí (en su
 // lugar del orden) en el mismo commit que la construye, para no enlazar vistas vacías.
-// Pendientes: Progresión, Niveles, Muertes, Logros y exploración.
-const SECCIONES: readonly Seccion[] = [{ ruta: '', etiqueta: ES.marco.secciones.resumen, icono: LayoutDashboard }];
+// Pendientes: Niveles, Muertes, Logros y exploración.
+const SECCIONES: readonly Seccion[] = [
+  { ruta: '', etiqueta: ES.marco.secciones.resumen, icono: LayoutDashboard },
+  { ruta: 'progresion', etiqueta: ES.marco.secciones.progresion, icono: Funnel },
+];
 
 // Slug del juego en la URL actual (/juegos/:slug/...), o null en /juegos.
 export function slugDeUrl(url: string): string | null {
