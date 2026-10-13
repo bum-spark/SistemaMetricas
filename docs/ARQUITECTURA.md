@@ -92,7 +92,8 @@ Supuestos para dimensionar (S-30):
 A 1x todo cabe en el plan gratuito: una instancia de API y Atlas M0 (512 MB, unos 2 meses
 de eventos a este ritmo).
 
-**Medido** (prueba de carga, sección 5): una instancia sostuvo 113.5 lotes/s de 20 eventos
+**Medido** (prueba de carga, sección 5; máquina de desarrollo con MongoDB local, como
+referencia del código y no como capacidad de producción): una instancia sostuvo 113.5 lotes/s de 20 eventos
 (≈ 2 270 eventos/s) en un equipo de desarrollo con MongoDB local; el 1x pide unos pocos
 lotes por segundo en el pico. El cuello de botella no es la ingesta sino la **lectura**:
 el embudo pasó de p50 222 ms con 5 000 eventos a p50 1.3 s con 69 120 eventos bajo 50
@@ -157,8 +158,11 @@ API y autocannon en el mismo equipo; 30 s por escenario, 50 conexiones, lotes de
   aperturas de sesión, que cuentan contra el mismo límite) y el resto recibió 429.
 - La lectura se degrada con el volumen de eventos crudos: es el primer punto a atacar con el
   precálculo de "Cómo crece" (10x).
-- Sin red de por medio: en Render (plan gratuito) y Atlas M0 hay más latencia y menos CPU.
-  Detalle y comandos en el README.
+- **Alcance:** se midió en una máquina de desarrollo con MongoDB local, con la API y autocannon
+  en el mismo equipo (sin red de por medio). El plan gratuito de Render (CPU compartida) y
+  Atlas M0 (cluster compartido, con latencia de red) darán menos; por eso estas cifras sirven
+  como referencia del comportamiento del código y no como capacidad de producción. Detalle y
+  comandos en el README.
 - **Multi-juego:** `seed-datos` crea La Casa del Bosque y un segundo juego ficticio con
   catálogo distinto; el dashboard muestra los dos sin cambios de código.
 - **Contrato verificable:** OpenAPI en `/api/v1/docs`, generado desde los mismos esquemas

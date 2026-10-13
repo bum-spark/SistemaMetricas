@@ -24,6 +24,8 @@ código.
 - [Pruebas: tests, lint y Newman](#pruebas-tests-lint-y-newman)
 - [URLs públicas](#urls-públicas)
 - [Prueba de carga](#prueba-de-carga)
+- [Limitaciones conocidas](#limitaciones-conocidas)
+- [Seguridad y dependencias](#seguridad-y-dependencias)
 - [Capturas del dashboard](#capturas-del-dashboard)
 - [Documentación](#documentación)
 
@@ -262,8 +264,32 @@ guardados durante la ingesta):
   con 69 120, p50 de 1.3 s. El embudo se calcula al consultar recorriendo los eventos del
   juego. Para 10x–100x de volumen hay que precalcular (ver "Cómo crece" en
   [`docs/ARQUITECTURA.md`](docs/ARQUITECTURA.md)).
-- Son números de un equipo de desarrollo con MongoDB local. Render (plan gratuito) y Atlas M0
-  agregan latencia de red y tienen menos CPU.
+- **Alcance de estas cifras:** se midieron en una máquina de desarrollo con MongoDB local,
+  con la API y autocannon en el mismo equipo (sin red de por medio). El plan gratuito de
+  Render (CPU compartida) y Atlas M0 (cluster compartido, con latencia de red) darán menos.
+  Por eso sirven como **referencia del comportamiento del código** (dónde está el cuello de
+  botella, que el rate limit responde 429), **no como capacidad de producción**.
+
+## Limitaciones conocidas
+
+- **Fechas en días UTC (S-59):** los filtros de fecha y los atajos "7 días"/"30 días" usan días
+  UTC, igual que la API. Para quien está en UTC-6, "hoy" cambia a las 18:00 hora local y un día
+  filtrado va de 18:00 del día anterior a 17:59.
+- **Lectura sin precálculo:** las estadísticas se calculan al consultar sobre los eventos
+  crudos. Con decenas de miles de eventos y muchas consultas a la vez se vuelven lentas (en la
+  prueba de carga, el embudo pasó de p50 222 ms a 1.3 s). El siguiente paso es precalcular
+  resúmenes ([`docs/ARQUITECTURA.md`](docs/ARQUITECTURA.md), "Cómo crece").
+- **Plan gratuito que duerme el servicio:** la API en Render se duerme sin uso y la primera
+  petición tarda ~1 minuto. El dashboard avisa ("El servidor se está despertando") y el login
+  muestra el estado de la API; antes de una demo hay que abrir `/salud` unos minutos antes.
+- **Accesibilidad:** hay foco visible, navegación con teclado en tabs y controles, alternativa
+  textual en las gráficas y contraste revisado con los tokens, pero **falta una pasada
+  completa con lector de pantalla**.
+- **Fuera de la entrega 1:** los endpoints `abandono`, `tutorial`, `atencion`, `versiones` y
+  `rendimiento` (diseñados en `docs/ESQUEMA_EVENTOS.md` §10.8–10.12, responden 404); la pantalla
+  "Builds y rendimiento"; la tabla de zonas calientes y el control de intensidad del mapa de
+  calor; coleccionables encontrados vs disponibles; vista comparativa entre juegos; modo
+  claro. El detalle y el porqué están en [`docs/ARQUITECTURA.md`](docs/ARQUITECTURA.md) §6.
 
 ## Seguridad y dependencias
 
