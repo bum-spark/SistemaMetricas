@@ -1,5 +1,7 @@
-// Desarrollo local: la API corre en el puerto 3000 (npm run dev en /api).
+// Desarrollo local (`npm start`): siempre la API local del puerto 3000 (`npm run dev` en /api),
+// para que nunca se toquen datos reales por accidente. Contra la API de producción:
+// `npm run start:produccion` (usa environment.ts).
 export const environment = {
   appName: 'Estudio Xolos',
-  apiUrl: 'https://xolos-analytics-api.onrender.com/api/v1',
+  apiUrl: 'http://localhost:3000/api/v1',
 };
