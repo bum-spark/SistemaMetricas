@@ -21,6 +21,7 @@ export const routes: Routes = [
         children: [
           { path: '', loadComponent: () => import('./features/juego/resumen/resumen').then((m) => m.Resumen) },
           { path: 'progresion', loadComponent: () => import('./features/juego/progresion/progresion').then((m) => m.Progresion) },
+          { path: 'niveles', loadComponent: () => import('./features/juego/niveles/niveles').then((m) => m.Niveles) },
         ],
       },
     ],

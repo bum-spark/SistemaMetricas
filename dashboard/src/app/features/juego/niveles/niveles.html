@@ -1,0 +1,63 @@
+<xa-cabecera [titulo]="textos.titulo" [pregunta]="textos.pregunta" [cargadoEn]="cargadoEn()" />
+
+<div aria-live="polite" [attr.aria-busy]="cargando()">
+  @if (conError()) {
+    <xa-estado-error (reintentar)="reintentar()" />
+  } @else if (!cargando() && sinDatos()) {
+    <xa-estado-vacio [titulo]="textosJuego.sinDatosTitulo" [ayuda]="textosJuego.sinDatosAyuda">
+      @if (conFiltros()) {
+        <button xa-boton type="button" variante="secundario" (click)="limpiarFiltros()">{{ textosFiltros.limpiar }}</button>
+      }
+    </xa-estado-vacio>
+  } @else {
+    <div class="kpis">
+      <xa-kpi [etiqueta]="textos.kpiMasLargo" tipo="texto" [valor]="kpis().masLargo" [attr.title]="kpis().masLargo" [contexto]="kpis().masLargoContexto" [cargando]="cargando()" />
+      <xa-kpi [etiqueta]="textos.kpiIntentos" [valor]="kpis().intentos" [contexto]="textos.kpiIntentosContexto" [cargando]="cargando()" />
+      <xa-kpi [etiqueta]="textos.kpiLimpia" [valor]="kpis().limpia" [contexto]="kpis().limpiaContexto" [cargando]="cargando()" />
+      <xa-kpi [etiqueta]="textos.kpiRendidos" tipo="texto" [valor]="kpis().masRendido" [attr.title]="kpis().masRendido" [contexto]="kpis().masRendidoContexto" [cargando]="cargando()" />
+    </div>
+
+    <div class="graficas">
+      <xa-tarjeta class="col-6" [titulo]="textos.tiempoTitulo" [pregunta]="textos.tiempoPregunta" [ayuda]="textos.tiempoAyuda">
+        @if (cargando()) {
+          <xa-skeleton class="esqueleto-grafica" />
+        } @else {
+          <xa-chart class="grafica" [datos]="datosTiempo()" [opciones]="opcionesTiempo()" [etiquetaAccesible]="altTiempo()" />
+        }
+      </xa-tarjeta>
+
+      <xa-tarjeta class="col-6" [titulo]="textos.distribucionTitulo" [pregunta]="textos.distribucionPregunta" [ayuda]="textos.distribucionAyuda">
+        @if (cargando()) {
+          <xa-skeleton class="esqueleto-grafica" />
+        } @else {
+          <xa-chart class="grafica" [datos]="datosGrupos()" [opciones]="opcionesGrupos()" [etiquetaAccesible]="altGrupos()" />
+        }
+      </xa-tarjeta>
+
+      <xa-tarjeta class="col-12" [titulo]="textos.tablaTitulo" [pregunta]="textos.tablaPregunta">
+        @if (cargando()) {
+          <xa-skeleton class="esqueleto-tabla" />
+        } @else {
+          <xa-tabla [columnas]="columnas" [filas]="filas()" [titulo]="textos.tablaTitulo">
+            <ng-template xaCelda="nivel" let-fila>
+              <span class="nivel">
+                <span class="nivel__numero cifras">{{ fila.orden }}</span>
+                <span class="nivel__textos">
+                  <span class="nivel__nombre">{{ fila.nombre }}</span>
+                  @if (fila.descripcion) {
+                    <span class="nivel__descripcion">{{ fila.descripcion }}</span>
+                  }
+                </span>
+              </span>
+            </ng-template>
+            <ng-template xaCelda="diagnostico" let-fila>
+              @if (fila.insignia) {
+                <xa-insignia [insignia]="fila.insignia" alinear="derecha" />
+              }
+            </ng-template>
+          </xa-tabla>
+        }
+      </xa-tarjeta>
+    </div>
+  }
+</div>

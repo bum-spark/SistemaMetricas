@@ -8,6 +8,13 @@ const sinDecimales = new Intl.NumberFormat(LOCALE, { maximumFractionDigits: 0 })
 
 export const SIN_DATO = '—';
 
+const decimales = new Intl.NumberFormat(LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+// Número con dos decimales (p. ej. intentos promedio: 1.42).
+export function formatearDecimal(valor: number | null | undefined): string {
+  return valor === null || valor === undefined || !Number.isFinite(valor) ? SIN_DATO : decimales.format(valor);
+}
+
 export function formatearEntero(valor: number | null | undefined): string {
   return valor === null || valor === undefined || !Number.isFinite(valor) ? SIN_DATO : enteros.format(valor);
 }

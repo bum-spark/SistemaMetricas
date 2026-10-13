@@ -13,7 +13,7 @@ import { Skeleton } from '../estado/estados';
       <xa-skeleton class="esqueleto-cifra" />
       <xa-skeleton class="esqueleto-contexto" />
     } @else {
-      <p class="cifra cifras">{{ valor() }}</p>
+      <p class="cifra cifras" [class.cifra--texto]="tipo() === 'texto'">{{ valor() }}</p>
       <p class="contexto">{{ contexto() || ' ' }}</p>
     }
   `,
@@ -42,6 +42,14 @@ import { Skeleton } from '../estado/estados';
       line-height: var(--lh-kpi);
       font-weight: var(--fw-semibold);
     }
+    /* Valor que es un nombre (p. ej. un nivel): estilo de título de sección para que no se parta. */
+    .cifra--texto {
+      font-size: var(--fs-titulo-seccion);
+      line-height: var(--lh-kpi);
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
     .contexto {
       min-height: var(--lh-secundario);
       font-size: var(--fs-secundario);
@@ -57,4 +65,5 @@ export class Kpi {
   readonly valor = input<string>('');
   readonly contexto = input<string | null>(null);
   readonly cargando = input(false);
+  readonly tipo = input<'cifra' | 'texto'>('cifra');
 }
