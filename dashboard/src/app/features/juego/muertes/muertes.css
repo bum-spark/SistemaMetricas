@@ -1,0 +1,33 @@
+/* KPIs en fila de 4 (2 en tablet, 1 en móvil) (§3). */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+@media (max-width: 1023px) {
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 639px) {
+  .kpis { grid-template-columns: minmax(0, 1fr); }
+}
+
+.pila {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.grafica {
+  --alto-grafica: calc(var(--space-8) * 4);
+}
+
+.esqueleto-grafica {
+  height: calc(var(--space-8) * 4);
+}
+
+.esqueleto-tabla {
+  height: calc(var(--space-8) * 3);
+}

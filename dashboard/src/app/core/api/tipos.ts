@@ -132,3 +132,11 @@ export interface ReintentosNivel {
   pasaron: GrupoReintentos;
   seRindieron: GrupoReintentos;
 }
+
+export interface MuertesNivelCausa {
+  nivelId: string;
+  causa: string;
+  muertes: number;
+  jugadores: number;
+  muertesPorJugador: number;
+}
