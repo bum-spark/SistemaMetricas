@@ -26,6 +26,45 @@
         }
       </xa-tarjeta>
 
+      <xa-tarjeta [titulo]="textos.mapaTitulo" [pregunta]="textos.mapaPregunta" [ayuda]="textos.mapaAyuda">
+        <div class="controles-mapa">
+          <label class="control-mapa">
+            <span class="control-mapa__etiqueta" aria-hidden="true">{{ textos.nivelMapa }}</span>
+            <select id="mapa-nivel" [attr.aria-label]="textos.nivelMapa" (change)="cambiarMapa({ nivelId: valor($event) })">
+              @for (n of nivelesCatalogo(); track n.nivelId) {
+                <option [value]="n.nivelId" [selected]="n.nivelId === nivelMapa()">{{ n.nombre }}</option>
+              }
+            </select>
+          </label>
+          <label class="control-mapa">
+            <span class="control-mapa__etiqueta" aria-hidden="true">{{ textos.celdaMapa }}</span>
+            <select id="mapa-celda" [attr.aria-label]="textos.celdaMapa" (change)="cambiarMapa({ celda: +valor($event) })">
+              @for (c of celdas; track c) {
+                <option [value]="c" [selected]="c === celdaMapa()">{{ textos.celdaOpcion(c) }}</option>
+              }
+            </select>
+          </label>
+          <xa-tabs [etiqueta]="textos.causasMapa" [opciones]="opcionesCausa()" [(seleccion)]="causaMapa" />
+        </div>
+        @if (mapaError()) {
+          <xa-estado-error (reintentar)="reintentarMapa()" />
+        } @else if (mapaCargando() || !datosMapa()) {
+          <xa-skeleton class="esqueleto-mapa" />
+        } @else {
+          @if (celdasMapa().length === 0) {
+            <p class="sin-muertes">{{ textos.sinMuertesNivel }}</p>
+          }
+          <xa-mapa-calor
+            [celdas]="celdasMapa()"
+            [celda]="datosMapa()!.celda"
+            [limites]="datosMapa()!.limites"
+            [imagenUrl]="datosMapa()!.imagenUrl"
+            [nombreCausa]="nombreCausa"
+            [alternativa]="altMapa()"
+          />
+        }
+      </xa-tarjeta>
+
       <xa-tarjeta [titulo]="textos.tablaTitulo" [pregunta]="textos.tablaPregunta">
         @if (cargando()) {
           <xa-skeleton class="esqueleto-tabla" />

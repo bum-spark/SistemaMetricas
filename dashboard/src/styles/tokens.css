@@ -37,6 +37,12 @@
   --warning: #E8B84A;  --warning-soft: rgba(232, 184, 74, 0.14);
   --danger:  #EF5D5D;  --danger-soft:  rgba(239, 93, 93, 0.14);
 
+  /* Escala secuencial del mapa de calor (§5), de frío a caliente */
+  --calor-1: #3B1E12;
+  --calor-2: #8A3A12;
+  --calor-3: #F08A3C;
+  --calor-4: #FFD08A;
+
   /* Foco */
   --focus-ring: 0 0 0 2px var(--bg-0), 0 0 0 4px var(--petal);
 

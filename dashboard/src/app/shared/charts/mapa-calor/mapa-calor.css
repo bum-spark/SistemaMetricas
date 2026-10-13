@@ -1,0 +1,65 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.lienzo {
+  position: relative;
+  width: 100%;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--bg-0);
+}
+
+canvas {
+  display: block;
+  margin: 0 auto;
+  cursor: crosshair;
+}
+
+.aviso {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--bg-1);
+  color: var(--text-2);
+  font-size: var(--fs-etiqueta);
+  line-height: var(--lh-etiqueta);
+}
+
+.pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+}
+
+.lectura {
+  min-height: var(--lh-mono);
+  font-family: var(--font-mono);
+  font-size: var(--fs-mono);
+  line-height: var(--lh-mono);
+  color: var(--text-2);
+}
+
+/* Leyenda de la escala secuencial (§5). */
+.escala {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-3);
+  font-size: var(--fs-etiqueta);
+  line-height: var(--lh-etiqueta);
+}
+
+.escala__barra {
+  width: calc(var(--space-8) * 2);
+  height: var(--space-2);
+  border-radius: var(--radius-full);
+  background: linear-gradient(90deg, var(--calor-1), var(--calor-2), var(--calor-3), var(--calor-4));
+}

@@ -147,3 +147,26 @@ export interface LogroObtenido {
   jugadores: number;
   porcentaje: number; // 0–100 respecto a los jugadores con eventos en el filtro
 }
+
+export interface LimitesNivel {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+}
+
+export interface CeldaMapaCalor {
+  x: number; // esquina inferior izquierda, unidades de mundo
+  y: number;
+  causa: string;
+  muertes: number;
+}
+
+export interface DatosMapaCalor {
+  nivelId: string;
+  imagenUrl: string | null;
+  limites: LimitesNivel | null;
+  celda: number;
+  totalMuertes: number;
+  celdas: CeldaMapaCalor[];
+}

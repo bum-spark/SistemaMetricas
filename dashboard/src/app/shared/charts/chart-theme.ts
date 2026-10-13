@@ -5,6 +5,29 @@ import type { ChartOptions } from 'chart.js';
 // semánticos) se leen de los tokens CSS en tiempo de ejecución.
 export const PALETA_CATEGORICA = ['#56B4E9', '#E69F00', '#2FBF94', '#CC79A7', '#F0E442', '#E8743B'] as const;
 
+// Escala secuencial del mapa de calor (§5), de frío a caliente: vive en tokens.css
+// (--calor-1 … --calor-4) para que la leyenda en CSS y el canvas usen los mismos colores.
+export type Rgb = [number, number, number];
+
+function aRgb(hex: string): Rgb {
+  const n = parseInt(hex.replace('#', ''), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+export function escalaCalor(): Rgb[] {
+  return [1, 2, 3, 4].map((i) => aRgb(token(`--calor-${i}`) || '#000000'));
+}
+
+// Color de la escala para t entre 0 y 1 (interpolación lineal entre sus puntos).
+export function colorCalor(t: number, escala: Rgb[]): Rgb {
+  const x = Math.max(0, Math.min(1, t)) * (escala.length - 1);
+  const i = Math.min(escala.length - 2, Math.floor(x));
+  const f = x - i;
+  const a = escala[i]!;
+  const b = escala[i + 1]!;
+  return [0, 1, 2].map((k) => Math.round(a[k]! + (b[k]! - a[k]!) * f)) as Rgb;
+}
+
 // Color por posición en el catálogo (el 1.º nivel o la 1.ª causa toma el color 1…), nunca por nombre.
 export function colorCategorico(posicion: number): string {
   return PALETA_CATEGORICA[posicion % PALETA_CATEGORICA.length]!;
