@@ -23,6 +23,7 @@ export const routes: Routes = [
           { path: 'progresion', loadComponent: () => import('./features/juego/progresion/progresion').then((m) => m.Progresion) },
           { path: 'niveles', loadComponent: () => import('./features/juego/niveles/niveles').then((m) => m.Niveles) },
           { path: 'muertes', loadComponent: () => import('./features/juego/muertes/muertes').then((m) => m.Muertes) },
+          { path: 'logros', loadComponent: () => import('./features/juego/logros/logros').then((m) => m.Logros) },
         ],
       },
     ],

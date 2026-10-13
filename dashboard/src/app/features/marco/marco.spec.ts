@@ -70,8 +70,8 @@ describe('Marco', () => {
   it('dentro de un juego: solo las secciones construidas, con la activa marcada, y el juego en el selector', async () => {
     const { el } = await montar('/juegos/juego-uno');
     const items = [...el.querySelectorAll<HTMLAnchorElement>('nav a')];
-    expect(items.map((a) => a.textContent?.trim())).toEqual([ES.marco.secciones.resumen, ES.marco.secciones.progresion, ES.marco.secciones.niveles, ES.marco.secciones.muertes]);
-    expect(items.map((a) => a.getAttribute('href'))).toEqual(['/juegos/juego-uno', '/juegos/juego-uno/progresion', '/juegos/juego-uno/niveles', '/juegos/juego-uno/muertes']);
+    expect(items.map((a) => a.textContent?.trim())).toEqual([ES.marco.secciones.resumen, ES.marco.secciones.progresion, ES.marco.secciones.niveles, ES.marco.secciones.muertes, ES.marco.secciones.logros]);
+    expect(items.map((a) => a.getAttribute('href'))).toEqual(['/juegos/juego-uno', '/juegos/juego-uno/progresion', '/juegos/juego-uno/niveles', '/juegos/juego-uno/muertes', '/juegos/juego-uno/logros']);
     expect(el.querySelector('nav [aria-current="page"]')?.textContent?.trim()).toBe(ES.marco.secciones.resumen);
     const selector = el.querySelector('xa-selector-juego')!;
     expect(selector.textContent).toContain('Juego Uno');

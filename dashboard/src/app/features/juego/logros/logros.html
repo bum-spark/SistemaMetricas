@@ -1,0 +1,51 @@
+<xa-cabecera [titulo]="textos.titulo" [pregunta]="textos.pregunta" [cargadoEn]="cargadoEn()" />
+
+<div aria-live="polite" [attr.aria-busy]="cargando()">
+  @if (conError()) {
+    <xa-estado-error (reintentar)="reintentar()" />
+  } @else if (!cargando() && sinDatos()) {
+    <xa-estado-vacio [titulo]="textosJuego.sinDatosTitulo" [ayuda]="textosJuego.sinDatosAyuda">
+      @if (conFiltros()) {
+        <button xa-boton type="button" variante="secundario" (click)="limpiarFiltros()">{{ textosFiltros.limpiar }}</button>
+      }
+    </xa-estado-vacio>
+  } @else {
+    <div class="kpis">
+      <xa-kpi [etiqueta]="textos.kpiObtenidos" [valor]="kpis().obtenidos" [contexto]="kpis().obtenidosContexto" [cargando]="cargando()" />
+      <xa-kpi [etiqueta]="textos.kpiComun" tipo="texto" [valor]="kpis().comun" [attr.title]="kpis().comun" [contexto]="kpis().comunContexto" [cargando]="cargando()" />
+      <xa-kpi [etiqueta]="textos.kpiRaro" tipo="texto" [valor]="kpis().raro" [attr.title]="kpis().raro" [contexto]="kpis().raroContexto" [cargando]="cargando()" />
+      <xa-kpi [etiqueta]="textos.kpiSinObtener" [valor]="kpis().sinObtener" [contexto]="kpis().sinObtenerContexto" [cargando]="cargando()" />
+    </div>
+
+    <xa-tarjeta [titulo]="textos.listaTitulo" [pregunta]="textos.listaPregunta" [ayuda]="textos.listaAyuda">
+      @if (cargando()) {
+        <xa-skeleton class="esqueleto-lista" />
+      } @else {
+        <ol class="lista">
+          @for (logro of filas(); track logro.logroId) {
+            <li class="logro">
+              <div class="logro__cabecera">
+                <div class="logro__textos">
+                  <span class="logro__nombre">
+                    {{ logro.nombre }}
+                    @if (logro.rareza) {
+                      <xa-insignia [insignia]="logro.rareza" />
+                    }
+                  </span>
+                  @if (logro.descripcion) {
+                    <span class="logro__descripcion">{{ logro.descripcion }}</span>
+                  }
+                </div>
+                <span class="logro__valor cifras">{{ textos.jugadores(entero(logro.jugadores)) }} · {{ porcentaje(logro.porcentaje) }}</span>
+              </div>
+              <svg class="barra" aria-hidden="true" focusable="false">
+                <rect class="barra__fondo" x="0" y="0" width="100%" height="100%" />
+                <rect class="barra__valor" x="0" y="0" [attr.width]="ancho(logro.porcentaje)" height="100%" />
+              </svg>
+            </li>
+          }
+        </ol>
+      }
+    </xa-tarjeta>
+  }
+</div>
