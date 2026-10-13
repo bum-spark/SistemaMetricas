@@ -100,3 +100,35 @@ export interface PasoEmbudo {
   jugadores: number;
   porcentaje: number;
 }
+
+export interface ResultadoTiempo {
+  intentos: number;
+  promedioMs: number | null;
+  medianaMs: number | null;
+}
+
+export interface TiempoNivel {
+  nivelId: string;
+  completado: ResultadoTiempo;
+  muerte: ResultadoTiempo;
+  abandono: ResultadoTiempo;
+}
+
+export interface GrupoIntentos {
+  minimo: number;
+  maximo: number | null;
+  sesiones: number;
+}
+
+export interface GrupoReintentos {
+  sesiones: number;
+  promedioIntentos: number | null;
+  maxIntentos: number | null;
+  distribucion: GrupoIntentos[];
+}
+
+export interface ReintentosNivel {
+  nivelId: string;
+  pasaron: GrupoReintentos;
+  seRindieron: GrupoReintentos;
+}

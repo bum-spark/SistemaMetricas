@@ -1,0 +1,67 @@
+/* KPIs en fila de 4 (2 en tablet, 1 en móvil) y gráficas en tarjetas de 6 o 12 columnas (§3). */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.graficas {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.col-6 { grid-column: span 6; }
+.col-12 { grid-column: span 12; }
+
+@media (max-width: 1023px) {
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .col-6 { grid-column: span 12; }
+}
+
+@media (max-width: 639px) {
+  .kpis { grid-template-columns: minmax(0, 1fr); }
+}
+
+.grafica {
+  --alto-grafica: calc(var(--space-8) * 4.5);
+}
+
+.esqueleto-grafica {
+  height: calc(var(--space-8) * 4.5);
+}
+
+.esqueleto-tabla {
+  height: calc(var(--space-8) * 3);
+}
+
+.nivel {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.nivel__numero {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: var(--control-alto-compacto);
+  height: var(--control-alto-compacto);
+  border-radius: var(--radius-sm);
+  background: var(--bg-3);
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-mono);
+}
+
+.nivel__textos {
+  display: flex;
+  flex-direction: column;
+}
+
+.nivel__descripcion {
+  color: var(--text-3);
+  font-size: var(--fs-etiqueta);
+  line-height: var(--lh-etiqueta);
+}
