@@ -1014,6 +1014,12 @@
                   "  const juego = r.datos.find((j) => j.juegoId === pm.environment.get('juegoId'));",
                   "  pm.expect(juego, 'el admin debe tener acceso al juego').to.exist;",
                   "  pm.expect(juego.resumen).to.include.keys('jugadores', 'sesiones', 'tasaCompletado');",
+                  "});",
+                  "pm.test('cada juego trae logoUrl (ruta del dashboard, URL https o null)', () => {",
+                  "  pm.response.json().datos.forEach((j) => {",
+                  "    pm.expect(j).to.have.property('logoUrl');",
+                  "    if (j.logoUrl !== null) pm.expect(j.logoUrl).to.match(/^(\\/logos\\/[a-z0-9-]+\\/logo\\.png|https:\\/\\/.+)$/);",
+                  "  });",
                   "});"
                 ]
               }
@@ -1107,7 +1113,7 @@
           ]
         },
         {
-          "name": "Detalle del juego (catálogo y filtros)",
+          "name": "Detalle del juego (catálogo, filtros y logo)",
           "request": {
             "method": "GET",
             "header": [
@@ -1141,6 +1147,7 @@
                   "  pm.expect(r.filtros.buildVersions).to.be.an('array');",
                   "  pm.expect(r.filtros.plataformas).to.be.an('array');",
                   "  pm.expect(r.contieneDatosSeed).to.be.a('boolean');",
+                  "  pm.expect(r).to.have.property('logoUrl');",
                   "  pm.expect(r).to.not.have.property('apiKeyHash');",
                   "});"
                 ]

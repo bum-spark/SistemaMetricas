@@ -46,7 +46,7 @@ export async function listarJuegos(admin: AdminAutenticado, pagina: number, limi
   const filtro = { juegoId: { $in: admin.juegosPermitidos } };
   const [total, juegos] = await Promise.all([
     JuegoModelo.countDocuments(filtro),
-    JuegoModelo.find(filtro, { juegoId: 1, nombre: 1, slug: 1, versionActual: 1, activo: 1, catalogo: 1 })
+    JuegoModelo.find(filtro, { juegoId: 1, nombre: 1, slug: 1, logoUrl: 1, versionActual: 1, activo: 1, catalogo: 1 })
       .sort({ nombre: 1 })
       .skip((pagina - 1) * limite)
       .limit(limite)
@@ -59,6 +59,7 @@ export async function listarJuegos(admin: AdminAutenticado, pagina: number, limi
         juegoId: j.juegoId,
         nombre: j.nombre,
         slug: j.slug,
+        logoUrl: j.logoUrl ?? null,
         versionActual: j.versionActual,
         activo: j.activo,
         resumen: await resumenDeJuego(j.juegoId, ultimo, origen),
@@ -69,7 +70,7 @@ export async function listarJuegos(admin: AdminAutenticado, pagina: number, limi
 }
 
 export async function detalleJuego(juegoId: string) {
-  const juego = await JuegoModelo.findOne({ juegoId }, { juegoId: 1, nombre: 1, slug: 1, versionActual: 1, activo: 1, catalogo: 1 }).lean();
+  const juego = await JuegoModelo.findOne({ juegoId }, { juegoId: 1, nombre: 1, slug: 1, logoUrl: 1, versionActual: 1, activo: 1, catalogo: 1 }).lean();
   if (!juego) {
     throw new AppError(404, 'JUEGO_NO_ENCONTRADO', 'El juego no existe.');
   }
@@ -85,6 +86,7 @@ export async function detalleJuego(juegoId: string) {
     juegoId: juego.juegoId,
     nombre: juego.nombre,
     slug: juego.slug,
+    logoUrl: juego.logoUrl ?? null,
     versionActual: juego.versionActual,
     activo: juego.activo,
     catalogo: esquemaCatalogo.parse(juego.catalogo),

@@ -1,0 +1,36 @@
+:host {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  background: var(--bg-3);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+:host(.xa-logo-juego--tarjeta) {
+  width: var(--logo-juego-tarjeta);
+  height: var(--logo-juego-tarjeta);
+  padding: var(--space-2);
+}
+
+:host(.xa-logo-juego--selector) {
+  width: var(--logo-juego-selector);
+  height: var(--logo-juego-selector);
+  padding: var(--space-1);
+}
+
+img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.xa-logo-juego__inicial {
+  font-family: var(--font-display);
+  font-weight: var(--fw-semibold);
+  color: var(--text-2);
+  line-height: 1;
+}
+
+:host(.xa-logo-juego--tarjeta) .xa-logo-juego__inicial { font-size: var(--fs-inicial-tarjeta); }
+:host(.xa-logo-juego--selector) .xa-logo-juego__inicial { font-size: var(--fs-inicial-selector); }

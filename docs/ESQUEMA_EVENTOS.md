@@ -346,6 +346,9 @@ En el seed se define **una sola constante** con este catálogo. Se ampliará des
 Son SVG generados (`npm run imagenes-niveles`) con los peligros dibujados donde `seed-datos`
 concentra las muertes; se reemplazan por las capturas y límites reales de Unity.
 
+**Logo:** `logoUrl: /logos/la-casa-del-bosque/logo.png` (campo del juego, no del catálogo;
+ver sección 6). `crear-juego` y `seed-datos` lo guardan, y `seed-datos` lo completa si falta.
+
 **Causas de muerte:** `fantasma` (Fantasma), `lava` (Lava), `caida` (Caída).
 
 **Logros:**
@@ -429,6 +432,7 @@ campos `...Id`. Fechas en UTC.
 | `juegoId`          | string (UUID v4)| Generado al crear el juego (S-10).                            |
 | `nombre`           | string          | "La Casa del Bosque".                                         |
 | `slug`             | string          | `la-casa-del-bosque`. Para URLs del dashboard.                |
+| `logoUrl`          | string (opcional)| Logo del juego para el dashboard: ruta `/logos/<slug>/logo.png` (con el slug del propio juego; el archivo vive en `dashboard/public/`) o URL `https://…`; máx. 500 caracteres. Sin logo, el dashboard muestra un avatar con la inicial. No forma parte del catálogo. La Casa del Bosque: `/logos/la-casa-del-bosque/logo.png`; Faro Nocturno (demo): sin logo. |
 | `versionActual`    | string          | Último `buildVersion` publicado.                              |
 | `activo`           | boolean         | Si es `false`, la ingesta responde 401.                       |
 | `fechaCreacion`    | Date            |                                                               |
@@ -558,8 +562,8 @@ Si la ruta lleva `:juegoId`: si no es UUID v4 → `400`; si no está en `juegosP
 |--------|---------------------------------------|------|--------------------------------------|--------------------------------------------------------------------------------------------|
 | POST   | `/auth/login`                         | no   | `{ email, password }`                | `200 { token, expiraEn, admin: { email, nombre, juegosPermitidos } }` · `401 CREDENCIALES_INVALIDAS` |
 | GET    | `/auth/yo`                            | JWT  | —                                    | `200 { email, nombre, juegosPermitidos }`                                                  |
-| GET    | `/juegos`                             | JWT  | `?pagina=1&limite=20&origen=todos`   | `200 { datos: [{ juegoId, nombre, slug, versionActual, activo, resumen: { jugadores, sesiones, tasaCompletado } }], pagina, limite, total, origen }` — solo juegos permitidos; `origen` = `real` \| `seed` \| `todos` (default) decide qué datos cuenta el resumen |
-| GET    | `/juegos/:juegoId`                    | JWT  | —                                    | `200 { juegoId, nombre, slug, versionActual, activo, catalogo, filtros: { buildVersions, plataformas }, contieneDatosSeed }` (sin `apiKeyHash`). `contieneDatosSeed` = `true` si el juego tiene jugadores, sesiones o eventos con `origen: "seed"` (el dashboard puede avisar que hay datos de prueba). `catalogo` incluye `duracionEsperadaMs` si existe. `filtros` = valores distintos de `buildVersion` y `plataforma` en `sesiones` del juego, ordenados, para llenar los selectores del dashboard. |
+| GET    | `/juegos`                             | JWT  | `?pagina=1&limite=20&origen=todos`   | `200 { datos: [{ juegoId, nombre, slug, logoUrl, versionActual, activo, resumen: { jugadores, sesiones, tasaCompletado } }], pagina, limite, total, origen }` — solo juegos permitidos; `origen` = `real` \| `seed` \| `todos` (default) decide qué datos cuenta el resumen |
+| GET    | `/juegos/:juegoId`                    | JWT  | —                                    | `200 { juegoId, nombre, slug, logoUrl, versionActual, activo, catalogo, filtros: { buildVersions, plataformas }, contieneDatosSeed }` (sin `apiKeyHash`). `logoUrl` es `null` si el juego no tiene logo (igual en `GET /juegos`). `contieneDatosSeed` = `true` si el juego tiene jugadores, sesiones o eventos con `origen: "seed"` (el dashboard puede avisar que hay datos de prueba). `catalogo` incluye `duracionEsperadaMs` si existe. `filtros` = valores distintos de `buildVersion` y `plataforma` en `sesiones` del juego, ordenados, para llenar los selectores del dashboard. |
 | DELETE | `/jugadores/:juegoId/:playerId`       | JWT  | —                                    | `200 { eliminados: { jugador, sesiones, eventos, logros } }` · `404 JUGADOR_NO_ENCONTRADO` (S-17) |
 | GET    | `/estadisticas/:juegoId/sesiones`     | JWT  | filtros comunes                      | Sección 10.1                                                                               |
 | GET    | `/estadisticas/:juegoId/tiempo-nivel` | JWT  | filtros comunes                      | Sección 10.2                                                                               |
@@ -605,7 +609,7 @@ corren a mano con acceso a la base de datos (S-19). Se ejecutan desde `/api` con
 | Script                   | Qué hace                                                                                                      |
 |--------------------------|---------------------------------------------------------------------------------------------------------------|
 | `crear-admin [--juegos s1,s2]` | Crea el primer admin con `ADMIN_EMAIL`, `ADMIN_PASSWORD` (mín. 12 caracteres) y `ADMIN_NOMBRE` del `.env`; la contraseña nunca se pasa por línea de comandos. Hashea con bcrypt (12 rondas). Sin `--juegos`, acceso a todos los juegos existentes (S-32). No hace nada si el email ya existe. |
-| `crear-juego --juego <slug> [--version x.y.z] [--sin-acceso]` | Crea un juego con su catálogo constante (`la-casa-del-bosque` §5.1 o `faro-nocturno-demo` §5.2). Muestra el `juegoId` y la API key **una sola vez**. Por defecto agrega el juego a `juegosPermitidos` de todos los admins activos (S-32). No sobrescribe un juego existente. |
+| `crear-juego --juego <slug> [--version x.y.z] [--sin-acceso]` | Crea un juego con su catálogo constante (`la-casa-del-bosque` §5.1 o `faro-nocturno-demo` §5.2) y su `logoUrl` si la definición lo trae. Muestra el `juegoId` y la API key **una sola vez**. Por defecto agrega el juego a `juegosPermitidos` de todos los admins activos (S-32). No sobrescribe un juego existente. |
 | `rotar-api-key --juego <slug>`   | Genera una key nueva, reemplaza el hash (la anterior deja de servir al instante) y la muestra una sola vez. También rehabilita un juego revocado. |
 | `revocar-api-key --juego <slug>` | Pone `apiKeyHash: null`. El juego deja de poder mandar datos; los datos guardados se conservan.               |
 | `seed-datos [--semilla n] [--jugadores n] [--referencia AAAA-MM-DD]` | Datos de prueba realistas para La Casa del Bosque (300 jugadores por defecto) y Faro Nocturno (demo) (la mitad), todos con `origen: "seed"` (ver "seed-datos" abajo). |

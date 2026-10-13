@@ -1,0 +1,89 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+  padding: var(--padding-tarjeta);
+  background: var(--bg-1);
+  border: var(--borde) solid var(--border-default);
+  border-radius: var(--radius-md);
+}
+
+.cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.textos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.titulo {
+  font-size: var(--fs-titulo-tarjeta);
+  line-height: var(--lh-titulo-tarjeta);
+  font-weight: var(--fw-semibold);
+}
+
+.pregunta {
+  font-size: var(--fs-secundario);
+  line-height: var(--lh-secundario);
+  color: var(--text-2);
+}
+
+.ayuda {
+  position: relative;
+  flex: none;
+}
+
+.ayuda__boton {
+  display: grid;
+  place-items: center;
+  width: var(--control-alto-compacto);
+  height: var(--control-alto-compacto);
+  padding: 0;
+  border: var(--borde) solid var(--border-default);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--text-2);
+  font-size: var(--fs-etiqueta);
+  font-weight: var(--fw-semibold);
+  cursor: help;
+}
+
+.ayuda__boton:hover {
+  border-color: var(--border-strong);
+  color: var(--text-1);
+}
+
+.ayuda__tooltip {
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  right: 0;
+  z-index: 15;
+  width: max-content;
+  max-width: var(--tooltip-ancho-max);
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-2);
+  border: var(--borde) solid var(--border-default);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-popover);
+  color: var(--text-1);
+  font-size: var(--fs-etiqueta);
+  line-height: var(--lh-etiqueta);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--dur-fast) var(--ease), visibility var(--dur-fast);
+}
+
+/* Aparece con retraso de 150 ms al hover y al foco (§4). */
+.ayuda:hover .ayuda__tooltip,
+.ayuda:focus-within .ayuda__tooltip {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: var(--retraso-tooltip);
+}

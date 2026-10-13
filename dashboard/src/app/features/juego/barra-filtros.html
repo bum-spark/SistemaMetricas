@@ -1,0 +1,71 @@
+<form class="barra" [attr.aria-label]="textos.titulo" (submit)="$event.preventDefault()">
+  <div class="segmentado" role="group" [attr.aria-label]="textos.atajos">
+    <button type="button" class="segmento" [attr.aria-pressed]="atajoActivo() === 7" (click)="aplicarAtajo(7)">{{ textos.dias7 }}</button>
+    <button type="button" class="segmento" [attr.aria-pressed]="atajoActivo() === 30" (click)="aplicarAtajo(30)">{{ textos.dias30 }}</button>
+    <button type="button" class="segmento" [attr.aria-pressed]="atajoActivo() === 'todo'" (click)="aplicarAtajo('todo')">{{ textos.todo }}</button>
+  </div>
+
+  <div class="control control--fechas">
+    <span class="control__etiqueta" aria-hidden="true">{{ textos.fechas }}</span>
+    <input
+      id="filtro-desde"
+      type="date"
+      [attr.aria-label]="textos.desdeAccesible"
+      [value]="filtros().desde ?? ''"
+      [max]="filtros().hasta ?? ''"
+      (change)="cambiar('desde', $event)"
+    />
+    <span class="control__separador" aria-hidden="true">–</span>
+    <input
+      id="filtro-hasta"
+      type="date"
+      [attr.aria-label]="textos.hastaAccesible"
+      [value]="filtros().hasta ?? ''"
+      [min]="filtros().desde ?? ''"
+      (change)="cambiar('hasta', $event)"
+    />
+  </div>
+
+  <label class="control">
+    <span class="control__etiqueta" aria-hidden="true">{{ textos.build }}</span>
+    <select id="filtro-build" [attr.aria-label]="textos.buildAccesible" (change)="cambiar('buildVersion', $event)">
+      <option value="" [selected]="!filtros().buildVersion">{{ textos.todas }}</option>
+      @for (v of opciones().buildVersions; track v) {
+        <option [value]="v" [selected]="filtros().buildVersion === v">{{ v }}</option>
+      }
+    </select>
+  </label>
+
+  <label class="control">
+    <span class="control__etiqueta" aria-hidden="true">{{ textos.plataforma }}</span>
+    <select id="filtro-plataforma" [attr.aria-label]="textos.plataforma" (change)="cambiar('plataforma', $event)">
+      <option value="" [selected]="!filtros().plataforma">{{ textos.todas }}</option>
+      @for (p of opciones().plataformas; track p) {
+        <option [value]="p" [selected]="filtros().plataforma === p">{{ textos.nombrePlataforma(p) }}</option>
+      }
+    </select>
+  </label>
+
+  <label class="control">
+    <span class="control__etiqueta" aria-hidden="true">{{ textos.origenCorto }}</span>
+    <select id="filtro-origen" [attr.aria-label]="textos.origen" (change)="cambiarOrigen($event)">
+      @for (o of origenes; track o.etiqueta) {
+        <option [value]="o.valor ?? ''" [selected]="filtros().origen === o.valor">{{ o.etiqueta }}</option>
+      }
+    </select>
+  </label>
+
+  <span class="limpiar">
+    <button
+      type="button"
+      class="limpiar__boton"
+      [attr.aria-label]="textos.limpiar"
+      aria-describedby="filtros-limpiar-tooltip"
+      [disabled]="!conFiltros()"
+      (click)="limpiar()"
+    >
+      <lucide-icon [img]="iconoLimpiar" [size]="16" [strokeWidth]="1.75" aria-hidden="true" />
+    </button>
+    <span class="limpiar__tooltip" role="tooltip" id="filtros-limpiar-tooltip">{{ textos.limpiar }}</span>
+  </span>
+</form>

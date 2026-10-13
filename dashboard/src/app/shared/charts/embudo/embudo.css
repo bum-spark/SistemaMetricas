@@ -1,0 +1,85 @@
+.embudo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.paso {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.fila {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.etiqueta {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: var(--fs-secundario);
+  line-height: var(--lh-secundario);
+  color: var(--text-1);
+}
+
+.valor {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: var(--fs-mono);
+  line-height: var(--lh-mono);
+  color: var(--text-2);
+}
+
+.barra {
+  display: block;
+  width: 100%;
+  height: var(--control-alto-compacto);
+  overflow: visible;
+}
+
+.embudo--compacto .barra {
+  height: var(--space-5);
+}
+
+.barra__fondo {
+  fill: var(--bg-2);
+  rx: var(--radius-sm);
+}
+
+/* Opacidad decreciente: de 1 en el primer paso a --opacidad-deshabilitado en el último. */
+.barra__valor {
+  fill: var(--petal);
+  fill-opacity: calc(1 - var(--paso, 0) * (1 - var(--opacidad-deshabilitado)));
+  rx: var(--radius-sm);
+}
+
+.paso--mayor-caida .barra__valor {
+  stroke: var(--danger);
+  stroke-width: var(--barra-activa);
+}
+
+.caida {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.caida__valor {
+  font-family: var(--font-mono);
+  font-size: var(--fs-etiqueta);
+  line-height: var(--lh-etiqueta);
+  color: var(--danger);
+}
+
+.paso--mayor-caida .caida__valor {
+  font-weight: var(--fw-semibold);
+}

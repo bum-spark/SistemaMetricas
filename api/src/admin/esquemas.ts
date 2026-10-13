@@ -36,6 +36,8 @@ export const esquemaResumenJuego = registrarEsquema(
     juegoId: uuidV4,
     nombre: z.string(),
     slug: z.string(),
+    // Ruta del dashboard (/logos/<slug>/logo.png) o URL https; null = avatar con la inicial.
+    logoUrl: z.string().nullable(),
     versionActual: z.string(),
     activo: z.boolean(),
     resumen: z.object({
@@ -64,6 +66,8 @@ export const esquemaDetalleJuego = registrarEsquema(
     juegoId: uuidV4,
     nombre: z.string(),
     slug: z.string(),
+    // Ruta del dashboard (/logos/<slug>/logo.png) o URL https; null = avatar con la inicial.
+    logoUrl: z.string().nullable(),
     versionActual: z.string(),
     activo: z.boolean(),
     catalogo: z.record(z.string(), z.unknown()),

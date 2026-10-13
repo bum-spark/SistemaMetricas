@@ -1,0 +1,128 @@
+/* Cuadrícula de 12 columnas (§3): tarjetas de 4 columnas, 6 en tablet y 12 en móvil. */
+.cuadricula {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.celda {
+  grid-column: span 4;
+}
+
+@media (max-width: 1023px) {
+  .celda { grid-column: span 6; }
+}
+
+@media (max-width: 639px) {
+  .celda { grid-column: span 12; }
+}
+
+/* Tarjeta clicable (§4): hover con borde --border-strong y fondo --bg-2. */
+.tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  height: 100%;
+  padding: var(--padding-tarjeta);
+  background: var(--bg-1);
+  border: var(--borde) solid var(--border-default);
+  border-radius: var(--radius-md);
+  color: inherit;
+  text-decoration: none;
+  transition: background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+
+a.tarjeta:hover {
+  background: var(--bg-2);
+  border-color: var(--border-strong);
+}
+
+.tarjeta__cabecera {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.tarjeta__identidad {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex: 1;
+  min-width: 0;
+}
+
+.tarjeta__nombre {
+  font-size: var(--fs-titulo-tarjeta);
+  line-height: var(--lh-titulo-tarjeta);
+  font-weight: var(--fw-semibold);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.tarjeta__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.tarjeta__version {
+  font-family: var(--font-mono);
+  font-size: var(--fs-mono);
+  line-height: var(--lh-mono);
+  color: var(--text-2);
+}
+
+/* Mini-KPIs: etiqueta como la del KPI (12/500, --text-3) y cifra de título de sección. */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+  padding-top: var(--space-4);
+  border-top: var(--borde) solid var(--border-subtle);
+}
+
+.kpi {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.kpi dt {
+  font-size: var(--fs-etiqueta);
+  line-height: var(--lh-etiqueta);
+  font-weight: var(--fw-medium);
+  color: var(--text-3);
+}
+
+.kpi dd {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-titulo-seccion);
+  line-height: var(--lh-titulo-seccion);
+  font-weight: var(--fw-semibold);
+}
+
+.esqueleto-logo {
+  width: var(--logo-juego-tarjeta);
+  height: var(--logo-juego-tarjeta);
+  border-radius: var(--radius-md);
+}
+
+.esqueleto-linea {
+  height: var(--space-4);
+}
+
+.esqueleto-linea--corta {
+  width: 50%;
+}
+
+.esqueleto-kpis {
+  height: var(--space-8);
+}

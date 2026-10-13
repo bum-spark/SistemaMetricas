@@ -1,0 +1,54 @@
+/* Sin encapsulación: estiliza el <input>/<select> proyectado, siempre bajo .xa-campo. */
+.xa-campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.xa-campo__etiqueta {
+  font-size: var(--fs-etiqueta);
+  line-height: var(--lh-etiqueta);
+  font-weight: var(--fw-medium);
+  color: var(--text-2);
+}
+
+.xa-campo input,
+.xa-campo select {
+  height: var(--control-alto);
+  padding: 0 var(--space-3);
+  background: var(--bg-3);
+  border: var(--borde) solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-1);
+  font-size: var(--fs-cuerpo);
+  transition: border-color var(--dur-fast) var(--ease);
+}
+
+.xa-campo input:hover,
+.xa-campo select:hover {
+  border-color: var(--border-strong);
+}
+
+.xa-campo input:focus-visible,
+.xa-campo select:focus-visible {
+  outline: none;
+  border-color: var(--petal);
+  box-shadow: var(--focus-ring);
+}
+
+.xa-campo input:disabled,
+.xa-campo select:disabled {
+  opacity: var(--opacidad-deshabilitado);
+  cursor: not-allowed;
+}
+
+.xa-campo--error input,
+.xa-campo--error select {
+  border-color: var(--danger);
+}
+
+.xa-campo__error {
+  font-size: var(--fs-etiqueta);
+  line-height: var(--lh-etiqueta);
+  color: var(--danger);
+}

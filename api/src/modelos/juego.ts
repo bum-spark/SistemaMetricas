@@ -1,6 +1,6 @@
 import { model, Schema, type InferSchemaType } from 'mongoose';
 import { describirProblemas, esquemaCatalogo } from '../dominio/catalogo';
-import { PATRON_SLUG } from '../dominio/constantes';
+import { PATRON_SLUG, problemaLogoUrl } from '../dominio/constantes';
 import { campoUuid, opcionesEsquema } from './comun';
 
 const subdocumento = { _id: false } as const;
@@ -79,6 +79,22 @@ const esquemaJuego = new Schema(
     nombre: { type: String, required: true, trim: true },
     slug: { type: String, required: true, unique: true, lowercase: true, match: PATRON_SLUG },
     versionActual: { type: String, required: true, trim: true },
+    // Opcional: sin logo, el dashboard muestra un avatar con la inicial del nombre.
+    logoUrl: {
+      type: String,
+      validate: {
+        validator(this: { slug?: unknown }, valor: unknown): boolean {
+          if (valor === undefined || valor === null) {
+            return true;
+          }
+          const problema = typeof valor === 'string' ? problemaLogoUrl(valor, String(this.slug)) : 'logoUrl debe ser texto';
+          if (problema) {
+            throw new Error(problema);
+          }
+          return true;
+        },
+      },
+    },
     activo: { type: Boolean, default: true },
     fechaCreacion: { type: Date, default: () => new Date() },
     // SHA-256 de la API key (S-19). null = revocada.

@@ -50,6 +50,20 @@ describe('cargarConfig', () => {
     });
   });
 
+  it('CORS_ORIGIN acepta una lista separada por comas y rechaza orígenes mal escritos', () => {
+    expect(cargarConfig({ ...BASE, CORS_ORIGIN: 'https://xolos.vercel.app,http://localhost:4200' }).corsOrigenes).toEqual([
+      'https://xolos.vercel.app',
+      'http://localhost:4200',
+    ]);
+    expect(cargarConfig({ ...BASE, CORS_ORIGIN: ' https://xolos.vercel.app , ' }).corsOrigenes).toEqual(['https://xolos.vercel.app']);
+    expect(cargarConfig(BASE).corsOrigenes).toEqual(['http://localhost:4200']);
+    expect(() => cargarConfig({ ...BASE, CORS_ORIGIN: 'https://xolos.vercel.app/' })).toThrow(/"https:\/\/xolos\.vercel\.app\/" no es un origen válido/);
+    expect(() => cargarConfig({ ...BASE, CORS_ORIGIN: 'xolos.vercel.app' })).toThrow(/CORS_ORIGIN/);
+    expect(() => cargarConfig({ ...BASE, CORS_ORIGIN: '*' })).toThrow(/CORS_ORIGIN/);
+    expect(() => cargarConfig({ ...BASE, CORS_ORIGIN: 'ftp://x.com' })).toThrow(/CORS_ORIGIN/);
+    expect(() => cargarConfig({ ...BASE, CORS_ORIGIN: ' , ' })).toThrow(/CORS_ORIGIN: indica al menos un origen/);
+  });
+
   it('exige MONGODB_URI y MONGODB_DB (sin valor por defecto)', () => {
     expect(() => cargarConfig({})).toThrow(ConfigInvalidaError);
     expect(() => cargarConfig({ MONGODB_DB: 'x' })).toThrow(/MONGODB_URI: es obligatoria/);

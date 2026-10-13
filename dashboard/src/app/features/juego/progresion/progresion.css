@@ -1,0 +1,48 @@
+.pila {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.esqueleto-embudo {
+  height: calc(var(--space-8) * 4);
+}
+
+.esqueleto-tabla {
+  height: calc(var(--space-8) * 3);
+}
+
+.paso {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.paso__numero {
+  display: inline-grid;
+  place-items: center;
+  width: var(--control-alto-compacto);
+  height: var(--control-alto-compacto);
+  border-radius: var(--radius-sm);
+  background: var(--bg-3);
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-mono);
+}
+
+.caida {
+  color: var(--danger);
+}
+
+.perdidos {
+  display: block;
+  color: var(--text-3);
+  font-size: var(--fs-etiqueta);
+  line-height: var(--lh-etiqueta);
+}
+
+.insignias {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}

@@ -1,0 +1,36 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-6) var(--space-5);
+  text-align: center;
+  color: var(--text-2);
+  background: var(--bg-1);
+  border: var(--borde) solid var(--border-default);
+  border-radius: var(--radius-md);
+}
+
+:host(.xa-estado--error) {
+  border-color: var(--danger);
+}
+
+:host(.xa-estado--error) lucide-icon {
+  color: var(--danger);
+}
+
+.titulo {
+  font-size: var(--fs-titulo-tarjeta);
+  line-height: var(--lh-titulo-tarjeta);
+  font-weight: var(--fw-semibold);
+  color: var(--text-1);
+}
+
+.ayuda {
+  font-size: var(--fs-secundario);
+  line-height: var(--lh-secundario);
+}
+
+button {
+  margin-top: var(--space-2);
+}

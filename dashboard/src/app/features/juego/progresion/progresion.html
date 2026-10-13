@@ -1,0 +1,51 @@
+<xa-cabecera [titulo]="textos.titulo" [pregunta]="textos.pregunta" [cargadoEn]="cargadoEn()" />
+
+<div aria-live="polite" [attr.aria-busy]="cargando()">
+  @if (conError()) {
+    <xa-estado-error (reintentar)="reintentar()" />
+  } @else if (!cargando() && sinDatos()) {
+    <xa-estado-vacio [titulo]="textosJuego.sinDatosTitulo" [ayuda]="textosJuego.sinDatosAyuda">
+      @if (conFiltros()) {
+        <button xa-boton type="button" variante="secundario" (click)="limpiarFiltros()">{{ textosFiltros.limpiar }}</button>
+      }
+    </xa-estado-vacio>
+  } @else {
+    <div class="pila">
+      <xa-tarjeta [titulo]="textos.embudoTitulo" [pregunta]="textos.embudoPregunta" [ayuda]="textos.embudoAyuda">
+        @if (cargando()) {
+          <xa-skeleton class="esqueleto-embudo" />
+        } @else {
+          <p class="solo-lector">{{ alternativa() }}</p>
+          <xa-embudo [pasos]="pasos()" [insignias]="insignias()" />
+        }
+      </xa-tarjeta>
+
+      <xa-tarjeta [titulo]="textos.tablaTitulo" [pregunta]="textos.tablaPregunta">
+        @if (cargando()) {
+          <xa-skeleton class="esqueleto-tabla" />
+        } @else {
+          <xa-tabla [columnas]="columnas" [filas]="filas()" [titulo]="textos.tablaTitulo">
+            <ng-template xaCelda="paso" let-fila>
+              <span class="paso"><span class="paso__numero cifras">{{ fila.numero }}</span>{{ fila.etiqueta }}</span>
+            </ng-template>
+            <ng-template xaCelda="caida" let-fila>
+              @if (fila.caida !== null) {
+                <span class="caida">−{{ porcentaje(fila.caida) }}</span>
+                <span class="perdidos">{{ textos.perdidos(entero(fila.perdidos)) }}</span>
+              } @else {
+                <span class="perdidos">—</span>
+              }
+            </ng-template>
+            <ng-template xaCelda="diagnostico" let-fila>
+              <span class="insignias">
+                @for (ins of fila.insignias; track ins.etiqueta) {
+                  <xa-insignia [insignia]="ins" alinear="derecha" />
+                }
+              </span>
+            </ng-template>
+          </xa-tabla>
+        }
+      </xa-tarjeta>
+    </div>
+  }
+</div>

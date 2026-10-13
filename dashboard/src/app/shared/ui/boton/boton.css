@@ -1,0 +1,60 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  height: var(--control-alto);
+  padding: 0 var(--space-4);
+  border: var(--borde) solid transparent;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-cuerpo);
+  font-weight: var(--fw-medium);
+  line-height: 1;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+
+:host(.xa-boton--compacto) { height: var(--control-alto-compacto); }
+:host(.xa-boton--grande) { height: var(--control-alto-grande); }
+:host(.xa-boton--bloque) { display: flex; width: 100%; }
+
+:host(.xa-boton--primario) { background: var(--accent); color: var(--text-on-accent); }
+:host(.xa-boton--primario:hover:not(:disabled)) { background: var(--accent-hover); }
+:host(.xa-boton--primario:active:not(:disabled)) { background: var(--accent-active); }
+
+:host(.xa-boton--secundario) { background: var(--bg-3); border-color: var(--border-default); color: var(--text-1); }
+:host(.xa-boton--fantasma) { background: transparent; color: var(--text-2); }
+:host(.xa-boton--peligro) { background: var(--danger-soft); border-color: var(--danger); color: var(--danger); }
+
+:host(.xa-boton--secundario:hover:not(:disabled)),
+:host(.xa-boton--fantasma:hover:not(:disabled)),
+:host(.xa-boton--peligro:hover:not(:disabled)) {
+  background: var(--bg-2);
+  border-color: var(--border-strong);
+}
+
+:host(:focus-visible) { outline: none; box-shadow: var(--focus-ring); }
+
+:host(:disabled) { opacity: var(--opacidad-deshabilitado); cursor: not-allowed; }
+
+/* Cargando: texto atenuado y spinner, sin cambiar el ancho del botón. */
+:host(.xa-boton--cargando) { opacity: 1; cursor: progress; }
+:host(.xa-boton--cargando) .xa-boton__texto { opacity: var(--opacidad-deshabilitado); }
+
+.xa-boton__spinner {
+  width: var(--spinner);
+  height: var(--spinner);
+  border: var(--spinner-trazo) solid currentColor;
+  border-right-color: transparent;
+  border-radius: var(--radius-full);
+  animation: girar var(--dur-giro) linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .xa-boton__spinner { animation-duration: calc(var(--dur-giro) * 3); }
+}
+
+@keyframes girar {
+  to { transform: rotate(360deg); }
+}

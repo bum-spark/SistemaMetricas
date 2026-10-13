@@ -1,0 +1,63 @@
+@if (juego.resumen(); as j) {
+  <xa-cabecera
+    [titulo]="j.nombre"
+    [pregunta]="textos.pregunta"
+    [version]="textosJuegos.version(j.versionActual)"
+    [tituloVersion]="textosJuego.versionActual(j.versionActual)"
+    [cargadoEn]="cargadoEn()"
+  />
+}
+
+<div aria-live="polite" [attr.aria-busy]="cargando()">
+  @if (conError()) {
+    <xa-estado-error (reintentar)="reintentar()" />
+  } @else if (!cargando() && sinDatos()) {
+    <xa-estado-vacio [titulo]="textosJuego.sinDatosTitulo" [ayuda]="textosJuego.sinDatosAyuda">
+      @if (conFiltros()) {
+        <button xa-boton type="button" variante="secundario" (click)="limpiarFiltros()">{{ textosFiltros.limpiar }}</button>
+      }
+    </xa-estado-vacio>
+  } @else {
+    <div class="kpis">
+      <xa-kpi [etiqueta]="textos.jugadores" [valor]="kpis().jugadores" [cargando]="cargando()" />
+      <xa-kpi [etiqueta]="textos.sesiones" [valor]="kpis().sesiones" [contexto]="kpis().inferidas" [cargando]="cargando()" />
+      <xa-kpi [etiqueta]="textos.duracion" [valor]="kpis().duracion" [contexto]="kpis().esperado" [cargando]="cargando()" />
+      <xa-kpi [etiqueta]="textos.terminaron" [valor]="kpis().terminaron" [contexto]="kpis().deJugadores" [cargando]="cargando()" />
+    </div>
+
+    <div class="graficas">
+      <xa-tarjeta class="col-6" [titulo]="textos.embudoTitulo" [pregunta]="textos.embudoPregunta" [ayuda]="textos.embudoAyuda">
+        @if (cargando()) {
+          <xa-skeleton class="esqueleto-grafica" />
+        } @else {
+          <xa-embudo [pasos]="pasos()" [compacto]="true" [insignias]="insignias()" />
+        }
+      </xa-tarjeta>
+
+      <xa-tarjeta class="col-6" [titulo]="textos.caidaTitulo" [pregunta]="textos.caidaPregunta" [ayuda]="textos.caidaAyuda">
+        @if (cargando()) {
+          <xa-skeleton class="esqueleto-grafica" />
+        } @else if (caida(); as c) {
+          <div class="caida">
+            <p class="caida__tramo">
+              <span>{{ c.desde }}</span>
+              <span class="caida__flecha" aria-hidden="true">→</span>
+              <span>{{ c.hasta }}</span>
+            </p>
+            <p class="caida__cifra cifras"><span aria-hidden="true">−</span>{{ c.porcentaje }}</p>
+            @if (c.insignias.length) {
+              <div class="caida__insignias">
+                @for (ins of c.insignias; track ins.etiqueta) {
+                  <xa-insignia [insignia]="ins" />
+                }
+              </div>
+            }
+            <p class="caida__detalle">{{ c.detalle }}</p>
+          </div>
+        } @else {
+          <p class="caida__detalle">{{ textos.sinCaida }}</p>
+        }
+      </xa-tarjeta>
+    </div>
+  }
+</div>

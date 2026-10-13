@@ -33,6 +33,8 @@ describe('seed-datos contra la base', () => {
       // Imágenes y límites provisionales en el catálogo (A-07).
       expect(juego.catalogo.niveles.every((n) => n.imagenUrl?.startsWith(`/niveles/${r.slug}/`) && n.limites)).toBe(true);
     }
+    const logos = await JuegoModelo.find({}, { slug: 1, logoUrl: 1, _id: 0 }).sort({ slug: 1 }).lean();
+    expect(logos).toEqual([{ slug: 'faro-nocturno-demo' }, { slug: 'la-casa-del-bosque', logoUrl: '/logos/la-casa-del-bosque/logo.png' }]);
   });
 
   it('es idempotente y determinista: correrlo dos veces deja exactamente los mismos datos', async () => {
@@ -47,10 +49,10 @@ describe('seed-datos contra la base', () => {
     expect(ids).toEqual(primera);
   });
 
-  it('no toca los datos reales ni la API key de un juego creado con crear-juego, y completa sus imágenes', async () => {
+  it('no toca los datos reales ni la API key de un juego creado con crear-juego, y completa su logo e imágenes', async () => {
     const { juegoId, apiKey } = await crearJuego({ slug: 'la-casa-del-bosque' });
     // Simula un juego dado de alta antes de tener imágenes/límites provisionales.
-    await JuegoModelo.updateOne({ juegoId }, { $unset: { 'catalogo.niveles.$[].imagenUrl': '', 'catalogo.niveles.$[].limites': '' } });
+    await JuegoModelo.updateOne({ juegoId }, { $unset: { logoUrl: '', 'catalogo.niveles.$[].imagenUrl': '', 'catalogo.niveles.$[].limites': '' } });
     const { app } = crearAppDePrueba();
     const real = { juegoId, ...(await abrirSesion(app, { juegoId, apiKey })) };
     await request(app).post('/api/v1/eventos').set('X-Api-Key', apiKey).send(loteEjemplo(real));
@@ -62,6 +64,7 @@ describe('seed-datos contra la base', () => {
     const juego = (await JuegoModelo.findOne({ juegoId }).lean())!;
     expect(juego.apiKeyHash).not.toBeNull();
     expect(juego.catalogo.niveles.every((n) => n.imagenUrl && n.limites)).toBe(true);
+    expect(juego.logoUrl).toBe('/logos/la-casa-del-bosque/logo.png');
   });
 
   it('da acceso a Faro Nocturno (demo) a los admins activos cuando lo crea', async () => {

@@ -1,0 +1,70 @@
+.login {
+  position: relative;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: var(--space-7) var(--space-4) var(--space-5);
+}
+
+.login__salud {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+}
+
+.login__marca {
+  display: flex;
+  justify-content: center;
+}
+
+.login__proposito {
+  margin-top: calc(-1 * var(--space-3));
+  text-align: center;
+  color: var(--text-2);
+  font-size: var(--fs-secundario);
+  line-height: var(--lh-secundario);
+}
+
+.login__tarjeta {
+  width: 100%;
+  max-width: var(--login-ancho);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-6) var(--space-5);
+  background: var(--bg-1);
+  border: var(--borde) solid var(--border-default);
+  border-radius: var(--radius-md);
+}
+
+.login__formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.login__avisos:empty {
+  display: none;
+}
+
+.login__avisos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.login__error {
+  padding: var(--space-2) var(--space-3);
+  background: var(--danger-soft);
+  border: var(--borde) solid var(--danger);
+  border-radius: var(--radius-sm);
+  color: var(--danger);
+  font-size: var(--fs-secundario);
+  line-height: var(--lh-secundario);
+}
+
+.login__despertando {
+  color: var(--text-2);
+  font-size: var(--fs-secundario);
+  line-height: var(--lh-secundario);
+}

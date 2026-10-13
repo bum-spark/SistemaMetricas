@@ -1,7 +1,8 @@
-# Deploy de la API (Render + MongoDB Atlas)
+# Deploy (API en Render + MongoDB Atlas + dashboard en Vercel)
 
-Guía paso a paso para publicar la API. La configuración del servicio está en
-[`render.yaml`](../render.yaml); aquí van los pasos manuales, en orden.
+Guía paso a paso para publicar la API y el dashboard. La configuración está en
+[`render.yaml`](../render.yaml) (API) y [`dashboard/vercel.json`](../dashboard/vercel.json)
+(dashboard); aquí van los pasos manuales, en orden.
 
 > **Reglas de secretos:** la cadena de conexión de Atlas, el `JWT_SECRET` y las API keys
 > solo viven en el panel de Render y en tu `api/.env` local (que git ignora). Nunca en el
@@ -59,7 +60,7 @@ usuario, con permiso solo sobre esa base** (R-41).
    | `MONGODB_URI` | la cadena del paso 1.4 (sin nombre de base) | **sí** |
    | `MONGODB_DB` | `xolos_analytics` | no |
    | `JWT_SECRET` | 48 bytes aleatorios (ver abajo). **Obligatoria**: sin ella (o con menos de 32 caracteres) la API no arranca | **sí** |
-   | `CORS_ORIGIN` | **provisionalmente `http://localhost:4200`**; cuando el dashboard esté publicado, cámbialo por su dominio (p. ej. `https://xolos-dashboard.netlify.app`) y vuelve a desplegar | no |
+   | `CORS_ORIGIN` | **provisionalmente `http://localhost:4200`**. Acepta varios orígenes separados por coma; cuando el dashboard esté publicado se agrega su dominio (sección 6) | no |
    | `TRUST_PROXY` | `1` | no |
    | `RATE_LIMIT_INGESTA_IP` | `300` (o vacío = 300) | no |
    | `RATE_LIMIT_INGESTA_KEY` | `1000` (o vacío = 1000) | no |
@@ -153,7 +154,70 @@ La primera petición después de un rato puede tardar ~1 minuto (el plan gratuit
 5. Para compartir el resultado conmigo, pega solo: la respuesta de `/salud`, el resumen de
    Newman y la salida de los scripts **reemplazando la API key por `ak_***`**.
 
-## 5. Problemas comunes
+## 5. Dashboard en Vercel
+
+El dashboard es Angular estático. `dashboard/vercel.json` ya trae la instalación, el build,
+la carpeta de salida, el rewrite a `index.html` (para que recargar `/juegos/...` no dé 404),
+la caché y las cabeceras de seguridad (S-60). La URL de la API está en
+`dashboard/src/environments/environment.ts` (es pública, no es un secreto). No hay variables
+de entorno que configurar en Vercel.
+
+1. Vercel → **Add New → Project** → **Import** el repositorio de tu cuenta personal de GitHub
+   (el plan Hobby no puede conectar repositorios de una organización).
+2. En **Configure Project**:
+
+   | Campo | Valor |
+   |---|---|
+   | *Root Directory* | **`dashboard`** (botón *Edit*) |
+   | *Framework Preset* | **Other** (`vercel.json` define todo) |
+   | *Build Command* | lo toma de `vercel.json`: `npm run build` (no actives *Override*) |
+   | *Output Directory* | lo toma de `vercel.json`: `dist/dashboard/browser` |
+   | *Install Command* | lo toma de `vercel.json`: `npm ci` |
+   | *Environment Variables* | ninguna |
+
+   El *Node.js Version* lo decide `engines` de `dashboard/package.json` (`^22.12.0` → Node
+   22.x), aunque el proyecto diga 24.x. Vercel usa npm 10 con Node 22: instala sin problema el
+   `package-lock.json` (generado con npm 11, S-54) porque `npm ci` no recalcula el árbol.
+3. **Deploy**. En los logs debe aparecer `Application bundle generation complete`. Anota el
+   dominio de producción, p. ej. `https://xolos-analytics.vercel.app` (Settings → Domains).
+4. Cada push a `main` publica una versión nueva; las otras ramas generan *previews* con otra
+   URL (esas no están en `CORS_ORIGIN`, así que no podrán hablar con la API; es lo esperado).
+
+## 6. Agregar el dominio del dashboard a `CORS_ORIGIN`
+
+La API solo responde al navegador si el origen está en `CORS_ORIGIN`. Se mantiene
+`http://localhost:4200` para poder correr el dashboard en tu computadora contra producción.
+
+1. Render → servicio `xolos-analytics-api` → **Environment** → `CORS_ORIGIN` → valor:
+   ```text
+   https://xolos-analytics.vercel.app,http://localhost:4200
+   ```
+   (con tu dominio real de Vercel). Reglas: esquema + dominio, **sin `/` final ni ruta**,
+   separados por coma; los espacios se ignoran. Si un origen está mal escrito la API no
+   arranca y el log dice cuál (`CORS_ORIGIN: "https://x.vercel.app/" no es un origen válido`).
+2. **Save Changes** (Render vuelve a desplegar solo). Espera a ver `API escuchando...`.
+3. Comprueba desde tu computadora (no necesita credenciales):
+   ```bash
+   curl -s -o /dev/null -D - -H "Origin: https://xolos-analytics.vercel.app" https://xolos-analytics-api.onrender.com/api/v1/salud | grep -i access-control-allow-origin
+   # access-control-allow-origin: https://xolos-analytics.vercel.app
+   ```
+4. Abre el dashboard publicado, entra con tu admin y revisa la lista de juegos y el Resumen.
+
+### Correr el dashboard en tu computadora contra la API de producción
+
+Sin archivos de credenciales: el usuario y la contraseña solo se escriben en el formulario
+del navegador; el JWT queda en la memoria y el `sessionStorage` de esa pestaña.
+
+```bash
+cd dashboard
+npm ci
+npm run start:produccion   # ng serve con environment.ts de producción en http://localhost:4200
+```
+
+Funciona mientras `CORS_ORIGIN` incluya `http://localhost:4200`. Si la API estaba dormida, el
+login tarda ~1 minuto y el dashboard muestra "El servidor se está despertando".
+
+## 7. Problemas comunes
 
 | Síntoma (en los logs de Render o en el script) | Causa probable |
 |---|---|
@@ -164,3 +228,6 @@ La primera petición después de un rato puede tardar ~1 minuto (el plan gratuit
 | `not authorized on xolos_analytics` | El usuario no tiene `readWrite` sobre `xolos_analytics` (paso 1.2). |
 | El script dice `La base de datos no es local...` | Es lo esperado sin `--confirmar` (paso 3.2). |
 | La primera petición tarda ~1 min | El servicio gratuito estaba dormido; las siguientes son rápidas. |
+| `CORS_ORIGIN: "…" no es un origen válido` | Un origen tiene `/` final, ruta o le falta `https://` (sección 6). |
+| El navegador dice *blocked by CORS policy* | El dominio del dashboard no está en `CORS_ORIGIN` o no coincide exacto (sección 6). |
+| Recargar `/juegos/...` en Vercel da 404 | *Root Directory* no es `dashboard` y Vercel no leyó `vercel.json` (sección 5). |

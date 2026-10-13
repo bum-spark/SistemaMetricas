@@ -1,0 +1,169 @@
+:host {
+  position: sticky;
+  top: var(--topbar-alto);
+  z-index: 5;
+  display: block;
+  margin: calc(-1 * var(--space-5)) calc(-1 * var(--space-5)) var(--space-5);
+  padding: var(--space-3) var(--space-5);
+  background: var(--bg-0);
+  border-bottom: var(--borde) solid var(--border-subtle);
+}
+
+/* Una sola fila en escritorio (§4); en pantallas angostas puede envolver. */
+.barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Control con la etiqueta dentro ("Build: Todas"): caja de input (§4) con el select o los
+   inputs de fecha sin borde propio. */
+.control {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: var(--control-alto);
+  padding: 0 var(--space-1) 0 var(--space-2);
+  background: var(--bg-3);
+  border: var(--borde) solid var(--border-default);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--dur-fast) var(--ease);
+}
+
+.control:hover {
+  border-color: var(--border-strong);
+}
+
+.control:focus-within {
+  border-color: var(--petal);
+  box-shadow: var(--focus-ring);
+}
+
+.control__etiqueta {
+  font-size: var(--fs-etiqueta);
+  line-height: var(--lh-etiqueta);
+  font-weight: var(--fw-medium);
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+.control__separador {
+  color: var(--text-3);
+}
+
+.control select,
+.control input {
+  height: 100%;
+  padding: 0 var(--space-1);
+  border: 0;
+  background: transparent;
+  color: var(--text-1);
+  font-size: var(--fs-secundario);
+  cursor: pointer;
+}
+
+.control select:focus-visible,
+.control input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.control option {
+  background: var(--bg-2);
+  color: var(--text-1);
+}
+
+input[type='date'] {
+  color-scheme: dark;
+}
+
+/* Grupo segmentado (atajos de fecha y origen): el activo con subrayado --accent, como las tabs (§4). */
+.segmentado {
+  display: inline-flex;
+  height: var(--control-alto);
+}
+
+.segmento {
+  padding: 0 var(--space-1);
+  border: 0;
+  border-bottom: var(--barra-activa) solid transparent;
+  background: transparent;
+  color: var(--text-2);
+  font-size: var(--fs-cuerpo);
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.segmento:hover {
+  color: var(--text-1);
+}
+
+.segmento[aria-pressed='true'] {
+  color: var(--text-1);
+  border-bottom-color: var(--accent);
+}
+
+/* "Limpiar filtros": botón de icono al final de la fila, con tooltip (§4). */
+.limpiar {
+  position: relative;
+  margin-left: auto;
+}
+
+.limpiar__boton {
+  display: grid;
+  place-items: center;
+  width: var(--control-alto);
+  height: var(--control-alto);
+  padding: 0;
+  background: var(--bg-3);
+  border: var(--borde) solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-1);
+  cursor: pointer;
+}
+
+.limpiar__boton:hover:not(:disabled) {
+  background: var(--bg-2);
+  border-color: var(--border-strong);
+}
+
+.limpiar__boton:disabled {
+  opacity: var(--opacidad-deshabilitado);
+  cursor: not-allowed;
+}
+
+.limpiar__tooltip {
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  right: 0;
+  z-index: 15;
+  padding: var(--space-1) var(--space-2);
+  background: var(--bg-2);
+  border: var(--borde) solid var(--border-default);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-popover);
+  color: var(--text-1);
+  font-size: var(--fs-etiqueta);
+  line-height: var(--lh-etiqueta);
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--dur-fast) var(--ease), visibility var(--dur-fast);
+}
+
+.limpiar:hover .limpiar__tooltip,
+.limpiar:focus-within .limpiar__tooltip {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: var(--retraso-tooltip);
+}
+
+@media (max-width: 767px) {
+  :host {
+    position: static;
+    margin: calc(-1 * var(--space-4)) calc(-1 * var(--space-4)) var(--space-4);
+    padding: var(--space-3) var(--space-4);
+  }
+}

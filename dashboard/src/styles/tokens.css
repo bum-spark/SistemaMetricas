@@ -1,0 +1,121 @@
+/* Tokens de diseño: único lugar con colores, tamaños y sombras (DISENO_DASHBOARD.md §2).
+   El primer bloque es copia literal de §2. El segundo solo da nombre a medidas que ya
+   están en §2–§4 y en "Marca" (tipografía, layout, controles), para no escribirlas a mano
+   en los componentes. Los breakpoints (640, 768, 1024, 1280) van directo en las media
+   queries porque CSS no admite variables ahí. */
+
+:root {
+  /* Superficies (de más profunda a más elevada) */
+  --bg-0: #0E1013;   /* fondo de la app */
+  --bg-1: #14171C;   /* tarjetas, sidebar, topbar */
+  --bg-2: #1B1F26;   /* hover, filas alternas, popovers */
+  --bg-3: #232832;   /* inputs, elemento activo */
+
+  /* Bordes */
+  --border-subtle:  #262B34;  /* separadores dentro de tarjetas */
+  --border-default: #323844;  /* tarjetas, inputs */
+  --border-strong:  #444C5A;  /* hover de inputs, énfasis */
+
+  /* Texto */
+  --text-1: #E8EAEE;  /* principal */
+  --text-2: #A3AAB8;  /* secundario */
+  --text-3: #8790A2;  /* apagado: etiquetas, ejes. Contraste: 5.60:1 sobre --bg-1, 5.15:1 sobre --bg-2, 4.60:1 sobre --bg-3 */
+  --text-on-accent: #14171C;
+
+  /* Acento principal: brasa (la habitación en llamas) */
+  --accent:        #F08A3C;
+  --accent-hover:  #F59D58;
+  --accent-active: #D9772C;
+  --accent-soft:   rgba(240, 138, 60, 0.14);  /* fondos suaves, selección */
+
+  /* Acento secundario: pétalo azul */
+  --petal:       #5FA8E8;
+  --petal-soft:  rgba(95, 168, 232, 0.14);
+
+  /* Semánticos */
+  --success: #4CC38A;  --success-soft: rgba(76, 195, 138, 0.14);
+  --warning: #E8B84A;  --warning-soft: rgba(232, 184, 74, 0.14);
+  --danger:  #EF5D5D;  --danger-soft:  rgba(239, 93, 93, 0.14);
+
+  /* Foco */
+  --focus-ring: 0 0 0 2px var(--bg-0), 0 0 0 4px var(--petal);
+
+  /* Tipografía */
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-body:    'Inter', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, monospace;
+
+  /* Espaciado: cuadrícula de 4 px */
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
+  --space-5: 24px; --space-6: 32px; --space-7: 48px; --space-8: 64px;
+
+  /* Radios */
+  --radius-sm: 6px;    /* botones, inputs, badges */
+  --radius-md: 10px;   /* tarjetas */
+  --radius-lg: 14px;   /* modales, popovers grandes */
+  --radius-full: 999px;
+
+  /* Elevación: en tema oscuro se usa borde, la sombra es mínima */
+  --shadow-popover: 0 8px 24px rgba(0, 0, 0, 0.45);
+
+  /* Movimiento */
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-fast: 0ms; --dur-base: 0ms; }
+}
+
+/* Medidas con nombre (valores de §2 tipografía, §3 layout, §4 componentes y "Marca"). */
+:root {
+  /* Tipografía: tamaño / interlineado */
+  --fs-titulo-pagina: 28px;  --lh-titulo-pagina: 36px;
+  --fs-titulo-seccion: 20px; --lh-titulo-seccion: 28px;
+  --fs-titulo-tarjeta: 14px; --lh-titulo-tarjeta: 20px;
+  --fs-cuerpo: 14px;         --lh-cuerpo: 22px;
+  --fs-secundario: 13px;     --lh-secundario: 20px;
+  --fs-etiqueta: 12px;       --lh-etiqueta: 16px;
+  --fs-kpi: 32px;            --lh-kpi: 40px;
+  --fs-mono: 13px;           --lh-mono: 20px;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --tracking-etiqueta: 0.04em;  /* "mayúscula suave" de las etiquetas de KPI (§4) */
+
+  /* Layout (§3) */
+  --sidebar-ancho: 232px;
+  --sidebar-ancho-colapsada: 64px;
+  --topbar-alto: 56px;
+  --contenido-max: 1280px;
+  --login-ancho: 400px;
+
+  /* Controles (§4) */
+  --control-alto: 36px;
+  --control-alto-compacto: 28px;
+  --control-alto-grande: 44px;
+  --badge-alto: 22px;
+  --fila-tabla-alto: 44px;
+  --borde: 1px;
+  --barra-activa: 2px;
+  --spinner: 16px;
+  --spinner-trazo: 2px;
+  --dur-giro: 800ms;
+  --icono-control: 16px;
+  --icono-nav: 20px;
+  --opacidad-deshabilitado: 0.45;
+  --opacidad-atenuado: 0.6;     /* imagen del mapa de calor (§5) y velo del menú móvil */
+  --padding-tarjeta: 20px;
+  --retraso-tooltip: 150ms;     /* §4: tooltip con retraso de 150 ms */
+  --tooltip-ancho-max: 320px;   /* S-55 */
+  --tactil-min: 40px;
+
+  /* Marca */
+  --logo-estudio-sidebar: 28px;
+  --logo-estudio-login: 64px;
+  --logo-juego-tarjeta: 56px;   /* recuadro; imagen de 40 px con padding --space-2 */
+  --logo-juego-selector: 28px;  /* recuadro; imagen de 20 px con padding --space-1 */
+  --fs-inicial-tarjeta: 16px;
+  --fs-inicial-selector: 12px;
+}
