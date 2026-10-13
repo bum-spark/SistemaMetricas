@@ -1,0 +1,50 @@
+:host {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.xa-marca__logo {
+  width: var(--logo-estudio-sidebar);
+  height: var(--logo-estudio-sidebar);
+  flex: none;
+}
+
+.xa-marca__texto {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.xa-marca__nombre {
+  font-size: var(--fs-titulo-tarjeta);
+  line-height: var(--lh-titulo-tarjeta);
+  font-weight: var(--fw-semibold);
+  color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+:host(.xa-marca--login) {
+  flex-direction: column;
+  text-align: center;
+}
+
+:host(.xa-marca--login) .xa-marca__logo {
+  width: var(--logo-estudio-login);
+  height: var(--logo-estudio-login);
+}
+
+:host(.xa-marca--login) .xa-marca__nombre {
+  font-family: var(--font-display);
+  font-size: var(--fs-titulo-seccion);
+  line-height: var(--lh-titulo-seccion);
+}
+
+.xa-marca__producto {
+  font-size: var(--fs-secundario);
+  line-height: var(--lh-secundario);
+  color: var(--text-2);
+}
