@@ -35,11 +35,11 @@ configuración `APP_NAME` (valor por defecto "Estudio Xolos"); nunca escribirlo 
 ## 3. Stack
 - **API**: Node.js + Express + Mongoose. TypeScript (modo estricto).
 - **BD**: MongoDB Atlas, UNA sola base de datos con varias colecciones (no una BD por tema).
-- **Dashboard**: Angular (última versión estable), gráficas con una librería ligera
-  (ej. ngx-charts o Chart.js). Mapa de calor con canvas sobre la imagen del nivel.
+- **Dashboard**: Angular 21.2 (no 22: exige Node ≥ 22.22.3, R-56), gráficas con Chart.js 4
+  envuelto en `xa-chart`. Mapa de calor con canvas sobre la imagen del nivel.
 - **Pruebas**: Jest + Supertest para la API. Postman para pruebas manuales y demo.
-- **Deploy**: MongoDB Atlas (gratis) + API en Render o Railway + dashboard en
-  Netlify/Vercel/Firebase Hosting. Deploy temprano (hacia el día 4–5 de 10).
+- **Deploy**: MongoDB Atlas (gratis) + API en Render + dashboard en Vercel
+  (`docs/DEPLOY.md`). Deploy temprano (hacia el día 4–5 de 10).
 
 ## 4. Estructura del repositorio (monorepo)
 ```
@@ -48,14 +48,19 @@ configuración `APP_NAME` (valor por defecto "Estudio Xolos"); nunca escribirlo 
 /postman        colección y entornos exportados (local y producción)
 /sdk-unity      cliente C# de métricas para Unity (guía en docs/SDK_UNITY.md)
 /docs           ESQUEMA_EVENTOS.md, DECISIONES_ABIERTAS.md, ARQUITECTURA.md, DEPLOY.md, SDK_UNITY.md,
-                DISENO_DASHBOARD.md (fuente de verdad visual del dashboard)
+                DISENO_DASHBOARD.md (fuente de verdad visual del dashboard), GUION_DEMO.md,
+                capturas/ (del dashboard con el seed), referencias/ (bocetos, solo inspiración)
 /scripts        seed de admin y de datos de prueba, prueba de carga
+/logos          logos originales y variantes de la marca
+render.yaml     servicio de la API en Render
+README.md
 CLAUDE.md
 ```
 
 ## 5. Decisiones de arquitectura (ya tomadas)
 ### Multi-juego
-- Colección `juegos`: juegoId, nombre, slug, versionActual, activo, fechaCreacion, apiKeyHash.
+- Colección `juegos`: juegoId, nombre, slug, logoUrl (opcional), versionActual, activo,
+  fechaCreacion, apiKeyHash, apiKeyCreadaEn y catalogo.
 - TODO documento de sesiones, eventos, jugadores y logros lleva `juegoId`.
 - **API key por juego** (guardada hasheada), revocable de forma independiente.
 - Niveles y logros viven en la BD (catálogo por juego), NO escritos fijos en Angular.

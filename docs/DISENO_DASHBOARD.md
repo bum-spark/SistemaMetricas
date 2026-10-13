@@ -117,8 +117,9 @@ Los números en tablas y KPIs usan `font-variant-numeric: tabular-nums`.
 
 - **Sidebar** fija de 232 px (`--bg-1`, borde derecho `--border-subtle`). Abajo de 1024 px se
   colapsa a 64 px (solo iconos con tooltip); abajo de 768 px pasa a menú hamburguesa.
-- **Barra superior** de 56 px: a la izquierda el selector de juego, a la derecha el
-  usuario/cerrar sesión. Debajo, en las vistas con datos, la **barra de filtros**.
+- **Barra superior** de 56 px: el botón de menú (abajo de 768 px) y el selector de juego.
+  El usuario y "Salir" van solo abajo en la sidebar para no repetirlos (S-57). Debajo, en las
+  vistas con datos, la **barra de filtros**.
 - **Contenido:** ancho máximo 1280 px, centrado, padding 24 px (16 px en móvil).
 - **Cuadrícula:** 12 columnas, separación 16 px. KPIs en fila de 4 (2 en tablet, 1 en móvil);
   gráficas en tarjetas de 6 o 12 columnas.
@@ -126,7 +127,8 @@ Los números en tablas y KPIs usan `font-variant-numeric: tabular-nums`.
 
 **Sidebar (orden y etiquetas):**
 Resumen · Progresión · Niveles · Muertes · Logros y exploración.
-("Builds y rendimiento" queda fuera de la entrega 1.)
+("Builds y rendimiento" queda fuera de la entrega 1.) Solo se listan pantallas construidas y
+solo cuando la URL es de un juego que existe. Colapsada, cada icono usa `title` como tooltip.
 Arriba el logotipo (marca + nombre del estudio); abajo el nombre del admin y "Salir".
 Elemento activo: fondo `--accent-soft`, texto `--accent`, barra de 2 px a la izquierda.
 
@@ -203,7 +205,8 @@ borde `--border-strong` y fondo `--bg-2`.
 
 ### Tarjeta KPI
 Etiqueta (12/500 mayúscula suave, `--text-3`), cifra (32/600), debajo variación o contexto
-(13, `--text-2`; verde/rojo con flecha **y** texto, nunca solo color). Ejemplo: "Duración
+(13, `--text-2`; verde/rojo con flecha **y** texto, nunca solo color). Si el valor es un
+nombre (p. ej. "Nivel más largo"), la cifra usa 20 px para no partirse en dos líneas. Ejemplo: "Duración
 mediana · 18:42 · esperado ~20:00". El valor "esperado" sale de
 `catalogo.duracionEsperadaMs` del juego; si el juego no lo tiene, el KPI omite esa parte
 (nunca un valor fijo en el código).
@@ -305,8 +308,11 @@ ancho de la tarjeta, atenuada al 60 %; encima, cada celda se dibuja como un **de
 radial** centrado en la celda (calor suavizado), con la escala secuencial
 `#3B1E12 → #8A3A12 → #F08A3C → #FFD08A` y transparencia hacia el borde. Las coordenadas del mundo se
 escalan con `limites` del catálogo (eje Y invertido: en Unity crece hacia arriba). Selector
-de nivel y de tamaño de celda arriba; leyenda de escala abajo; tooltip con muertes y
-causa dominante. Si el nivel no tiene `imagenUrl`, usar un fondo `--bg-2` con cuadrícula y
+de nivel y de tamaño de celda arriba (en la URL: `?nivelId=&celda=`), con pestañas por causa
+("Todas" suma las causas); leyenda de escala abajo; al mover el puntero, una lectura bajo el
+mapa con las coordenadas del mundo, las muertes de la celda y la causa dominante. La escala
+vive en los tokens `--calor-1` … `--calor-4`. Un nivel muy vertical se limita a 512 px de alto y
+se centra. Si el nivel no tiene `imagenUrl`, usar un fondo `--bg-2` con cuadrícula y
 un aviso discreto "Falta la imagen del nivel".
 
 ---
@@ -328,11 +334,11 @@ abajo como *(cuando exista)* se agregan cuando se implemente su endpoint.
 |-------------------------------|---------------------------------------------------------------------------------------|
 | `/login`                      | Tarjeta centrada de 400 px: marca, email, contraseña, botón primario "Entrar". Error genérico "Correo o contraseña incorrectos" (no revelar cuál). `POST /auth/login`. |
 | `/juegos`                     | Cuadrícula de tarjetas, una por juego: nombre, versión actual, badge de estado, y 3 mini-KPIs (jugadores, sesiones, % completado). Clic entra al juego. `GET /juegos`. |
-| `/juegos/:slug` (Resumen)     | `versionActual` como badge junto al nombre del juego. Fila de 4 KPIs (jugadores, sesiones, duración mediana con "esperado" si hay `duracionEsperadaMs`, % terminaron); embudo compacto (6 col); tarjeta "Dónde se pierde la gente" (6 col) con la **mayor caída entre dos pasos del embudo**. `GET /juegos/:juegoId`, `/estadisticas/*/sesiones`, `embudo`. |
-| `/progresion`                 | Embudo completo. *(cuando exista)* abandono (antes del primer nivel, dentro de cada nivel, entre niveles) y completado del tutorial si el juego tiene uno. `embudo` · *(cuando exista)* `abandono`, `tutorial`. |
-| `/niveles`                    | Tiempo por nivel; tabla resumen por nivel. *(cuando exista)* reintentos por nivel. `tiempo-nivel` · *(cuando exista)* `reintentos`. |
-| `/muertes`                    | Muertes por nivel y causa. *(cuando exista)* mapa de calor con selector de nivel. `muertes` · *(cuando exista)* `mapa-calor`. |
-| `/logros`                     | Logros (%). *(cuando exista)* coleccionables encontrados vs disponibles por nivel, diálogos saltados, inactividad y pausas. `logros` · *(cuando exista)* `atencion`. |
+| `/juegos/:slug` (Resumen)     | `versionActual` como badge junto al nombre del juego. Fila de 4 KPIs (jugadores, sesiones, duración mediana con "esperado" si hay `duracionEsperadaMs`, % terminaron); embudo compacto (6 col); tarjeta "Dónde se pierde la gente" (6 col) con la **mayor caída entre dos pasos del embudo** y un enlace a Muertes con ese nivel preseleccionado. `GET /juegos/:juegoId`, `/estadisticas/*/sesiones`, `embudo`. |
+| `/progresion`                 | Embudo completo con insignias y tabla por paso (jugadores, % del inicio, % del paso anterior, caída). *(cuando exista)* abandono (antes del primer nivel, dentro de cada nivel, entre niveles) y completado del tutorial si el juego tiene uno. `embudo` · *(cuando exista)* `abandono`, `tutorial`. |
+| `/niveles`                    | 4 KPIs, tiempo por nivel, intentos para pasar (distribución de `reintentos`) y tabla resumen por nivel con diagnóstico. `tiempo-nivel` · `reintentos` · `embudo`. |
+| `/muertes`                    | 4 KPIs, muertes por nivel y causa, mapa de calor con selector de nivel y tabla por nivel y causa. `muertes` · `mapa-calor`. |
+| `/logros`                     | 4 KPIs y lista de logros con barras y rareza calculada. *(cuando exista)* coleccionables encontrados vs disponibles por nivel, diálogos saltados, inactividad y pausas. `logros` · *(cuando exista)* `atencion`. |
 
 "Builds y rendimiento" (`/builds`: tabla por versión y plataforma, FPS, cargas y crashes;
 endpoints `versiones` y `rendimiento`) **queda fuera de la entrega 1**.
@@ -369,8 +375,10 @@ dashboard/src/
     core/            auth (servicio, guard, interceptor JWT), api (cliente tipado), config (APP_NAME, API_URL)
     shared/ui/       botón, input, select, tarjeta, kpi, tabs, badge, tabla, tooltip,
                      skeleton, estado-vacio, estado-error, toast  (prefijo xa-)
-    shared/charts/   xa-chart, xa-embudo, xa-mapa-calor
-    features/        login, juegos, juego (resumen, progresion, niveles, muertes, logros)
+    shared/ui/       … + cabecera, insignia, tabs (y umbrales.ts, formato/, carga.ts en shared/)
+    shared/charts/   xa-chart (+ chart-theme.ts), xa-embudo, xa-mapa-calor
+    features/        login, marco (sidebar y barra superior), juegos,
+                     juego (resumen, progresion, niveles, muertes, logros)
     i18n/es.ts
 ```
 
@@ -394,11 +402,13 @@ dashboard/src/
 
 ## 9. Criterios de "diseño terminado"
 
-- [ ] Todos los tokens en `tokens.css` y ningún valor de diseño fuera de él
-- [ ] Componentes `shared/ui` usados, con todos sus estados (hover, foco, deshabilitado, error)
-- [ ] Cada vista con skeleton, vacío, error y datos
-- [ ] Login, lista de juegos y al menos Resumen, Progresión, Niveles, Muertes y Logros
+- [x] Todos los tokens en `tokens.css` y ningún valor de diseño fuera de él (excepto la paleta
+      categórica en `chart-theme.ts`, como permite §8)
+- [x] Componentes `shared/ui` usados, con todos sus estados (hover, foco, deshabilitado, error)
+- [x] Cada vista con skeleton, vacío, error y datos
+- [x] Login, lista de juegos y al menos Resumen, Progresión, Niveles, Muertes y Logros
       (con las tarjetas cuyos endpoints existan; "Builds y rendimiento" fuera de la entrega 1)
-- [ ] El segundo juego (demo) se ve correcto sin cambios de código
-- [ ] Contraste y foco revisados; navegación completa con teclado
-- [ ] Revisado en 1280, 1024 y 390 px de ancho
+- [x] El segundo juego (demo) se ve correcto sin cambios de código
+- [ ] Contraste y foco revisados; navegación completa con teclado (foco visible y tabs con
+      teclado implementados; falta una pasada completa con lector de pantalla)
+- [x] Revisado en 1280, 1024 y 390 px de ancho (capturas en 1280, 1000 y 390)
