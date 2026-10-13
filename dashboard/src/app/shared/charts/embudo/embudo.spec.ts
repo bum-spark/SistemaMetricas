@@ -39,4 +39,19 @@ describe('Embudo', () => {
     expect(el.querySelectorAll('.paso--mayor-caida')).toHaveLength(1);
     expect(pasos[3]!.querySelector('.barra__valor')?.getAttribute('width')).toBe('31%');
   });
+
+  it('muestra las insignias de cada paso con su regla en el tooltip', async () => {
+    const fixture = TestBed.createComponent(Embudo);
+    fixture.componentRef.setInput('pasos', PASOS);
+    fixture.componentRef.setInput('insignias', [[], [], [{ etiqueta: 'Mayor fuga', tono: 'danger', regla: 'La regla.' }], []]);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const insignias = el.querySelectorAll('xa-insignia');
+    expect(insignias).toHaveLength(1);
+    expect(el.querySelectorAll('li.paso')[2]!.querySelector('xa-insignia xa-badge')?.textContent?.trim()).toBe('Mayor fuga');
+    const tooltip = el.querySelector('xa-insignia [role="tooltip"]')!;
+    expect(tooltip.textContent).toBe('La regla.');
+    expect(insignias[0]!.getAttribute('aria-describedby')).toBe(tooltip.id);
+    expect(insignias[0]!.getAttribute('tabindex')).toBe('0');
+  });
 });

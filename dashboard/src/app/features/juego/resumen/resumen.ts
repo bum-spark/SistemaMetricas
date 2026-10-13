@@ -8,10 +8,12 @@ import { formatearDuracion, formatearEntero, formatearPorcentaje } from '../../.
 import { Boton } from '../../../shared/ui/boton/boton';
 import { Cabecera } from '../../../shared/ui/cabecera/cabecera';
 import { EstadoError, EstadoVacio, Skeleton } from '../../../shared/ui/estado/estados';
+import { Insignia } from '../../../shared/ui/insignia/insignia';
 import { Kpi } from '../../../shared/ui/kpi/kpi';
 import { Tarjeta } from '../../../shared/ui/tarjeta/tarjeta';
 import { FILTROS_VACIOS, hayFiltros } from '../filtros';
 import { JuegoActualService } from '../juego-actual.service';
+import { insigniasEmbudo } from '../insignias-embudo';
 import { pasosVisibles } from '../pasos';
 
 // /juegos/:slug (Resumen, DISENO_DASHBOARD.md §6): versión actual junto al nombre, 4 KPIs
@@ -20,7 +22,7 @@ import { pasosVisibles } from '../pasos';
 @Component({
   selector: 'xa-resumen',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Boton, Cabecera, Embudo, EstadoError, EstadoVacio, Kpi, Skeleton, Tarjeta],
+  imports: [Boton, Cabecera, Embudo, EstadoError, EstadoVacio, Insignia, Kpi, Skeleton, Tarjeta],
   templateUrl: './resumen.html',
   styleUrl: './resumen.css',
 })
@@ -55,6 +57,7 @@ export class Resumen {
     const c = this.embudo.carga();
     return c.estado === 'listo' ? pasosVisibles(c.datos, this.juego.catalogo()) : [];
   });
+  protected readonly insignias = computed(() => insigniasEmbudo(this.pasos()));
   protected readonly sinDatos = computed(() => (this.datosSesiones()?.sesiones ?? 0) === 0 && (this.pasos()[0]?.jugadores ?? 0) === 0);
   protected readonly conFiltros = computed(() => hayFiltros(this.juego.filtros()));
 
@@ -83,6 +86,7 @@ export class Resumen {
           hasta: pasos[c.hasta]!.etiqueta,
           porcentaje: formatearPorcentaje(c.porcentaje),
           detalle: this.textos.caidaDetalle(formatearEntero(c.jugadores)),
+          insignias: this.insignias()[c.hasta] ?? [],
         }
       : null;
   });

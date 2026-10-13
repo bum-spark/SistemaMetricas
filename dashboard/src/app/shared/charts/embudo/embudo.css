@@ -67,13 +67,19 @@
 }
 
 .caida {
-  align-self: flex-end;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.caida__valor {
   font-family: var(--font-mono);
   font-size: var(--fs-etiqueta);
   line-height: var(--lh-etiqueta);
   color: var(--danger);
 }
 
-.paso--mayor-caida .caida {
+.paso--mayor-caida .caida__valor {
   font-weight: var(--fw-semibold);
 }

@@ -63,3 +63,9 @@
   font-size: var(--fs-secundario);
   line-height: var(--lh-secundario);
 }
+
+.caida__insignias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}

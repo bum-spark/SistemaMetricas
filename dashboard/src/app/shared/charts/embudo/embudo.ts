@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { ES } from '../../../i18n/es';
 import { formatearEntero, formatearPorcentaje } from '../../formato/formato';
+import { DatosInsignia } from '../../umbrales';
+import { Insignia } from '../../ui/insignia/insignia';
 
 export interface PasoVisible {
   etiqueta: string;
@@ -35,14 +37,20 @@ export function mayorCaida(pasos: readonly PasoVisible[]): Caida | null {
 @Component({
   selector: 'xa-embudo',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [Insignia],
   template: `
     <ol class="embudo" [class.embudo--compacto]="compacto()">
       @for (paso of pasos(); track $index; let i = $index) {
         <li class="paso" [class.paso--mayor-caida]="mayor()?.hasta === i" [style.--paso]="fraccion(i)">
           @if (i > 0) {
-            <p class="caida">
-              <span aria-hidden="true">−</span><span class="solo-lector">{{ textos.perdida }}</span>{{ porcentaje(listaCaidas()[i - 1]!.porcentaje) }}
-            </p>
+            <div class="caida">
+              @for (ins of insignias()?.[i] ?? []; track ins.etiqueta) {
+                <xa-insignia [insignia]="ins" alinear="derecha" />
+              }
+              <p class="caida__valor">
+                <span aria-hidden="true">−</span><span class="solo-lector">{{ textos.perdida }}</span>{{ porcentaje(listaCaidas()[i - 1]!.porcentaje) }}
+              </p>
+            </div>
           }
           <div class="fila">
             <span class="etiqueta">{{ paso.etiqueta }}</span>
@@ -61,6 +69,8 @@ export function mayorCaida(pasos: readonly PasoVisible[]): Caida | null {
 export class Embudo {
   readonly pasos = input.required<PasoVisible[]>();
   readonly compacto = input(false);
+  // Insignias por paso (índice del paso donde cae la gente); las calcula la vista con umbrales.ts.
+  readonly insignias = input<DatosInsignia[][] | null>(null);
   protected readonly textos = ES.embudo;
   protected readonly entero = formatearEntero;
   protected readonly porcentaje = formatearPorcentaje;

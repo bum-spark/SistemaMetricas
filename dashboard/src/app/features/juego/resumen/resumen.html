@@ -30,7 +30,7 @@
         @if (cargando()) {
           <xa-skeleton class="esqueleto-grafica" />
         } @else {
-          <xa-embudo [pasos]="pasos()" [compacto]="true" />
+          <xa-embudo [pasos]="pasos()" [compacto]="true" [insignias]="insignias()" />
         }
       </xa-tarjeta>
 
@@ -45,6 +45,13 @@
               <span>{{ c.hasta }}</span>
             </p>
             <p class="caida__cifra cifras"><span aria-hidden="true">−</span>{{ c.porcentaje }}</p>
+            @if (c.insignias.length) {
+              <div class="caida__insignias">
+                @for (ins of c.insignias; track ins.etiqueta) {
+                  <xa-insignia [insignia]="ins" />
+                }
+              </div>
+            }
             <p class="caida__detalle">{{ c.detalle }}</p>
           </div>
         } @else {

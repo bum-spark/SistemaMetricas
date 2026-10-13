@@ -41,6 +41,10 @@ describe('Resumen (/juegos/:slug)', () => {
     expect(m.el.querySelector('.caida__tramo')?.textContent).toContain('Nivel A');
     expect(m.el.querySelector('.caida__tramo')?.textContent).toContain('Nivel B');
     expect(m.el.querySelector('.caida__cifra')?.textContent).toContain('50 %');
+    // Caída de 50 % (n = 1,200): "Mayor fuga" y "Crítica"; la de 10 % no lleva insignia.
+    const enCaida = [...m.el.querySelectorAll('.caida__insignias xa-badge')].map((b) => b.textContent?.trim());
+    expect(enCaida).toEqual([ES.insignias.mayorFuga, ES.insignias.critica]);
+    expect(m.el.querySelectorAll('xa-embudo xa-insignia')).toHaveLength(2);
   });
 
   it('manda los filtros de la URL a la API (fechas en UTC, hasta inclusivo)', async () => {
