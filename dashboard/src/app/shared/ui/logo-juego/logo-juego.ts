@@ -3,7 +3,7 @@ import { ES } from '../../../i18n/es';
 import { inicial } from '../../formato/formato';
 
 // Ruta del dashboard para logos servidos desde public/ (mismo patrón que valida la API).
-const RUTA_LOGO_DASHBOARD = /^\/juegos\/[a-z0-9]+(?:-[a-z0-9]+)*\/logo\.png$/;
+const RUTA_LOGO_DASHBOARD = /^\/logos\/[a-z0-9]+(?:-[a-z0-9]+)*\/logo\.png$/;
 
 // Logo del juego en su recuadro --bg-3 (DISENO_DASHBOARD.md §3, "Marca"). Siempre sale de
 // `logoUrl`; sin logo o si la imagen falla, muestra la inicial del nombre.

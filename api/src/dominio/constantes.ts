@@ -42,10 +42,10 @@ export const PATRON_SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
 // Logo del juego (opcional): ruta del dashboard con el slug del propio juego o una URL https.
 export const LOGO_URL_MAX = 500;
-export const PATRON_LOGO_DASHBOARD = /^\/juegos\/([a-z0-9]+(?:-[a-z0-9]+)*)\/logo\.png$/;
+export const PATRON_LOGO_DASHBOARD = /^\/logos\/([a-z0-9]+(?:-[a-z0-9]+)*)\/logo\.png$/;
 
 export function rutaLogoDashboard(slug: string): string {
-  return `/juegos/${slug}/logo.png`;
+  return `/logos/${slug}/logo.png`;
 }
 
 // null si es válida; si no, el motivo. La ruta del dashboard debe usar el slug del juego.
@@ -61,7 +61,7 @@ export function problemaLogoUrl(logoUrl: string, slug: string): string | null {
   try {
     url = new URL(logoUrl);
   } catch {
-    return 'logoUrl debe ser /juegos/<slug>/logo.png o una URL https';
+    return 'logoUrl debe ser /logos/<slug>/logo.png o una URL https';
   }
-  return url.protocol === 'https:' && url.hostname !== '' ? null : 'logoUrl debe ser /juegos/<slug>/logo.png o una URL https';
+  return url.protocol === 'https:' && url.hostname !== '' ? null : 'logoUrl debe ser /logos/<slug>/logo.png o una URL https';
 }

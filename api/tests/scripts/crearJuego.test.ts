@@ -22,7 +22,7 @@ describe('crearJuego', () => {
     expect(JSON.stringify(juego)).not.toContain(r.apiKey);
     expect(juego?.catalogo.niveles.map((n) => n.nivelId)).toEqual(['casa_abandonada', 'hospital_cuarto', 'habitacion_llamas']);
     expect(juego?.catalogo.duracionEsperadaMs).toBe(1200000);
-    expect(juego?.logoUrl).toBe('/juegos/la-casa-del-bosque/logo.png');
+    expect(juego?.logoUrl).toBe('/logos/la-casa-del-bosque/logo.png');
   });
 
   it('acepta --version y da acceso solo a los admins activos', async () => {

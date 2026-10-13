@@ -346,7 +346,7 @@ En el seed se define **una sola constante** con este catálogo. Se ampliará des
 Son SVG generados (`npm run imagenes-niveles`) con los peligros dibujados donde `seed-datos`
 concentra las muertes; se reemplazan por las capturas y límites reales de Unity.
 
-**Logo:** `logoUrl: /juegos/la-casa-del-bosque/logo.png` (campo del juego, no del catálogo;
+**Logo:** `logoUrl: /logos/la-casa-del-bosque/logo.png` (campo del juego, no del catálogo;
 ver sección 6). `crear-juego` y `seed-datos` lo guardan, y `seed-datos` lo completa si falta.
 
 **Causas de muerte:** `fantasma` (Fantasma), `lava` (Lava), `caida` (Caída).
@@ -432,7 +432,7 @@ campos `...Id`. Fechas en UTC.
 | `juegoId`          | string (UUID v4)| Generado al crear el juego (S-10).                            |
 | `nombre`           | string          | "La Casa del Bosque".                                         |
 | `slug`             | string          | `la-casa-del-bosque`. Para URLs del dashboard.                |
-| `logoUrl`          | string (opcional)| Logo del juego para el dashboard: ruta `/juegos/<slug>/logo.png` (con el slug del propio juego; el archivo vive en `dashboard/public/`) o URL `https://…`; máx. 500 caracteres. Sin logo, el dashboard muestra un avatar con la inicial. No forma parte del catálogo. La Casa del Bosque: `/juegos/la-casa-del-bosque/logo.png`; Faro Nocturno (demo): sin logo. |
+| `logoUrl`          | string (opcional)| Logo del juego para el dashboard: ruta `/logos/<slug>/logo.png` (con el slug del propio juego; el archivo vive en `dashboard/public/`) o URL `https://…`; máx. 500 caracteres. Sin logo, el dashboard muestra un avatar con la inicial. No forma parte del catálogo. La Casa del Bosque: `/logos/la-casa-del-bosque/logo.png`; Faro Nocturno (demo): sin logo. |
 | `versionActual`    | string          | Último `buildVersion` publicado.                              |
 | `activo`           | boolean         | Si es `false`, la ingesta responde 401.                       |
 | `fechaCreacion`    | Date            |                                                               |

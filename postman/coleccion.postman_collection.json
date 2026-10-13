@@ -1018,7 +1018,7 @@
                   "pm.test('cada juego trae logoUrl (ruta del dashboard, URL https o null)', () => {",
                   "  pm.response.json().datos.forEach((j) => {",
                   "    pm.expect(j).to.have.property('logoUrl');",
-                  "    if (j.logoUrl !== null) pm.expect(j.logoUrl).to.match(/^(\\/juegos\\/[a-z0-9-]+\\/logo\\.png|https:\\/\\/.+)$/);",
+                  "    if (j.logoUrl !== null) pm.expect(j.logoUrl).to.match(/^(\\/logos\\/[a-z0-9-]+\\/logo\\.png|https:\\/\\/.+)$/);",
                   "  });",
                   "});"
                 ]

@@ -33,7 +33,7 @@ async function montar(url: string) {
   const fixture = TestBed.createComponent(Marco);
   const http = TestBed.inject(HttpTestingController);
   http.expectOne(`${CONFIG.apiUrl}/juegos?limite=100`).flush({
-    datos: [juegoDePrueba({ nombre: 'Juego Uno', slug: 'juego-uno', logoUrl: '/juegos/juego-uno/logo.png' }), juegoDePrueba({ juegoId: 'b', nombre: 'Demo', slug: 'demo' })],
+    datos: [juegoDePrueba({ nombre: 'Juego Uno', slug: 'juego-uno', logoUrl: '/logos/juego-uno/logo.png' }), juegoDePrueba({ juegoId: 'b', nombre: 'Demo', slug: 'demo' })],
     pagina: 1,
     limite: 100,
     total: 2,
@@ -80,7 +80,7 @@ describe('Marco', () => {
     expect(el.querySelector('[aria-current="page"]')?.textContent?.trim()).toBe(ES.marco.secciones.muertes);
     const selector = el.querySelector('xa-selector-juego')!;
     expect(selector.textContent).toContain('Juego Uno');
-    expect(selector.querySelector('img')?.getAttribute('src')).toBe('/juegos/juego-uno/logo.png');
+    expect(selector.querySelector('img')?.getAttribute('src')).toBe('/logos/juego-uno/logo.png');
   });
 
   it('el selector lista los juegos y se cierra con Escape', async () => {

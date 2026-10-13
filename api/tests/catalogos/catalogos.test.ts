@@ -12,7 +12,7 @@ describe('catálogos de los juegos', () => {
   });
 
   it('La Casa del Bosque trae su logo del dashboard; Faro Nocturno (demo) no tiene logo', () => {
-    expect(LA_CASA_DEL_BOSQUE.logoUrl).toBe('/juegos/la-casa-del-bosque/logo.png');
+    expect(LA_CASA_DEL_BOSQUE.logoUrl).toBe('/logos/la-casa-del-bosque/logo.png');
     expect(FARO_NOCTURNO_DEMO.logoUrl).toBeUndefined();
   });
 });

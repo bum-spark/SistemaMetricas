@@ -12,10 +12,10 @@ async function montar(entradas: Record<string, unknown>) {
 
 describe('LogoJuego', () => {
   it('muestra el logo de logoUrl con alt, tamaño explícito y srcset @2x para rutas del dashboard', async () => {
-    const { el } = await montar({ nombre: 'La Casa', logoUrl: '/juegos/la-casa/logo.png' });
+    const { el } = await montar({ nombre: 'La Casa', logoUrl: '/logos/la-casa/logo.png' });
     const img = el.querySelector('img')!;
-    expect(img.getAttribute('src')).toBe('/juegos/la-casa/logo.png');
-    expect(img.getAttribute('srcset')).toBe('/juegos/la-casa/logo.png 1x, /juegos/la-casa/logo@2x.png 2x');
+    expect(img.getAttribute('src')).toBe('/logos/la-casa/logo.png');
+    expect(img.getAttribute('srcset')).toBe('/logos/la-casa/logo.png 1x, /logos/la-casa/logo@2x.png 2x');
     expect(img.getAttribute('alt')).toBe('Logo de La Casa');
     expect(img.getAttribute('width')).toBe('40');
     expect(img.getAttribute('height')).toBe('40');
@@ -36,7 +36,7 @@ describe('LogoJuego', () => {
   });
 
   it('si la imagen falla al cargar, cae a la inicial', async () => {
-    const { el, fixture } = await montar({ nombre: 'Roto', logoUrl: '/juegos/roto/logo.png' });
+    const { el, fixture } = await montar({ nombre: 'Roto', logoUrl: '/logos/roto/logo.png' });
     el.querySelector('img')!.dispatchEvent(new Event('error'));
     await fixture.whenStable();
     expect(el.querySelector('img')).toBeNull();
@@ -44,7 +44,7 @@ describe('LogoJuego', () => {
   });
 
   it('decorativo: alt vacío (el nombre ya está escrito junto al logo)', async () => {
-    const { el } = await montar({ nombre: 'La Casa', logoUrl: '/juegos/la-casa/logo.png', decorativo: true });
+    const { el } = await montar({ nombre: 'La Casa', logoUrl: '/logos/la-casa/logo.png', decorativo: true });
     expect(el.querySelector('img')!.getAttribute('alt')).toBe('');
   });
 });

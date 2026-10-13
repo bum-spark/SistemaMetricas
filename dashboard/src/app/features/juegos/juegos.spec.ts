@@ -38,7 +38,7 @@ describe('Juegos (/juegos)', () => {
     const { el, fixture, http } = await montar();
     http.expectOne(URL).flush(
       lista([
-        juegoDePrueba({ nombre: 'Juego Uno', slug: 'juego-uno', logoUrl: '/juegos/juego-uno/logo.png' }),
+        juegoDePrueba({ nombre: 'Juego Uno', slug: 'juego-uno', logoUrl: '/logos/juego-uno/logo.png' }),
         juegoDePrueba({ juegoId: 'b', nombre: 'Demo', slug: 'demo', activo: false, resumen: { jugadores: 0, sesiones: 0, tasaCompletado: 0.05 } }),
       ]),
     );
@@ -52,7 +52,7 @@ describe('Juegos (/juegos)', () => {
     expect(tarjetas[0]!.textContent).toContain(ES.juegos.activo);
     expect(tarjetas[0]!.textContent).toContain('1,200');
     expect(tarjetas[0]!.textContent).toContain('31 %');
-    expect(tarjetas[0]!.querySelector('img')?.getAttribute('src')).toBe('/juegos/juego-uno/logo.png');
+    expect(tarjetas[0]!.querySelector('img')?.getAttribute('src')).toBe('/logos/juego-uno/logo.png');
     expect(tarjetas[1]!.textContent).toContain(ES.juegos.inactivo);
     expect(tarjetas[1]!.textContent).toContain('5.0 %');
     expect(tarjetas[1]!.querySelector('img')).toBeNull();

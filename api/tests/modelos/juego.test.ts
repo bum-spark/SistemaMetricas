@@ -45,17 +45,18 @@ describe('modelo Juego', () => {
 
   it('logoUrl es opcional: acepta la ruta del dashboard con su slug o una URL https', async () => {
     expect((await JuegoModelo.create(datosJuego())).logoUrl).toBeUndefined();
-    const conRuta = await JuegoModelo.create(datosJuego({ slug: 'mi-juego', logoUrl: '/juegos/mi-juego/logo.png' }));
-    expect(conRuta.logoUrl).toBe('/juegos/mi-juego/logo.png');
+    const conRuta = await JuegoModelo.create(datosJuego({ slug: 'mi-juego', logoUrl: '/logos/mi-juego/logo.png' }));
+    expect(conRuta.logoUrl).toBe('/logos/mi-juego/logo.png');
     const conHttps = await JuegoModelo.create(datosJuego({ logoUrl: 'https://cdn.ejemplo.com/logos/juego.png' }));
     expect(conHttps.logoUrl).toBe('https://cdn.ejemplo.com/logos/juego.png');
   });
 
   it.each([
-    ['/juegos/otro-juego/logo.png', /debe usar el slug del juego: \/juegos\/mi-juego\/logo\.png/],
+    ['/logos/otro-juego/logo.png', /debe usar el slug del juego: \/logos\/mi-juego\/logo\.png/],
     ['http://cdn.ejemplo.com/logo.png', /URL https/],
     ['javascript:alert(1)', /URL https/],
-    ['/juegos/mi-juego/logo.svg', /URL https/],
+    ['/logos/mi-juego/logo.svg', /URL https/],
+    ['/juegos/mi-juego/logo.png', /URL https/],
     ['logo.png', /URL https/],
     [`https://cdn.ejemplo.com/${'a'.repeat(500)}.png`, /máximo 500/],
   ])('rechaza logoUrl %s', async (logoUrl, mensaje) => {

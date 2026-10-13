@@ -141,7 +141,7 @@ dashboard solo usa las copias optimizadas de `dashboard/public/` (R-55, S-53).
 | `marca/favicon-32.png`                       | `favicon-32.png`             | 32 px       | Favicon                              |
 | `marca/apple-touch-icon.png`                 | `favicon-180.png`            | 180 px      | Icono de iOS                          |
 | `marca/icono-512.png`                        | `favicon-512.png`            | 512 px      | Icono grande (manifest, si se usa)   |
-| `juegos/<slug>/logo.png` / `logo@2x.png`     | `casa-del-bosque-limpia.png` | 40 / 80 px  | Logo del juego (`logoUrl`)           |
+| `logos/<slug>/logo.png` / `logo@2x.png`     | `casa-del-bosque-limpia.png` | 40 / 80 px  | Logo del juego (`logoUrl`)           |
 
 - **Logo del estudio:** siempre la silueta clara (`#E8EAEE`, igual a `--text-1`) sobre las
   superficies oscuras; el xolo negro original no se usa en el dashboard.
@@ -155,7 +155,7 @@ dashboard solo usa las copias optimizadas de `dashboard/public/` (R-55, S-53).
   `--radius-md`:
   - Tarjeta de `/juegos`: recuadro de 56 px con padding `--space-2` (imagen de 40 px).
   - Selector de la barra superior: recuadro de 28 px con padding `--space-1` (imagen de 20 px).
-  - Si `logoUrl` es una ruta del dashboard (`/juegos/<slug>/logo.png`), se agrega
+  - Si `logoUrl` es una ruta del dashboard (`/logos/<slug>/logo.png`), se agrega
     `srcset` con `logo@2x.png`; si es una URL https externa, solo `src`.
   - Sin `logoUrl` (o si la imagen falla al cargar): el mismo recuadro con la inicial del
     nombre del juego en Space Grotesk 600, `--text-2`, centrada (16 px en la tarjeta, 12 px
