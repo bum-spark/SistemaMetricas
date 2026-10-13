@@ -614,6 +614,7 @@ corren a mano con acceso a la base de datos (S-19). Se ejecutan desde `/api` con
 | `revocar-api-key --juego <slug>` | Pone `apiKeyHash: null`. El juego deja de poder mandar datos; los datos guardados se conservan.               |
 | `seed-datos [--semilla n] [--jugadores n] [--referencia AAAA-MM-DD]` | Datos de prueba realistas para La Casa del Bosque (300 jugadores por defecto) y Faro Nocturno (demo) (la mitad), todos con `origen: "seed"` (ver "seed-datos" abajo). |
 | `imagenes-niveles`       | Regenera las imágenes provisionales de los niveles en `dashboard/public/niveles/` (no toca la base). |
+| `prueba-carga [--duracion s] [--conexiones n] [--lote n]` | Prueba de carga con autocannon (S-31): levanta la API en el mismo proceso contra una base aparte (`MONGODB_DB`, por defecto `xolos_carga`), crea un juego y un admin de prueba, mide ingesta (`POST /eventos` en lotes) y lectura (`GET /estadisticas/:id/embudo`) y **borra la base al terminar**. Se niega a correr si `MONGODB_DB` es `xolos_analytics`. Límites altos con `RATE_LIMIT_INGESTA_IP`/`RATE_LIMIT_INGESTA_KEY` para medir capacidad. |
 | `limpiar-seed [--juego <slug>]` | Borra todo lo que tenga `origen: "seed"` (y los logros de esos jugadores); con `--juego`, solo de ese juego. Muestra cuántos documentos eliminó por colección. |
 
 **API key:**

@@ -22,7 +22,8 @@
     "revocar-api-key": "tsx ../scripts/revocar-api-key.ts",
     "limpiar-seed": "tsx ../scripts/limpiar-seed.ts",
     "seed-datos": "tsx ../scripts/seed-datos.ts",
-    "imagenes-niveles": "tsx ../scripts/imagenes-niveles.ts"
+    "imagenes-niveles": "tsx ../scripts/imagenes-niveles.ts",
+    "prueba-carga": "tsx ../scripts/prueba-carga.ts"
   },
   "license": "UNLICENSED",
   "dependencies": {
@@ -38,6 +39,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@types/autocannon": "^7.12.7",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
@@ -45,6 +47,7 @@
     "@types/node": "^22.20.5",
     "@types/supertest": "^7.2.1",
     "@types/swagger-ui-express": "^4.1.8",
+    "autocannon": "^8.0.0",
     "eslint": "^10.12.0",
     "jest": "^30.5.2",
     "mongodb-memory-server": "^11.3.0",
