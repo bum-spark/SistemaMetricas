@@ -1,3 +1,4 @@
+import { rutaLogoDashboard } from '../dominio/constantes';
 import type { DefinicionJuego } from './tipos';
 
 // Catálogo definitivo de La Casa del Bosque (ESQUEMA_EVENTOS.md §5.1, R-02).
@@ -57,6 +58,7 @@ const coleccionables = [
 export const LA_CASA_DEL_BOSQUE: DefinicionJuego = {
   nombre: 'La Casa del Bosque',
   slug: 'la-casa-del-bosque',
+  logoUrl: rutaLogoDashboard('la-casa-del-bosque'),
   catalogo: {
     duracionEsperadaMs: 1200000,
     tiposEvento: [

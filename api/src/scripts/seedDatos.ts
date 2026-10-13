@@ -36,7 +36,7 @@ export function referenciaPorDefecto(ahora = new Date()): Date {
 }
 
 // Crea el juego si no existe (sin API key: el seed no la necesita) y completa en su catálogo
-// las imágenes y límites provisionales que falten (A-07).
+// el logo y las imágenes y límites provisionales que falten (A-07).
 async function asegurarJuego(def: DefinicionJuego): Promise<{ juegoId: string; catalogo: Catalogo; creado: boolean }> {
   const constante = esquemaCatalogo.parse(def.catalogo);
   let juego = await JuegoModelo.findOne({ slug: def.slug });
@@ -47,6 +47,7 @@ async function asegurarJuego(def: DefinicionJuego): Promise<{ juegoId: string; c
       nombre: def.nombre,
       slug: def.slug,
       versionActual: '1.0.1',
+      ...(def.logoUrl ? { logoUrl: def.logoUrl } : {}),
       apiKeyHash: null,
       catalogo: constante,
     });
@@ -54,6 +55,10 @@ async function asegurarJuego(def: DefinicionJuego): Promise<{ juegoId: string; c
     await AdminModelo.updateMany({ activo: true }, { $addToSet: { juegosPermitidos: juego.juegoId } });
   } else {
     let cambio = false;
+    if (def.logoUrl && !juego.logoUrl) {
+      juego.logoUrl = def.logoUrl;
+      cambio = true;
+    }
     for (const nivel of juego.catalogo.niveles) {
       const base = constante.niveles.find((n) => n.nivelId === nivel.nivelId);
       if (base?.imagenUrl && !nivel.imagenUrl) {

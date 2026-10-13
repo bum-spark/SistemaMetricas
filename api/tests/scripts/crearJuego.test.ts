@@ -22,6 +22,7 @@ describe('crearJuego', () => {
     expect(JSON.stringify(juego)).not.toContain(r.apiKey);
     expect(juego?.catalogo.niveles.map((n) => n.nivelId)).toEqual(['casa_abandonada', 'hospital_cuarto', 'habitacion_llamas']);
     expect(juego?.catalogo.duracionEsperadaMs).toBe(1200000);
+    expect(juego?.logoUrl).toBe('/juegos/la-casa-del-bosque/logo.png');
   });
 
   it('acepta --version y da acceso solo a los admins activos', async () => {
@@ -33,7 +34,9 @@ describe('crearJuego', () => {
     expect(r.adminsConAcceso).toBe(1);
     expect((await AdminModelo.findById(activo._id).lean())?.juegosPermitidos).toEqual([r.juegoId]);
     expect((await AdminModelo.findById(inactivo._id).lean())?.juegosPermitidos).toEqual([]);
-    expect((await JuegoModelo.findOne({ juegoId: r.juegoId }).lean())?.versionActual).toBe('0.9.0');
+    const faro = await JuegoModelo.findOne({ juegoId: r.juegoId }).lean();
+    expect(faro?.versionActual).toBe('0.9.0');
+    expect(faro?.logoUrl).toBeUndefined();
   });
 
   it('con --sin-acceso no modifica a los admins', async () => {

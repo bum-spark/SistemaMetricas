@@ -40,6 +40,12 @@ describe('GET /api/v1/juegos', () => {
     expect(lcdb?.resumen).toEqual({ jugadores: 2, sesiones: 2, tasaCompletado: 0.5 });
   });
 
+  it('incluye logoUrl: la ruta del dashboard o null si el juego no tiene logo', async () => {
+    const res = await get('/juegos');
+    const logos = Object.fromEntries((res.body.datos as { slug: string; logoUrl: string | null }[]).map((j) => [j.slug, j.logoUrl]));
+    expect(logos).toEqual({ 'la-casa-del-bosque': '/juegos/la-casa-del-bosque/logo.png', 'faro-nocturno-demo': null });
+  });
+
   it('un juego sin datos tiene resumen en cero', async () => {
     const res = await get('/juegos');
     const demo = (res.body.datos as { slug: string; resumen: unknown }[]).find((j) => j.slug === 'faro-nocturno-demo');
@@ -78,7 +84,7 @@ describe('GET /api/v1/juegos/:juegoId', () => {
 
     const res = await get(`/juegos/${casa.juegoId}`);
     expect(res.status).toBe(200);
-    expect(res.body).toMatchObject({ juegoId: casa.juegoId, slug: 'la-casa-del-bosque' });
+    expect(res.body).toMatchObject({ juegoId: casa.juegoId, slug: 'la-casa-del-bosque', logoUrl: '/juegos/la-casa-del-bosque/logo.png' });
     expect(res.body.catalogo.duracionEsperadaMs).toBe(1200000);
     expect((res.body.catalogo.niveles as { nivelId: string }[]).map((n) => n.nivelId)).toEqual(['casa_abandonada', 'hospital_cuarto', 'habitacion_llamas']);
     expect(res.body.filtros).toEqual({ buildVersions: ['1.0.0', '1.1.0'], plataformas: ['android', 'windows'] });
@@ -88,6 +94,7 @@ describe('GET /api/v1/juegos/:juegoId', () => {
   it('sin sesiones, los filtros vienen vacíos', async () => {
     const res = await get(`/juegos/${faro.juegoId}`);
     expect(res.body.filtros).toEqual({ buildVersions: [], plataformas: [] });
+    expect(res.body.logoUrl).toBeNull();
   });
 
   it('403 SIN_PERMISO si el juego no está en juegosPermitidos', async () => {

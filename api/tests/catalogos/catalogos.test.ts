@@ -10,6 +10,11 @@ describe('catálogos de los juegos', () => {
   it('están registrados por su slug', () => {
     expect(Object.keys(CATALOGOS).sort()).toEqual(['faro-nocturno-demo', 'la-casa-del-bosque']);
   });
+
+  it('La Casa del Bosque trae su logo del dashboard; Faro Nocturno (demo) no tiene logo', () => {
+    expect(LA_CASA_DEL_BOSQUE.logoUrl).toBe('/juegos/la-casa-del-bosque/logo.png');
+    expect(FARO_NOCTURNO_DEMO.logoUrl).toBeUndefined();
+  });
 });
 
 describe('La Casa del Bosque (ESQUEMA_EVENTOS.md §5.1)', () => {

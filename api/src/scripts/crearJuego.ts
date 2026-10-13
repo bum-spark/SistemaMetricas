@@ -39,6 +39,7 @@ export async function crearJuego(opciones: OpcionesCrearJuego): Promise<Resultad
     nombre: definicion.nombre,
     slug: definicion.slug,
     versionActual: opciones.versionActual ?? '1.0.0',
+    ...(definicion.logoUrl ? { logoUrl: definicion.logoUrl } : {}),
     apiKeyHash: hashApiKey(apiKey),
     apiKeyCreadaEn: new Date(),
     catalogo: catalogo.data,
