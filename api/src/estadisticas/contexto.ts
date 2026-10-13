@@ -3,10 +3,10 @@ import { condicionOrigen, type FiltrosEstadisticas } from './filtros';
 
 // Contexto común de las consultas de /estadisticas/* (ESQUEMA_EVENTOS.md §10).
 
-export interface ContextoEstadistica {
+export interface ContextoEstadistica<F extends FiltrosEstadisticas = FiltrosEstadisticas> {
   juegoId: string;
   catalogo: Catalogo;
-  filtros: FiltrosEstadisticas;
+  filtros: F;
   // Hora del servidor para decidir qué sesiones ya terminaron (R-34).
   ahora: Date;
 }

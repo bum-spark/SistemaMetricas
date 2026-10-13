@@ -108,3 +108,48 @@ export function oraculoLogros(datos: DatosSeed, catalogo: Catalogo, f: FiltrosOr
     return { logroId: l.logroId, nombre: l.nombre, jugadores, porcentaje: pct(jugadores, total) };
   });
 }
+
+export function oraculoMapaCalor(datos: DatosSeed, catalogo: Catalogo, f: FiltrosOraculo, nivelId: string, celda: number) {
+  const nivel = catalogo.niveles.find((n) => n.nivelId === nivelId)!;
+  const conteo = new Map<string, { cx: number; cy: number; causa: string; muertes: number }>();
+  for (const e of eventosFiltrados(datos, f).filter((ev) => ev.tipo === 'muerte' && ev.data.nivelId === nivelId)) {
+    const cx = Math.floor((e.data.x as number) / celda);
+    const cy = Math.floor((e.data.y as number) / celda);
+    const causa = e.data.causa as string;
+    const clave = `${cx}|${cy}|${causa}`;
+    const actual = conteo.get(clave) ?? { cx, cy, causa, muertes: 0 };
+    actual.muertes++;
+    conteo.set(clave, actual);
+  }
+  const ordenCausa = new Map(catalogo.causasMuerte.map((c, i) => [c.causa, i]));
+  const celdas = [...conteo.values()]
+    .sort((a, b) => a.cx - b.cx || a.cy - b.cy || ordenCausa.get(a.causa)! - ordenCausa.get(b.causa)!)
+    .map((c) => ({ x: c.cx * celda, y: c.cy * celda, causa: c.causa, muertes: c.muertes }));
+  return {
+    nivelId,
+    imagenUrl: nivel.imagenUrl ?? null,
+    limites: nivel.limites ?? null,
+    celda,
+    totalMuertes: celdas.reduce((s, c) => s + c.muertes, 0),
+    celdas,
+  };
+}
+
+export function oraculoReintentos(datos: DatosSeed, catalogo: Catalogo, f: FiltrosOraculo) {
+  const porSesionNivel = new Map<string, { nivelId: string; intentos: number; completado: boolean }>();
+  for (const e of eventosFiltrados(datos, f).filter((ev) => ev.tipo === 'nivel_inicio' || ev.tipo === 'nivel_fin')) {
+    const nivelId = e.data.nivelId as string;
+    const clave = `${e.sessionId}|${nivelId}`;
+    const actual = porSesionNivel.get(clave) ?? { nivelId, intentos: 0, completado: false };
+    actual.intentos = Math.max(actual.intentos, e.data.intento as number);
+    actual.completado ||= e.tipo === 'nivel_fin' && e.data.resultado === 'completado';
+    porSesionNivel.set(clave, actual);
+  }
+  const grupo = (nivelId: string, completado: boolean) => {
+    const intentos = [...porSesionNivel.values()].filter((x) => x.nivelId === nivelId && x.completado === completado).map((x) => x.intentos);
+    return intentos.length === 0
+      ? { sesiones: 0, promedioIntentos: null, maxIntentos: null }
+      : { sesiones: intentos.length, promedioIntentos: Math.round((intentos.reduce((s, x) => s + x, 0) / intentos.length) * 100) / 100, maxIntentos: Math.max(...intentos) };
+  };
+  return niveles(catalogo).map((nivelId) => ({ nivelId, pasaron: grupo(nivelId, true), seRindieron: grupo(nivelId, false) }));
+}

@@ -6,7 +6,7 @@ import { PLATAFORMAS } from '../dominio/constantes';
 import { describirIssue } from '../dominio/zodEs';
 import { AppError, esquemaRespuestaError } from '../errores';
 import type { ContextoEstadistica } from '../estadisticas/contexto';
-import { esquemaFiltrosEstadisticas, ORIGENES_FILTRO, type FiltrosEstadisticas } from '../estadisticas/filtros';
+import { esquemaFiltrosEstadisticas, esquemaFiltrosMapaCalor, ORIGENES_FILTRO, type FiltrosEstadisticas, type FiltrosMapaCalor } from '../estadisticas/filtros';
 import {
   esquemaDatosEmbudo,
   esquemaDatosLogros,
@@ -19,6 +19,7 @@ import {
   estadisticaSesiones,
   estadisticaTiempoNivel,
 } from '../estadisticas/imprescindibles';
+import { esquemaDatosMapaCalor, esquemaDatosReintentos, estadisticaMapaCalor, estadisticaReintentos } from '../estadisticas/mapaCalorReintentos';
 import { adminAutenticado, crearAutenticarAdmin, verificarAccesoJuego } from '../middlewares/autenticarAdmin';
 import { JuegoModelo } from '../modelos';
 import { refEsquema, type RutasOpenApi } from '../openapi/registro';
@@ -33,6 +34,9 @@ export interface DefinicionEstadistica {
   pregunta: string;
   seccion: string;
   esquemaDatos: z.ZodType;
+  // Esquema de la query: los filtros comunes, o una extensión con parámetros propios.
+  consulta?: z.ZodType<FiltrosEstadisticas>;
+  parametrosExtra?: Record<string, unknown>[];
   calcular: (ctx: ContextoEstadistica) => Promise<unknown>;
 }
 
@@ -42,10 +46,25 @@ export const ESTADISTICAS: DefinicionEstadistica[] = [
   { ruta: 'embudo', resumen: 'Embudo de progresión', pregunta: '¿Dónde se pierde la gente?', seccion: '10.3', esquemaDatos: esquemaDatosEmbudo, calcular: estadisticaEmbudo },
   { ruta: 'muertes', resumen: 'Muertes por nivel y causa', pregunta: '¿Qué está injusto o mal diseñado?', seccion: '10.4', esquemaDatos: esquemaDatosMuertes, calcular: estadisticaMuertes },
   { ruta: 'logros', resumen: 'Logros (% de jugadores)', pregunta: '¿Qué es muy fácil o muy difícil?', seccion: '10.5', esquemaDatos: esquemaDatosLogros, calcular: estadisticaLogros },
+  {
+    ruta: 'mapa-calor',
+    resumen: 'Mapa de calor de muertes de un nivel',
+    pregunta: '¿En qué punto exacto fallan?',
+    seccion: '10.6',
+    esquemaDatos: esquemaDatosMapaCalor,
+    consulta: esquemaFiltrosMapaCalor,
+    parametrosExtra: [
+      { name: 'nivelId', in: 'query', required: true, description: 'Nivel del catálogo.', schema: { type: 'string' } },
+      { name: 'celda', in: 'query', description: 'Tamaño de celda en unidades de mundo (> 0, máx. 1000).', schema: { type: 'number', default: 1 } },
+    ],
+    calcular: (ctx) => estadisticaMapaCalor(ctx as ContextoEstadistica<FiltrosMapaCalor>),
+  },
+  { ruta: 'reintentos', resumen: 'Reintentos por nivel', pregunta: '¿Dónde se frustran antes de pasar o rendirse?', seccion: '10.7', esquemaDatos: esquemaDatosReintentos, calcular: estadisticaReintentos },
 ];
 
+// Eco de los filtros aplicados: los comunes siempre (null si no se usaron) y los extras de la ruta.
 function filtrosRespuesta(f: FiltrosEstadisticas) {
-  return { desde: f.desde ?? null, hasta: f.hasta ?? null, buildVersion: f.buildVersion ?? null, plataforma: f.plataforma ?? null, origen: f.origen };
+  return { desde: null, hasta: null, buildVersion: null, plataforma: null, ...f };
 }
 
 export function crearRutasEstadisticas(jwtSecret: string, definiciones: DefinicionEstadistica[] = ESTADISTICAS): Router {
@@ -60,7 +79,7 @@ export function crearRutasEstadisticas(jwtSecret: string, definiciones: Definici
       }
       const { juegoId } = params.data;
       verificarAccesoJuego(adminAutenticado(res), juegoId);
-      const filtros = esquemaFiltrosEstadisticas.safeParse(req.query);
+      const filtros = (def.consulta ?? esquemaFiltrosEstadisticas).safeParse(req.query);
       if (!filtros.success) {
         throw new AppError(400, 'VALIDACION_FALLIDA', 'Los filtros no son válidos.', filtros.error.issues.map((i) => describirIssue(i)));
       }
@@ -98,7 +117,7 @@ export function openApiEstadisticas(definiciones: DefinicionEstadistica[] = ESTA
           summary: def.resumen,
           description: `${def.pregunta} Ver docs/ESQUEMA_EVENTOS.md §${def.seccion}.`,
           security: [{ BearerAuth: [] }],
-          parameters: parametrosFiltros,
+          parameters: [...parametrosFiltros, ...(def.parametrosExtra ?? [])],
           responses: {
             '200': {
               description: 'Resultado con los filtros aplicados.',

@@ -44,6 +44,21 @@ describe('una sola sesión real (la partida de ejemplo de §11)', () => {
     const logros = (await get(casa.juegoId, 'logros')).body.datos as { logroId: string; porcentaje: number }[];
     expect(logros).toHaveLength(5);
     expect(logros.filter((l) => l.porcentaje === 100).map((l) => l.logroId)).toEqual(['tutorial_superado', 'casa_abandonada_completada']);
+
+    // Reintentos: murió en el intento 1 y completó en el 2 → pasó con 2 intentos.
+    expect((await get(casa.juegoId, 'reintentos')).body.datos[0]).toEqual({
+      nivelId: 'casa_abandonada',
+      pasaron: { sesiones: 1, promedioIntentos: 2, maxIntentos: 2 },
+      seRindieron: { sesiones: 0, promedioIntentos: null, maxIntentos: null },
+    });
+    // Mapa de calor: una muerte por fantasma en (12.5, -3.2) → celda (12, -4) con celda 1; (10, -5) con celda 5.
+    expect((await get(casa.juegoId, 'mapa-calor', { nivelId: 'casa_abandonada' })).body.datos).toMatchObject({
+      totalMuertes: 1,
+      celdas: [{ x: 12, y: -4, causa: 'fantasma', muertes: 1 }],
+    });
+    expect((await get(casa.juegoId, 'mapa-calor', { nivelId: 'casa_abandonada', celda: '5' })).body.datos.celdas).toEqual([
+      { x: 10, y: -5, causa: 'fantasma', muertes: 1 },
+    ]);
   });
 
   it('una sesión todavía activa (sin sesion_fin y recién recibida) no entra en la duración', async () => {

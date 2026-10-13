@@ -1432,6 +1432,133 @@
           ]
         },
         {
+          "name": "Mapa de calor (casa_abandonada, celda 5)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/estadisticas/{{juegoId}}/mapa-calor?nivelId=casa_abandonada&celda=5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estadisticas",
+                "{{juegoId}}",
+                "mapa-calor"
+              ],
+              "query": [
+                {
+                  "key": "nivelId",
+                  "value": "casa_abandonada"
+                },
+                {
+                  "key": "celda",
+                  "value": "5"
+                }
+              ]
+            },
+            "description": "§10.6. nivelId obligatorio; celda en unidades de mundo (default 1)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 con imagen, límites y celdas que suman el total', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  const d = pm.response.json().datos;",
+                  "  pm.expect(d).to.include({ nivelId: 'casa_abandonada', celda: 5 });",
+                  "  pm.expect(d).to.include.keys('imagenUrl', 'limites', 'totalMuertes', 'celdas');",
+                  "  pm.expect(d.celdas.reduce((s, c) => s + c.muertes, 0)).to.eql(d.totalMuertes);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mapa de calor sin nivelId (400)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/estadisticas/{{juegoId}}/mapa-calor",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estadisticas",
+                "{{juegoId}}",
+                "mapa-calor"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 VALIDACION_FALLIDA', () => {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().error.codigo).to.eql('VALIDACION_FALLIDA');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reintentos por nivel",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/estadisticas/{{juegoId}}/reintentos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estadisticas",
+                "{{juegoId}}",
+                "reintentos"
+              ]
+            },
+            "description": "§10.7."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 con pasaron y seRindieron por nivel', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.response.json().datos.forEach((n) => pm.expect(n).to.include.keys('nivelId', 'pasaron', 'seRindieron'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "Embudo solo datos seed y build 1.0.1",
           "request": {
             "method": "GET",

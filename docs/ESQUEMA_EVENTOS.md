@@ -839,6 +839,11 @@ db.eventos.distinct("playerId", F).length
   | embudo | build + plataforma | 16.8 ms | 10.4 ms | 15.4 ms |
   | sesiones | rango 3 días | 7.7 ms | 7.6 ms | 8.8 ms |
 
+  | mapa-calor | `nivelId=casa_abandonada` | 26.7 ms | 12.0 ms | 18.1 ms |
+  | mapa-calor | `nivelId=habitacion_llamas&celda=5` | 9.8 ms | 9.7 ms | 12.0 ms |
+  | reintentos | — | 22.4 ms | 19.4 ms | 24.8 ms |
+  | reintentos | `buildVersion=1.0.1` | 15.0 ms | 14.0 ms | 17.4 ms |
+
   Con Atlas M0 y Render hay que sumar la latencia de red (y el arranque en frío del plan gratuito).
 
 ### 10.6 Mapa de calor de muertes
@@ -852,7 +857,16 @@ db.eventos.aggregate([
               muertes: { $sum: 1 } } }
 ])
 ```
-`datos`: `{ nivelId, imagenUrl, limites, celda, celdas: [{ x: cx*celda, y: cy*celda, causa, muertes }] }`.
+`datos`: `{ nivelId, imagenUrl, limites, celda, totalMuertes, celdas: [{ x: cx*celda, y: cy*celda, causa, muertes }] }`.
+- `nivelId` obligatorio y del catálogo del juego (si no, `400 VALIDACION_FALLIDA`); `celda` > 0 y ≤ 1000 (default 1).
+- `x`, `y` = esquina inferior izquierda de la celda en unidades de mundo (puede ser negativa si
+  el juego mandó coordenadas fuera de los límites); una entrada por celda **y causa**, ordenadas
+  por x, y y posición de la causa en el catálogo. `imagenUrl` y `limites` salen del catálogo
+  (`null` si faltan); `totalMuertes` = suma de `celdas`.
+- `explain()` (seed completo): usa `{ juegoId, tipo, timestamp }` (o `{ juegoId, tipo,
+  buildVersion }` con ese filtro) y filtra el nivel en FETCH: examina todas las muertes del juego
+  (545 en La Casa del Bosque) en ≤ 10 ms. A 10x, un índice `{ juegoId, tipo, "data.nivelId" }`
+  evitaría leer las muertes de otros niveles (no hace falta hoy).
 El dashboard escala `x, y` con `limites` sobre la imagen del nivel en un canvas.
 
 ### 10.7 Reintentos por nivel
@@ -869,7 +883,11 @@ db.eventos.aggregate([
               maxIntentos: { $max: "$intentos" } } }
 ])
 ```
-`datos`: `[{ nivelId, pasaron: { sesiones, promedioIntentos, maxIntentos }, seRindieron: { … } }]`.
+`datos`: `[{ nivelId, pasaron: { sesiones, promedioIntentos, maxIntentos }, seRindieron: { … } }]`: un elemento por nivel del catálogo; `promedioIntentos` con dos decimales; un grupo vacío da `{ sesiones: 0, promedioIntentos: null, maxIntentos: null }`.
+- "Pasaron" = la sesión tuvo un `nivel_fin` `completado` de ese nivel; si no, "se rindieron"
+  (incluye sesiones con crash, aunque el jugador lo complete después en otra sesión).
+- `explain()` (seed completo): `IXSCAN` sobre `{ juegoId, tipo, timestamp }` (o `{ juegoId, tipo,
+  buildVersion }`), 2 323 eventos en 13 ms.
 
 ### 10.8 Abandono por nivel (drop-off)
 Último evento de nivel de cada sesión que no terminó el juego. Solo sesiones terminadas
