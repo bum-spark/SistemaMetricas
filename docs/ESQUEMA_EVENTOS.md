@@ -1,6 +1,7 @@
 # Esquema de eventos y contrato de la API
 
-> **Estado:** borrador de diseño, pendiente de aprobación. Aún no hay código.
+> **Estado:** implementado en la entrega 1 (API en `api/`). Las métricas 10.8–10.12 están
+> diseñadas pero no implementadas (R-54); cada sección lo indica.
 > **Versión del esquema:** `versionEsquema: 1`
 >
 > Este documento es el contrato entre los juegos (cliente Unity), la API de métricas y el
@@ -96,8 +97,8 @@ Al arrancar el juego, el cliente llama `POST /api/v1/sesiones` con `juegoId`, `p
   | `201` con eventos en `rechazados`                | **No reintenta los rechazados.** Están mal; reenviarlos daría el mismo resultado. |
 
   Como cada evento lleva `eventoId`, reenviar un lote completo es seguro (los repetidos se
-  ignoran). Los valores del backoff (espera inicial, máximo, número de intentos) los define
-  el SDK en la entrega 2.
+  ignoran). El SDK de `sdk-unity/` reintenta con espera creciente de 2 s a 60 s, con timeout de
+  60 s por petición (R-53, [`SDK_UNITY.md`](./SDK_UNITY.md)).
 
 ### 1.4 Fin de sesión (dos relojes, R-34)
 
@@ -136,8 +137,10 @@ La sesión guarda dos relojes por separado, y cada uno se usa para una sola cosa
 - **`GET /salud` y `GET /docs`:** sin el rate limit de ingesta ni el de login, para que el monitoreo del
   hosting pueda consultarlo seguido. Solo lleva un límite laxo de 600 peticiones/min por
   IP, para que no se pueda usar para saturar el servidor (S-26).
-- CORS: solo el dominio del dashboard. Unity no usa CORS (no es navegador), salvo un build
-  WebGL, que no está previsto.
+- CORS: solo los orígenes de `CORS_ORIGIN` (el dominio del dashboard y, si se quiere,
+  `http://localhost:4200`), separados por coma. Cada origen debe ser esquema + dominio, sin
+  ruta ni `/` final, y `*` no se acepta: si uno está mal escrito la API no arranca. Unity no
+  usa CORS (no es navegador), salvo un build WebGL, que no está previsto.
 
 ---
 
@@ -440,7 +443,8 @@ campos `...Id`. Fechas en UTC.
 | `apiKeyCreadaEn`   | Date            |                                                               |
 | `catalogo`         | objeto          | Sección 5.                                                    |
 
-Índices: `{ juegoId: 1 }` único · `{ slug: 1 }` único · `{ apiKeyHash: 1 }` único (sparse).
+Índices: `{ juegoId: 1 }` único · `{ slug: 1 }` único · `{ apiKeyHash: 1 }` único **parcial**
+(solo cuando es texto: varios juegos pueden tener la key revocada en `null`).
 
 ### `jugadores`
 
@@ -572,11 +576,11 @@ Si la ruta lleva `:juegoId`: si no es UUID v4 → `400`; si no está en `juegosP
 | GET    | `/estadisticas/:juegoId/logros`       | JWT  | filtros comunes                      | Sección 10.5                                                                               |
 | GET    | `/estadisticas/:juegoId/mapa-calor`   | JWT  | filtros comunes + `nivelId` (oblig.), `celda` (número > 0, default 1) | Sección 10.6                                              |
 | GET    | `/estadisticas/:juegoId/reintentos`   | JWT  | filtros comunes                      | Sección 10.7                                                                               |
-| GET    | `/estadisticas/:juegoId/abandono`     | JWT  | filtros comunes                      | Sección 10.8                                                                               |
-| GET    | `/estadisticas/:juegoId/tutorial`     | JWT  | filtros comunes                      | Sección 10.9                                                                               |
-| GET    | `/estadisticas/:juegoId/versiones`    | JWT  | filtros comunes                      | Sección 10.10                                                                              |
-| GET    | `/estadisticas/:juegoId/atencion`     | JWT  | filtros comunes                      | Sección 10.11                                                                              |
-| GET    | `/estadisticas/:juegoId/rendimiento`  | JWT  | filtros comunes                      | Sección 10.12                                                                              |
+| GET    | `/estadisticas/:juegoId/abandono`     | JWT  | filtros comunes                      | Sección 10.8 — **no implementado en la entrega 1** (R-54)                                  |
+| GET    | `/estadisticas/:juegoId/tutorial`     | JWT  | filtros comunes                      | Sección 10.9 — **no implementado en la entrega 1** (R-54)                                  |
+| GET    | `/estadisticas/:juegoId/versiones`    | JWT  | filtros comunes                      | Sección 10.10 — **no implementado en la entrega 1**                                         |
+| GET    | `/estadisticas/:juegoId/atencion`     | JWT  | filtros comunes                      | Sección 10.11 — **no implementado en la entrega 1** (R-54)                                 |
+| GET    | `/estadisticas/:juegoId/rendimiento`  | JWT  | filtros comunes                      | Sección 10.12 — **no implementado en la entrega 1**                                         |
 
 **Filtros comunes** (query, todos opcionales; sin filtros = todo el histórico, S-21):
 `desde`, `hasta` (ISO 8601 UTC; rango `[desde, hasta)`), `buildVersion`, `plataforma`,
@@ -906,6 +910,8 @@ db.eventos.aggregate([
   buildVersion }`), 2 323 eventos en 13 ms.
 
 ### 10.8 Abandono por nivel (drop-off)
+
+> **No implementado en la entrega 1** (R-54): el endpoint no existe (`404 RUTA_NO_ENCONTRADA`). El diseño queda documentado para la siguiente entrega.
 Último evento de nivel de cada sesión que no terminó el juego. Solo sesiones terminadas
 (misma regla que 10.1). Cada sesión cae en una sola categoría:
 
@@ -950,6 +956,8 @@ esta consulta o que terminaron el juego. `porcentaje` es sobre las sesiones term
 
 ### 10.9 Completado del tutorial
 
+> **No implementado en la entrega 1** (R-54): el endpoint no existe (`404 RUTA_NO_ENCONTRADA`). El diseño queda documentado para la siguiente entrega.
+
 ```js
 const nivelTutorial = catalogo.niveles.find(n => n.tieneTutorial).nivelId; // casa_abandonada
 const iniciaron = db.eventos.distinct("playerId", { ...F, tipo: "nivel_inicio", "data.nivelId": nivelTutorial }).length;
@@ -963,6 +971,8 @@ db.eventos.aggregate([
 `datos`: `{ nivelId, iniciaron, completaron, porcentaje, medianaMs }`.
 
 ### 10.10 Versión del build y plataforma
+
+> **No implementado en la entrega 1**: el endpoint no existe (`404 RUTA_NO_ENCONTRADA`). El diseño queda documentado para la siguiente entrega.
 
 ```js
 db.sesiones.aggregate([
@@ -978,6 +988,8 @@ Por cada grupo se agrega la tasa de completado: sesiones con `nivel_fin` `comple
 `datos`: `[{ buildVersion, plataforma, sesiones, jugadores, duracionMedianaMs, tasaCompletado }]`.
 
 ### 10.11 Proxies de atención
+
+> **No implementado en la entrega 1** (R-54): el endpoint no existe (`404 RUTA_NO_ENCONTRADA`). El diseño queda documentado para la siguiente entrega.
 
 ```js
 // inactividad y pausas por nivel
@@ -1007,6 +1019,8 @@ db.eventos.aggregate([
 `datos`: `{ inactividad: […], pausas: […], dialogosSaltados: […], coleccionables: [{ nivelId, disponibles, jugadores, promedioEncontrados, jugadoresConTodos }] }`.
 
 ### 10.12 Rendimiento
+
+> **No implementado en la entrega 1**: el endpoint no existe (`404 RUTA_NO_ENCONTRADA`). El diseño queda documentado para la siguiente entrega.
 
 ```js
 db.eventos.aggregate([

@@ -1,7 +1,7 @@
 # Arquitectura
 
-> **Estado:** diseño aprobado, aún sin código. Este documento explica cómo encajan las
-> piezas, por qué se eligieron así y qué cambiaría si el volumen crece.
+> **Estado:** implementado (entrega 1). Este documento explica cómo encajan las piezas,
+> por qué se eligieron así, qué cambiaría si el volumen crece y qué quedó fuera.
 > El contrato detallado (eventos, colecciones, endpoints, consultas) está en
 > [`ESQUEMA_EVENTOS.md`](./ESQUEMA_EVENTOS.md); los supuestos, en
 > [`DECISIONES_ABIERTAS.md`](./DECISIONES_ABIERTAS.md).
@@ -17,7 +17,7 @@ flowchart LR
     U2["Otro juego<br/>(Unity + SDK)"]
   end
 
-  subgraph API["API de métricas — Node.js + Express (Render/Railway)"]
+  subgraph API["API de métricas — Node.js + Express (Render)"]
     ING["Ingesta<br/>POST /sesiones · POST /eventos<br/>X-Api-Key · zod · rate limit"]
     ADM["Administración<br/>/auth · /juegos · /jugadores"]
     EST["Estadísticas<br/>/estadisticas/:juegoId/*<br/>pipelines de agregación"]
@@ -25,7 +25,7 @@ flowchart LR
   end
 
   DB[("MongoDB Atlas<br/>juegos · jugadores · sesiones<br/>eventos · logros · admins")]
-  DASH["Dashboard Angular<br/>(Netlify/Vercel/Firebase)"]
+  DASH["Dashboard Angular 21<br/>(Vercel)"]
   ADMIN(["Admin del estudio"])
 
   U1 -- "lotes de eventos (HTTPS)" --> ING
@@ -92,6 +92,12 @@ Supuestos para dimensionar (S-30):
 A 1x todo cabe en el plan gratuito: una instancia de API y Atlas M0 (512 MB, unos 2 meses
 de eventos a este ritmo).
 
+**Medido** (prueba de carga, sección 5): una instancia sostuvo 113.5 lotes/s de 20 eventos
+(≈ 2 270 eventos/s) en un equipo de desarrollo con MongoDB local; el 1x pide unos pocos
+lotes por segundo en el pico. El cuello de botella no es la ingesta sino la **lectura**:
+el embudo pasó de p50 222 ms con 5 000 eventos a p50 1.3 s con 69 120 eventos bajo 50
+conexiones, porque se calcula recorriendo los eventos crudos.
+
 ---
 
 ## 4. Cómo crece
@@ -101,7 +107,7 @@ de eventos a este ritmo).
 | Dónde duele | Qué cambia |
 |---|---|
 | **Almacenamiento:** M0 se llena en ~1 semana | Subir a Atlas M10 o superior. Política de retención: eventos crudos N días (índice TTL o archivado), agregados para siempre. |
-| **Dashboard lento:** las agregaciones recorren todos los eventos crudos | **Precálculo:** un job periódico (cada hora o noche) resume por juego/día/nivel/versión con `$merge` en colecciones de resumen (`resumenes_diarios`). Los endpoints de estadísticas leen el resumen y solo agregan en crudo el día en curso. El contrato de los endpoints no cambia. |
+| **Dashboard lento:** las agregaciones recorren todos los eventos crudos (medido: con ~69 000 eventos el embudo tarda p50 1.3 s bajo carga) | **Precálculo:** un job periódico (cada hora o noche) resume por juego/día/nivel/versión con `$merge` en colecciones de resumen (`resumenes_diarios`). Los endpoints de estadísticas leen el resumen y solo agregan en crudo el día en curso. El contrato de los endpoints no cambia. |
 | **Consultas repetidas** | Caché corta (1–5 min) de respuestas de `/estadisticas/*` por juego y filtros. |
 | **Rate limit en memoria** | Si hay más de una instancia, cada una cuenta por separado. Pasar el contador a un almacén compartido (Redis) con el store de `express-rate-limit`. |
 | **Índices** | Revisar con `explain()` las consultas reales y ajustar índices compuestos. |
@@ -132,11 +138,46 @@ de eventos a este ritmo).
 
 ## 5. Evidencia
 
-- **Prueba de carga:** `scripts/` contiene una prueba con autocannon contra la ingesta.
-  Los resultados (peticiones/s, latencias p50/p99, errores) y las condiciones en que se
-  midió están en el README (S-31). Corre contra un MongoDB local o una base aparte
-  que se borra al terminar, nunca contra `xolos_analytics`.
+### Prueba de carga (S-31)
+
+`npm run prueba-carga` (desde `/api`) levanta la API contra una base aparte (`xolos_carga`,
+que se borra al terminar; nunca `xolos_analytics`) y la carga con autocannon. Condiciones:
+AMD Ryzen 7 5700U (16 hilos), 15 GB de RAM, Windows 11; Node v22.22.0; MongoDB 7.0.43 local;
+API y autocannon en el mismo equipo; 30 s por escenario, 50 conexiones, lotes de 20 eventos.
+
+| Corrida | Escenario | Peticiones/s | p50 | p99 | 2xx | 429 | Errores |
+|---|---|---:|---:|---:|---:|---:|---:|
+| Capacidad (límites subidos) | Ingesta `POST /eventos` | 113.5 | 435 ms | 733 ms | 3406 | 0 | 0 |
+| Capacidad (69 120 eventos) | Lectura `GET /estadisticas/:id/embudo` | 37.4 | 1342 ms | 1970 ms | 1121 | 0 | 0 |
+| Límites normales (300/min/IP) | Ingesta `POST /eventos` | 755.4 | 51 ms | 679 ms | 250 | 22411 | 0 |
+| Límites normales (5 000 eventos) | Lectura `GET /estadisticas/:id/embudo` | 221.1 | 222 ms | 347 ms | 6632 | 0 | 0 |
+
+- La ingesta no tuvo errores ni timeouts y tiene margen de sobra para el 1x.
+- El rate limit funciona: con 300/min por IP se aceptaron 250 lotes (300 menos las 50
+  aperturas de sesión, que cuentan contra el mismo límite) y el resto recibió 429.
+- La lectura se degrada con el volumen de eventos crudos: es el primer punto a atacar con el
+  precálculo de "Cómo crece" (10x).
+- Sin red de por medio: en Render (plan gratuito) y Atlas M0 hay más latencia y menos CPU.
+  Detalle y comandos en el README.
 - **Multi-juego:** `seed-datos` crea La Casa del Bosque y un segundo juego ficticio con
   catálogo distinto; el dashboard muestra los dos sin cambios de código.
 - **Contrato verificable:** OpenAPI en `/api/v1/docs`, generado desde los mismos esquemas
   que validan las peticiones.
+- **Pruebas automáticas:** API con Jest + Supertest contra MongoDB 7.0 en memoria (incluye un
+  "oráculo" que recalcula cada métrica en JavaScript y la compara con la agregación); dashboard
+  con Vitest; colección de Postman/Newman; cada pantalla del dashboard verificada con la misma
+  CSP de producción (S-61).
+
+---
+
+## 6. Qué quedó fuera de la entrega 1 y por qué
+
+| Qué | Estado | Por qué |
+|---|---|---|
+| Endpoints `abandono`, `tutorial` y `atencion` (§10.8, 10.9, 10.11 del esquema) | Diseñados, no implementados | Se priorizaron las métricas imprescindibles y el dashboard completo (R-54). Los eventos que los alimentan (`nivel_fin` `abandono`, `tutorial_completado`, `inactividad`, `pausa`, `dialogo_saltado`, `coleccionable_encontrado`) ya se reciben y guardan, así que se pueden calcular después sin cambiar el SDK. |
+| Endpoints `versiones` y `rendimiento` (§10.10, 10.12) y la pantalla "Builds y rendimiento" | Diseñados, no implementados | Fuera de la entrega 1 por DISENO_DASHBOARD.md §6. Mientras tanto, los filtros de build y plataforma permiten comparar versiones en todas las vistas. |
+| Mapa de calor, parte b: tabla de zonas calientes y control de intensidad | No implementado | Opcional "si sobra tiempo"; la parte a (calor radial, causas, celda, coordenadas) ya responde dónde fallan. |
+| Coleccionables encontrados vs disponibles en Logros | No implementado | Depende de `atencion`. La pantalla no deja tarjetas vacías ni enlaces a lo que no existe. |
+| Monetización (ARPU), adquisición y retención D1/D7/D30 | Fuera de alcance | No aplican a un juego gratuito de ~20 min que se juega una vez (CLAUDE.md §8). |
+| Vista comparativa entre juegos | No implementado | "Solo si sobra tiempo" (CLAUDE.md §9). |
+| Modo claro del dashboard | Preparado en los tokens, no implementado | Tema oscuro por defecto (CLAUDE.md §9). |
