@@ -4,6 +4,7 @@ import { JuegosService } from '../../core/juegos/juegos.service';
 import { ES } from '../../i18n/es';
 import { formatearEntero, formatearFraccion } from '../../shared/formato/formato';
 import { Badge } from '../../shared/ui/badge/badge';
+import { Cabecera } from '../../shared/ui/cabecera/cabecera';
 import { EstadoError, EstadoVacio, Skeleton } from '../../shared/ui/estado/estados';
 import { LogoJuego } from '../../shared/ui/logo-juego/logo-juego';
 
@@ -12,7 +13,7 @@ import { LogoJuego } from '../../shared/ui/logo-juego/logo-juego';
 @Component({
   selector: 'xa-juegos',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, Badge, LogoJuego, Skeleton, EstadoVacio, EstadoError],
+  imports: [RouterLink, Badge, Cabecera, LogoJuego, Skeleton, EstadoVacio, EstadoError],
   templateUrl: './juegos.html',
   styleUrl: './juegos.css',
 })

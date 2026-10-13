@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { Skeleton } from '../estado/estados';
 
-// Tarjeta KPI (DISENO_DASHBOARD.md §4): etiqueta (12/500, --text-3), cifra (32/600) y debajo
+// Tarjeta KPI (DISENO_DASHBOARD.md §4): etiqueta (12/500 mayúscula suave, --text-3), cifra (32/600) y debajo
 // el contexto (13, --text-2), p. ej. "esperado ~20:00".
 @Component({
   selector: 'xa-kpi',
@@ -33,6 +33,8 @@ import { Skeleton } from '../estado/estados';
       line-height: var(--lh-etiqueta);
       font-weight: var(--fw-medium);
       color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-etiqueta);
     }
     .cifra {
       font-family: var(--font-display);

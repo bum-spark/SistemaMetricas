@@ -82,6 +82,7 @@
   --fw-regular: 400;
   --fw-medium: 500;
   --fw-semibold: 600;
+  --tracking-etiqueta: 0.04em;  /* "mayúscula suave" de las etiquetas de KPI (§4) */
 
   /* Layout (§3) */
   --sidebar-ancho: 232px;

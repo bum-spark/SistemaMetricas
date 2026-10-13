@@ -2,11 +2,11 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { EstadisticasService } from '../../../core/api/estadisticas.service';
 import { DatosSesiones, PasoEmbudo } from '../../../core/api/tipos';
 import { ES } from '../../../i18n/es';
-import { cargaReactiva } from '../../../shared/carga';
+import { cargadoEnDe, cargaReactiva } from '../../../shared/carga';
 import { Embudo, mayorCaida } from '../../../shared/charts/embudo/embudo';
 import { formatearDuracion, formatearEntero, formatearPorcentaje } from '../../../shared/formato/formato';
-import { Badge } from '../../../shared/ui/badge/badge';
 import { Boton } from '../../../shared/ui/boton/boton';
+import { Cabecera } from '../../../shared/ui/cabecera/cabecera';
 import { EstadoError, EstadoVacio, Skeleton } from '../../../shared/ui/estado/estados';
 import { Kpi } from '../../../shared/ui/kpi/kpi';
 import { Tarjeta } from '../../../shared/ui/tarjeta/tarjeta';
@@ -20,7 +20,7 @@ import { pasosVisibles } from '../pasos';
 @Component({
   selector: 'xa-resumen',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Badge, Boton, Embudo, EstadoError, EstadoVacio, Kpi, Skeleton, Tarjeta],
+  imports: [Boton, Cabecera, Embudo, EstadoError, EstadoVacio, Kpi, Skeleton, Tarjeta],
   templateUrl: './resumen.html',
   styleUrl: './resumen.css',
 })
@@ -44,6 +44,7 @@ export class Resumen {
   protected readonly cargando = computed(
     () => this.sesiones.carga().estado === 'cargando' || this.embudo.carga().estado === 'cargando' || !this.juego.catalogo(),
   );
+  protected readonly cargadoEn = computed(() => cargadoEnDe(this.sesiones.carga(), this.embudo.carga()));
   protected readonly conError = computed(() => this.sesiones.carga().estado === 'error' || this.embudo.carga().estado === 'error');
 
   private readonly datosSesiones = computed(() => {

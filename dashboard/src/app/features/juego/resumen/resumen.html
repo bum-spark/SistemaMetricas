@@ -1,8 +1,11 @@
 @if (juego.resumen(); as j) {
-  <header class="encabezado">
-    <h1 class="titulo">{{ j.nombre }}</h1>
-    <xa-badge tono="petal" [attr.title]="textosJuego.versionActual(j.versionActual)">{{ textosJuegos.version(j.versionActual) }}</xa-badge>
-  </header>
+  <xa-cabecera
+    [titulo]="j.nombre"
+    [pregunta]="textos.pregunta"
+    [version]="textosJuegos.version(j.versionActual)"
+    [tituloVersion]="textosJuego.versionActual(j.versionActual)"
+    [cargadoEn]="cargadoEn()"
+  />
 }
 
 <div aria-live="polite" [attr.aria-busy]="cargando()">

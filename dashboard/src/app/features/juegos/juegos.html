@@ -1,7 +1,4 @@
-<header class="encabezado">
-  <h1 class="titulo">{{ textos.titulo }}</h1>
-  <p class="subtitulo">{{ textos.subtitulo }}</p>
-</header>
+<xa-cabecera [titulo]="textos.titulo" [pregunta]="textos.subtitulo" [cargadoEn]="servicio.cargadoEn()" />
 
 <div aria-live="polite" [attr.aria-busy]="servicio.estado() === 'cargando'">
   @switch (servicio.estado()) {

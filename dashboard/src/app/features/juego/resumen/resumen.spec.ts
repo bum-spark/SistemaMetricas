@@ -25,7 +25,7 @@ describe('Resumen (/juegos/:slug)', () => {
 
     const titulo = m.el.querySelector('h1')!;
     expect(titulo.textContent).toBe('Juego Uno');
-    expect(m.el.querySelector('.encabezado xa-badge')?.textContent?.trim()).toBe('v1.0.0');
+    expect(m.el.querySelector('xa-cabecera xa-badge')?.textContent?.trim()).toBe('v1.0.0');
 
     const kpis = [...m.el.querySelectorAll('xa-kpi')].map((k) => k.textContent);
     expect(kpis[0]).toContain('1,200');

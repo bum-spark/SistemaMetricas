@@ -91,6 +91,8 @@ export const ES = {
   resumen: {
     jugadores: 'Jugadores',
     sesiones: 'Sesiones',
+    titulo: 'Resumen',
+    pregunta: '¿Cuánto juega la gente y hasta dónde llega?',
     duracion: 'Duración mediana',
     terminaron: 'Terminaron',
     inferidas: (n: string) => `${n} con cierre inferido`,
@@ -104,6 +106,10 @@ export const ES = {
     caidaAyuda: 'La mayor caída entre dos pasos consecutivos del embudo, relativa al paso anterior.',
     caidaDetalle: (n: string) => `${n} jugadores no llegaron al siguiente paso.`,
     sinCaida: 'Nadie se pierde entre pasos en este rango.',
+  },
+  cabecera: {
+    cargadoHace: (minutos: number) =>
+      minutos < 1 ? 'Datos cargados hace menos de 1 min' : minutos < 60 ? `Datos cargados hace ${minutos} min` : `Datos cargados hace ${Math.floor(minutos / 60)} h`,
   },
   estados: {
     errorTitulo: 'No se pudieron cargar los datos',

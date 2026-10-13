@@ -16,10 +16,12 @@ export class JuegosService {
   private readonly http = inject(HttpClient);
   private readonly lista = signal<ResumenJuego[]>([]);
   private readonly estadoInterno = signal<EstadoCarga>('inicial');
+  private readonly cargadoEnInterno = signal<Date | null>(null);
   private pendiente: Promise<ResumenJuego[]> | null = null;
 
   readonly juegos = this.lista.asReadonly();
   readonly estado = this.estadoInterno.asReadonly();
+  readonly cargadoEn = this.cargadoEnInterno.asReadonly();
   readonly cargado = computed(() => this.estadoInterno() === 'listo');
 
   // Carga una sola vez (las llamadas simultáneas comparten la petición); `forzar` recarga.
@@ -34,6 +36,7 @@ export class JuegosService {
     this.pendiente = firstValueFrom(this.http.get<ListaJuegos>(`${CONFIG.apiUrl}/juegos`, { params: { limite: LIMITE } }))
       .then((r) => {
         this.lista.set(r.datos);
+        this.cargadoEnInterno.set(new Date());
         this.estadoInterno.set('listo');
         return r.datos;
       })

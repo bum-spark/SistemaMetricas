@@ -1,7 +1,8 @@
 import { DestroyRef, effect, inject, Signal, signal, untracked } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
 
-export type Carga<T> = { estado: 'cargando' } | { estado: 'listo'; datos: T } | { estado: 'error'; error: unknown };
+// `cargadoEn`: reloj del cliente cuando llegaron los datos ("Datos cargados hace X min").
+export type Carga<T> = { estado: 'cargando' } | { estado: 'listo'; datos: T; cargadoEn: Date } | { estado: 'error'; error: unknown };
 
 export interface CargaReactiva<T> {
   readonly carga: Signal<Carga<T>>;
@@ -27,7 +28,7 @@ export function cargaReactiva<T>(origen: () => Observable<T> | null): CargaReact
         return;
       }
       sub = peticion.subscribe({
-        next: (datos) => carga.set({ estado: 'listo', datos }),
+        next: (datos) => carga.set({ estado: 'listo', datos, cargadoEn: new Date() }),
         error: (error: unknown) => carga.set({ estado: 'error', error }),
       });
     });
@@ -35,4 +36,18 @@ export function cargaReactiva<T>(origen: () => Observable<T> | null): CargaReact
   inject(DestroyRef).onDestroy(() => sub?.unsubscribe());
 
   return { carga: carga.asReadonly(), reintentar: () => intento.update((n) => n + 1) };
+}
+
+// El momento de carga más reciente entre varias cargas listas (null si alguna no está lista).
+export function cargadoEnDe(...cargas: Carga<unknown>[]): Date | null {
+  let ultimo: Date | null = null;
+  for (const c of cargas) {
+    if (c.estado !== 'listo') {
+      return null;
+    }
+    if (!ultimo || c.cargadoEn > ultimo) {
+      ultimo = c.cargadoEn;
+    }
+  }
+  return ultimo;
 }
