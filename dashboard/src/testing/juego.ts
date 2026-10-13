@@ -55,7 +55,7 @@ export interface MontajeJuego {
 
 // Monta /juegos/juego-uno/<seccion> con el componente Juego real, responde la lista de juegos
 // y el detalle con el catálogo de prueba. Las peticiones de estadísticas quedan para el spec.
-export async function montarVistaJuego(vista: Type<unknown>, seccion = '', url?: string): Promise<MontajeJuego> {
+export async function montarVistaJuego(vista: Type<unknown>, seccion = '', url?: string, catalogo: Catalogo = CATALOGO_PRUEBA): Promise<MontajeJuego> {
   TestBed.configureTestingModule({
     providers: [
       provideRouter([{ path: 'juegos/:slug', component: Juego, children: [{ path: seccion, component: vista }] }]),
@@ -75,7 +75,7 @@ export async function montarVistaJuego(vista: Type<unknown>, seccion = '', url?:
   const j = juegoDePrueba();
   http.expectOne(`${CONFIG.apiUrl}/juegos?limite=100`).flush({ datos: [j], pagina: 1, limite: 100, total: 1, origen: 'todos' });
   await asentar();
-  http.expectOne(`${CONFIG.apiUrl}/juegos/${j.juegoId}`).flush(detalleDePrueba());
+  http.expectOne(`${CONFIG.apiUrl}/juegos/${j.juegoId}`).flush(detalleDePrueba({ catalogo }));
   await asentar();
   return {
     fixture,

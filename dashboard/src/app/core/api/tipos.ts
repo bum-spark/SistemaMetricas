@@ -140,3 +140,10 @@ export interface MuertesNivelCausa {
   jugadores: number;
   muertesPorJugador: number;
 }
+
+export interface LogroObtenido {
+  logroId: string;
+  nombre: string;
+  jugadores: number;
+  porcentaje: number; // 0–100 respecto a los jugadores con eventos en el filtro
+}
