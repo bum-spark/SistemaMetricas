@@ -46,7 +46,8 @@ configuración `APP_NAME` (valor por defecto "Estudio Xolos"); nunca escribirlo 
 /api            Express + Mongoose
 /dashboard      Angular
 /postman        colección y entornos exportados (local y producción)
-/docs           ESQUEMA_EVENTOS.md, DECISIONES_ABIERTAS.md, ARQUITECTURA.md, DEPLOY.md,
+/sdk-unity      cliente C# de métricas para Unity (guía en docs/SDK_UNITY.md)
+/docs           ESQUEMA_EVENTOS.md, DECISIONES_ABIERTAS.md, ARQUITECTURA.md, DEPLOY.md, SDK_UNITY.md,
                 DISENO_DASHBOARD.md (fuente de verdad visual del dashboard)
 /scripts        seed de admin y de datos de prueba, prueba de carga
 CLAUDE.md

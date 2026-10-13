@@ -13,3 +13,10 @@ coverage/
 .DS_Store
 Thumbs.db
 *.log
+
+# SDK de Unity: la configuración real (juegoId y API key) nunca va al repositorio.
+xolos-metricas.json
+# Compilación de las pruebas en .NET del SDK
+sdk-unity/**/bin/
+sdk-unity/**/obj/
+sdk-unity/Pruebas/salida/
