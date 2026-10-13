@@ -145,11 +145,28 @@ export function oraculoReintentos(datos: DatosSeed, catalogo: Catalogo, f: Filtr
     actual.completado ||= e.tipo === 'nivel_fin' && e.data.resultado === 'completado';
     porSesionNivel.set(clave, actual);
   }
+  // Grupos fijos 1, 2–3, 4–6 y 7+ escritos a mano (no se importa la constante de la API).
+  const LIMITES = [
+    [1, 1],
+    [2, 3],
+    [4, 6],
+    [7, null],
+  ] as const;
   const grupo = (nivelId: string, completado: boolean) => {
     const intentos = [...porSesionNivel.values()].filter((x) => x.nivelId === nivelId && x.completado === completado).map((x) => x.intentos);
+    const distribucion = LIMITES.map(([minimo, maximo]) => ({
+      minimo,
+      maximo,
+      sesiones: intentos.filter((n) => n >= minimo && (maximo === null || n <= maximo)).length,
+    }));
     return intentos.length === 0
-      ? { sesiones: 0, promedioIntentos: null, maxIntentos: null }
-      : { sesiones: intentos.length, promedioIntentos: Math.round((intentos.reduce((s, x) => s + x, 0) / intentos.length) * 100) / 100, maxIntentos: Math.max(...intentos) };
+      ? { sesiones: 0, promedioIntentos: null, maxIntentos: null, distribucion }
+      : {
+          sesiones: intentos.length,
+          promedioIntentos: Math.round((intentos.reduce((s, x) => s + x, 0) / intentos.length) * 100) / 100,
+          maxIntentos: Math.max(...intentos),
+          distribucion,
+        };
   };
   return niveles(catalogo).map((nivelId) => ({ nivelId, pasaron: grupo(nivelId, true), seRindieron: grupo(nivelId, false) }));
 }

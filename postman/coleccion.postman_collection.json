@@ -1548,7 +1548,7 @@
                 "reintentos"
               ]
             },
-            "description": "§10.7."
+            "description": "§10.7: intentos por sesión y nivel, con la distribución por grupos de intento máximo."
           },
           "event": [
             {
@@ -1559,6 +1559,15 @@
                   "pm.test('200 con pasaron y seRindieron por nivel', () => {",
                   "  pm.response.to.have.status(200);",
                   "  pm.response.json().datos.forEach((n) => pm.expect(n).to.include.keys('nivelId', 'pasaron', 'seRindieron'));",
+                  "});",
+                  "pm.test('distribución de intentos: grupos 1, 2-3, 4-6 y 7+ que suman las sesiones', () => {",
+                  "  pm.response.json().datos.forEach((n) => {",
+                  "    ['pasaron', 'seRindieron'].forEach((k) => {",
+                  "      const d = n[k].distribucion;",
+                  "      pm.expect(d.map((g) => [g.minimo, g.maximo])).to.eql([[1, 1], [2, 3], [4, 6], [7, null]]);",
+                  "      pm.expect(d.reduce((s, g) => s + g.sesiones, 0)).to.eql(n[k].sesiones);",
+                  "    });",
+                  "  });",
                   "});"
                 ]
               }

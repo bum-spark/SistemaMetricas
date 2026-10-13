@@ -881,13 +881,24 @@ db.eventos.aggregate([
   { $group: { _id: { sessionId: "$sessionId", nivelId: "$data.nivelId" },
               intentos: { $max: "$data.intento" },
               completado: { $max: { $cond: [ { $eq: ["$data.resultado", "completado"] }, 1, 0 ] } } } },
-  { $group: { _id: { nivelId: "$_id.nivelId", completado: "$completado" },
-              sesiones: { $sum: 1 },
-              promedioIntentos: { $avg: "$intentos" },
-              maxIntentos: { $max: "$intentos" } } }
+  { $facet: {
+      resumen: [ { $group: { _id: { nivelId: "$_id.nivelId", completado: "$completado" },
+                             sesiones: { $sum: 1 },
+                             promedioIntentos: { $avg: "$intentos" },
+                             maxIntentos: { $max: "$intentos" } } } ],
+      // grupo = índice en GRUPOS_INTENTOS = [1, 2, 4, 7] según el intento máximo
+      distribucion: [ { $group: { _id: { nivelId: "$_id.nivelId", completado: "$completado",
+                                         grupo: { $switch: { branches: [ /* ≥7 → 3, ≥4 → 2, ≥2 → 1 */ ], default: 0 } } },
+                                  sesiones: { $sum: 1 } } } ] } }
 ])
 ```
-`datos`: `[{ nivelId, pasaron: { sesiones, promedioIntentos, maxIntentos }, seRindieron: { … } }]`: un elemento por nivel del catálogo; `promedioIntentos` con dos decimales; un grupo vacío da `{ sesiones: 0, promedioIntentos: null, maxIntentos: null }`.
+`datos`: `[{ nivelId, pasaron: { sesiones, promedioIntentos, maxIntentos, distribucion }, seRindieron: { … } }]`: un elemento por nivel del catálogo; `promedioIntentos` con dos decimales; un grupo vacío da `{ sesiones: 0, promedioIntentos: null, maxIntentos: null, distribucion }` con los grupos en 0.
+- `distribucion`: sesiones según su **intento máximo** en el nivel, siempre con los 4 grupos y en
+  este orden: `[{ minimo: 1, maximo: 1, sesiones }, { minimo: 2, maximo: 3, … }, { minimo: 4,
+  maximo: 6, … }, { minimo: 7, maximo: null, … }]` (`maximo: null` = sin tope). La suma de los
+  grupos es igual a `sesiones`. Los límites viven en una sola constante de la API
+  (`GRUPOS_INTENTOS`, S-63); los nombres de los grupos ("pasada limpia", "fricción alta"…) los
+  pone el dashboard.
 - "Pasaron" = la sesión tuvo un `nivel_fin` `completado` de ese nivel; si no, "se rindieron"
   (incluye sesiones con crash, aunque el jugador lo complete después en otra sesión).
 - `explain()` (seed completo): `IXSCAN` sobre `{ juegoId, tipo, timestamp }` (o `{ juegoId, tipo,
