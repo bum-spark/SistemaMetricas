@@ -1,11 +1,13 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EstadoApiService } from '../../core/api/estado-api.service';
+import { SaludService } from '../../core/api/salud.service';
 import { destinoSeguro } from '../../core/auth/auth.guard';
 import { AuthService } from '../../core/auth/auth.service';
 import { ES } from '../../i18n/es';
+import { Badge, TonoBadge } from '../../shared/ui/badge/badge';
 import { Boton } from '../../shared/ui/boton/boton';
 import { Campo } from '../../shared/ui/campo/campo';
 import { Marca } from '../../shared/ui/marca/marca';
@@ -15,7 +17,7 @@ import { Marca } from '../../shared/ui/marca/marca';
 @Component({
   selector: 'xa-login',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, Boton, Campo, Marca],
+  imports: [ReactiveFormsModule, Badge, Boton, Campo, Marca],
   templateUrl: './login.html',
   styleUrl: './login.css',
 })
@@ -24,6 +26,13 @@ export class Login {
   private readonly router = inject(Router);
   private readonly ruta = inject(ActivatedRoute);
   protected readonly estadoApi = inject(EstadoApiService);
+  private readonly salud = inject(SaludService);
+  // Chip "API: en línea / despertando" con GET /salud (también despierta a Render mientras se escribe).
+  protected readonly chipSalud = computed(() => {
+    const estado = this.salud.estado();
+    const tonos: Record<typeof estado, TonoBadge> = { 'comprobando': 'neutro', 'en-linea': 'success', 'despertando': 'warning', 'sin-conexion': 'danger' };
+    return { texto: ES.api.estado[estado], tono: tonos[estado] };
+  });
   protected readonly textos = ES.login;
   protected readonly textosApi = ES.api;
 
@@ -36,6 +45,11 @@ export class Login {
   protected readonly errorGeneral = signal<string | null>(
     this.ruta.snapshot.queryParamMap.get('motivo') === 'expirada' ? ES.login.sesionExpirada : null,
   );
+
+  constructor() {
+    this.salud.comprobar();
+    inject(DestroyRef).onDestroy(() => this.salud.detener());
+  }
 
   protected errorEmail(): string | null {
     const c = this.formulario.controls.email;

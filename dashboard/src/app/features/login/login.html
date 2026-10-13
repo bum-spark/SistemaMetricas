@@ -1,6 +1,12 @@
 <main class="login">
+  <p class="login__salud" aria-live="polite">
+    <xa-badge [tono]="chipSalud().tono">{{ chipSalud().texto }}</xa-badge>
+  </p>
   <section class="login__tarjeta" aria-labelledby="login-titulo">
-    <xa-marca variante="login" />
+    <div class="login__marca">
+      <xa-marca variante="login" />
+    </div>
+    <p class="login__proposito">{{ textosApi.proposito }}</p>
     <h1 id="login-titulo" class="solo-lector">{{ textos.tituloPagina }}</h1>
 
     <form class="login__formulario" [formGroup]="formulario" (ngSubmit)="entrar()" novalidate>

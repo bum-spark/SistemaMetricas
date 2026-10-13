@@ -33,8 +33,12 @@
 }
 
 :host(.xa-marca--login) .xa-marca__logo {
+  box-sizing: content-box;
   width: var(--logo-estudio-login);
   height: var(--logo-estudio-login);
+  padding: var(--space-3);
+  background: var(--bg-3);
+  border-radius: var(--radius-md);
 }
 
 :host(.xa-marca--login) .xa-marca__nombre {

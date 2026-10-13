@@ -105,6 +105,15 @@ describe('Login', () => {
     expect(el.querySelector<HTMLButtonElement>('button[type="submit"]')!.disabled).toBe(false);
   });
 
+  it('muestra el chip de estado de la API con GET /salud', async () => {
+    const { el, fixture, http } = await montar();
+    expect(el.querySelector('.login__salud')?.textContent?.trim()).toBe(ES.api.estado['comprobando']);
+    http.expectOne(`${CONFIG.apiUrl}/salud`).flush({ estado: 'ok' });
+    await new Promise((r) => setTimeout(r));
+    await fixture.whenStable();
+    expect(el.querySelector('.login__salud')?.textContent?.trim()).toBe(ES.api.estado['en-linea']);
+  });
+
   it('avisa si llegó por sesión expirada', async () => {
     const { el } = await montar('/login?motivo=expirada');
     expect(el.querySelector('[role="alert"]')?.textContent).toBe(ES.login.sesionExpirada);

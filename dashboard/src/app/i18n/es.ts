@@ -23,6 +23,13 @@ export const ES = {
   },
   api: {
     despertando: 'El servidor se está despertando, puede tardar un minuto.',
+    estado: {
+      'comprobando': 'API: comprobando…',
+      'en-linea': 'API: en línea',
+      'despertando': 'API: despertando…',
+      'sin-conexion': 'API: sin conexión',
+    },
+    proposito: 'Acceso para administradores del estudio',
   },
   marco: {
     navegacion: 'Secciones del juego',
