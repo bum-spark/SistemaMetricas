@@ -1,0 +1,38 @@
+<xa-cabecera [titulo]="textos.titulo" [pregunta]="textos.pregunta" [cargadoEn]="cargadoEn()" />
+
+<div aria-live="polite" [attr.aria-busy]="cargando()">
+  @if (conError()) {
+    <xa-estado-error (reintentar)="reintentar()" />
+  } @else if (!cargando() && sinDatos()) {
+    <xa-estado-vacio [titulo]="textosJuego.sinDatosTitulo" [ayuda]="textosJuego.sinDatosAyuda">
+      @if (conFiltros()) {
+        <button xa-boton type="button" variante="secundario" (click)="limpiarFiltros()">{{ textosFiltros.limpiar }}</button>
+      }
+    </xa-estado-vacio>
+  } @else {
+    <div class="kpis">
+      <xa-kpi [etiqueta]="textos.kpiTotal" [valor]="kpis().total" [contexto]="kpis().totalContexto" [cargando]="cargando()" />
+      <xa-kpi [etiqueta]="textos.kpiCausa" tipo="texto" [valor]="kpis().causa" [contexto]="kpis().causaContexto" [cargando]="cargando()" />
+      <xa-kpi [etiqueta]="textos.kpiNivel" tipo="texto" [valor]="kpis().nivel" [attr.title]="kpis().nivel" [contexto]="kpis().nivelContexto" [cargando]="cargando()" />
+      <xa-kpi [etiqueta]="textos.kpiRepetida" [valor]="kpis().repetida" [contexto]="kpis().repetidaContexto" [cargando]="cargando()" />
+    </div>
+
+    <div class="pila">
+      <xa-tarjeta [titulo]="textos.barrasTitulo" [pregunta]="textos.barrasPregunta" [ayuda]="textos.barrasAyuda">
+        @if (cargando()) {
+          <xa-skeleton class="esqueleto-grafica" />
+        } @else {
+          <xa-chart class="grafica" [datos]="datosBarras()" [opciones]="opcionesBarras()" [etiquetaAccesible]="altBarras()" />
+        }
+      </xa-tarjeta>
+
+      <xa-tarjeta [titulo]="textos.tablaTitulo" [pregunta]="textos.tablaPregunta">
+        @if (cargando()) {
+          <xa-skeleton class="esqueleto-tabla" />
+        } @else {
+          <xa-tabla [columnas]="columnas" [filas]="filasTabla()" [titulo]="textos.tablaTitulo" [porPagina]="12" />
+        }
+      </xa-tarjeta>
+    </div>
+  }
+</div>
