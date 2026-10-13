@@ -45,6 +45,10 @@ describe('Resumen (/juegos/:slug)', () => {
     const enCaida = [...m.el.querySelectorAll('.caida__insignias xa-badge')].map((b) => b.textContent?.trim());
     expect(enCaida).toEqual([ES.insignias.mayorFuga, ES.insignias.critica]);
     expect(m.el.querySelectorAll('xa-embudo xa-insignia')).toHaveLength(2);
+    // Botón hacia Muertes con el nivel donde se pierde la gente (paso anterior a la caída).
+    const enlace = m.el.querySelector<HTMLAnchorElement>('.caida__enlace')!;
+    expect(enlace.textContent).toContain(ES.resumen.verMuertes('Nivel A'));
+    expect(enlace.getAttribute('href')).toBe('/juegos/juego-uno/muertes?nivelId=nivel_a');
   });
 
   it('manda los filtros de la URL a la API (fechas en UTC, hasta inclusivo)', async () => {

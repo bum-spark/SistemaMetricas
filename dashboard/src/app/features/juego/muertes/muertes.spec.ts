@@ -1,6 +1,19 @@
 import { montarVistaJuego } from '../../../../testing/juego';
 import { ES } from '../../../i18n/es';
 import { Muertes } from './muertes';
+
+const MAPA = {
+  nivelId: 'nivel_b',
+  imagenUrl: null,
+  limites: { minX: 0, maxX: 100, minY: 0, maxY: 20 },
+  celda: 5,
+  totalMuertes: 9,
+  celdas: [
+    { x: 10, y: 0, causa: 'pinchos', muertes: 3 },
+    { x: 10, y: 0, causa: 'agua', muertes: 5 },
+    { x: 20, y: 5, causa: 'agua', muertes: 1 },
+  ],
+};
 import { MUERTES } from '../../../../testing/muertes';
 
 describe('Muertes (/juegos/:slug/muertes)', () => {
@@ -45,5 +58,37 @@ describe('Muertes (/juegos/:slug/muertes)', () => {
     m.http.expectOne((r) => r.url === m.urlEstadistica('muertes')).flush({ juegoId: 'x', filtros: {}, datos: MUERTES });
     await m.asentar();
     expect(m.el.querySelectorAll('xa-tabla tbody tr')).toHaveLength(3);
+  });
+
+  it('mapa de calor: usa ?nivelId= y ?celda= de la URL, y las pestañas filtran por causa', async () => {
+    const m = await montarVistaJuego(Muertes, 'muertes', '/juegos/juego-uno/muertes?nivelId=nivel_b&celda=5');
+    m.http.expectOne((r) => r.url === m.urlEstadistica('muertes')).flush({ juegoId: 'x', filtros: {}, datos: MUERTES });
+    const req = m.http.expectOne((r) => r.url === m.urlEstadistica('mapa-calor'));
+    expect(req.request.params.get('nivelId')).toBe('nivel_b');
+    expect(req.request.params.get('celda')).toBe('5');
+    req.flush({ juegoId: 'x', filtros: {}, datos: MAPA });
+    await m.asentar();
+
+    expect(m.el.querySelector<HTMLSelectElement>('#mapa-nivel')!.value).toBe('nivel_b');
+    const tabs = [...m.el.querySelectorAll<HTMLButtonElement>('xa-tabs [role="tab"]')];
+    expect(tabs.map((t) => t.textContent?.trim())).toEqual([ES.muertes.todas, 'Pinchos', 'Agua']);
+    expect(m.el.querySelector('xa-mapa-calor canvas')?.getAttribute('aria-label')).toBe(ES.muertes.mapaAlt('9', '10', '0', '8'));
+
+    tabs[1]!.click();
+    await m.asentar();
+    expect(m.el.querySelector('xa-mapa-calor canvas')?.getAttribute('aria-label')).toBe(ES.muertes.mapaAlt('3', '10', '0', '3'));
+  });
+
+  it('sin ?nivelId= el mapa pide el primer nivel del catálogo; cambiar el nivel lo escribe en la URL', async () => {
+    const m = await montarVistaJuego(Muertes, 'muertes');
+    m.http.expectOne((r) => r.url === m.urlEstadistica('muertes')).flush({ juegoId: 'x', filtros: {}, datos: MUERTES });
+    expect(m.http.expectOne((r) => r.url === m.urlEstadistica('mapa-calor')).request.params.get('nivelId')).toBe('nivel_a');
+    await m.asentar();
+    const select = m.el.querySelector<HTMLSelectElement>('#mapa-nivel')!;
+    select.value = 'nivel_b';
+    select.dispatchEvent(new Event('change'));
+    await m.asentar();
+    expect(m.router.url).toBe('/juegos/juego-uno/muertes?nivelId=nivel_b');
+    expect(m.http.expectOne((r) => r.url === m.urlEstadistica('mapa-calor')).request.params.get('nivelId')).toBe('nivel_b');
   });
 });

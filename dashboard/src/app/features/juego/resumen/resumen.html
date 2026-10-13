@@ -53,6 +53,9 @@
               </div>
             }
             <p class="caida__detalle">{{ c.detalle }}</p>
+            @if (c.nivelId) {
+              <a class="caida__enlace" [routerLink]="['muertes']" [queryParams]="{ nivelId: c.nivelId }" queryParamsHandling="merge">{{ textos.verMuertes(c.desde) }} →</a>
+            }
           </div>
         } @else {
           <p class="caida__detalle">{{ textos.sinCaida }}</p>

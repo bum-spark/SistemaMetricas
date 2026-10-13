@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { EstadisticasService } from '../../../core/api/estadisticas.service';
 import { DatosSesiones, PasoEmbudo } from '../../../core/api/tipos';
 import { ES } from '../../../i18n/es';
@@ -22,7 +23,7 @@ import { pasosVisibles } from '../pasos';
 @Component({
   selector: 'xa-resumen',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Boton, Cabecera, Embudo, EstadoError, EstadoVacio, Insignia, Kpi, Skeleton, Tarjeta],
+  imports: [Boton, Cabecera, RouterLink, Embudo, EstadoError, EstadoVacio, Insignia, Kpi, Skeleton, Tarjeta],
   templateUrl: './resumen.html',
   styleUrl: './resumen.css',
 })
@@ -80,6 +81,9 @@ export class Resumen {
   protected readonly caida = computed(() => {
     const pasos = this.pasos();
     const c = mayorCaida(pasos);
+    // El paso donde se pierde la gente es un nivel del embudo (en el orden del catálogo).
+    const embudo = this.embudo.carga();
+    const nivelId = c && embudo.estado === 'listo' ? embudo.datos[c.desde]?.paso : undefined;
     return c
       ? {
           desde: pasos[c.desde]!.etiqueta,
@@ -87,6 +91,7 @@ export class Resumen {
           porcentaje: formatearPorcentaje(c.porcentaje),
           detalle: this.textos.caidaDetalle(formatearEntero(c.jugadores)),
           insignias: this.insignias()[c.hasta] ?? [],
+          nivelId: nivelId && nivelId !== 'terminaron' ? nivelId : null,
         }
       : null;
   });

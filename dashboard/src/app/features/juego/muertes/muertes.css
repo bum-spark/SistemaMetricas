@@ -31,3 +31,66 @@
 .esqueleto-tabla {
   height: calc(var(--space-8) * 3);
 }
+
+.esqueleto-mapa {
+  height: calc(var(--space-8) * 3);
+}
+
+.sin-muertes {
+  color: var(--text-2);
+  font-size: var(--fs-secundario);
+  line-height: var(--lh-secundario);
+}
+
+/* Controles del mapa con la etiqueta dentro del control, como la barra de filtros (§4). */
+.controles-mapa {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+}
+
+.control-mapa {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: var(--control-alto);
+  padding: 0 var(--space-1) 0 var(--space-2);
+  background: var(--bg-3);
+  border: var(--borde) solid var(--border-default);
+  border-radius: var(--radius-sm);
+}
+
+.control-mapa:hover {
+  border-color: var(--border-strong);
+}
+
+.control-mapa:focus-within {
+  border-color: var(--petal);
+  box-shadow: var(--focus-ring);
+}
+
+.control-mapa__etiqueta {
+  color: var(--text-3);
+  font-size: var(--fs-etiqueta);
+  line-height: var(--lh-etiqueta);
+  font-weight: var(--fw-medium);
+}
+
+.control-mapa select {
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--text-1);
+  font-size: var(--fs-secundario);
+  cursor: pointer;
+}
+
+.control-mapa select:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.control-mapa option {
+  background: var(--bg-2);
+}
