@@ -1,0 +1,73 @@
+:host {
+  position: sticky;
+  top: var(--topbar-alto);
+  z-index: 5;
+  display: block;
+  margin: calc(-1 * var(--space-5)) calc(-1 * var(--space-5)) var(--space-5);
+  padding: var(--space-3) var(--space-5);
+  background: var(--bg-0);
+  border-bottom: var(--borde) solid var(--border-subtle);
+}
+
+.barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-4);
+}
+
+.grupo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+
+/* Atajos como tabs de texto: subrayado de 2 px --accent en el activo (§4). */
+.atajos {
+  display: flex;
+  gap: var(--space-1);
+  height: var(--control-alto);
+}
+
+.atajo {
+  padding: 0 var(--space-3);
+  border: 0;
+  border-bottom: var(--barra-activa) solid transparent;
+  background: transparent;
+  color: var(--text-2);
+  font-size: var(--fs-cuerpo);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+}
+
+.atajo:hover {
+  color: var(--text-1);
+}
+
+.atajo[aria-pressed='true'] {
+  color: var(--text-1);
+  border-bottom-color: var(--accent);
+}
+
+input[type='date'] {
+  color-scheme: dark;
+}
+
+@media (max-width: 767px) {
+  :host {
+    position: static;
+    margin: calc(-1 * var(--space-4)) calc(-1 * var(--space-4)) var(--space-4);
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .barra,
+  .grupo {
+    align-items: stretch;
+  }
+
+  .grupo > xa-campo {
+    flex: 1;
+  }
+}

@@ -1,0 +1,37 @@
+<form class="barra" [attr.aria-label]="textos.titulo" (submit)="$event.preventDefault()">
+  <div class="grupo grupo--fechas">
+    <div class="atajos" role="group" [attr.aria-label]="textos.atajos">
+      <button type="button" class="atajo" [attr.aria-pressed]="atajoActivo() === 7" (click)="aplicarAtajo(7)">{{ textos.dias7 }}</button>
+      <button type="button" class="atajo" [attr.aria-pressed]="atajoActivo() === 30" (click)="aplicarAtajo(30)">{{ textos.dias30 }}</button>
+      <button type="button" class="atajo" [attr.aria-pressed]="atajoActivo() === 'todo'" (click)="aplicarAtajo('todo')">{{ textos.todo }}</button>
+    </div>
+    <xa-campo [etiqueta]="textos.desde" para="filtro-desde">
+      <input id="filtro-desde" type="date" [value]="filtros().desde ?? ''" [max]="filtros().hasta ?? ''" (change)="cambiar('desde', $event)" />
+    </xa-campo>
+    <xa-campo [etiqueta]="textos.hasta" para="filtro-hasta">
+      <input id="filtro-hasta" type="date" [value]="filtros().hasta ?? ''" [min]="filtros().desde ?? ''" (change)="cambiar('hasta', $event)" />
+    </xa-campo>
+  </div>
+
+  <div class="grupo">
+    <xa-campo [etiqueta]="textos.build" para="filtro-build">
+      <select id="filtro-build" (change)="cambiar('buildVersion', $event)">
+        <option value="" [selected]="!filtros().buildVersion">{{ textos.todas }}</option>
+        @for (v of opciones().buildVersions; track v) {
+          <option [value]="v" [selected]="filtros().buildVersion === v">{{ v }}</option>
+        }
+      </select>
+    </xa-campo>
+    <xa-campo [etiqueta]="textos.plataforma" para="filtro-plataforma">
+      <select id="filtro-plataforma" (change)="cambiar('plataforma', $event)">
+        <option value="" [selected]="!filtros().plataforma">{{ textos.todas }}</option>
+        @for (p of opciones().plataformas; track p) {
+          <option [value]="p" [selected]="filtros().plataforma === p">{{ textos.nombrePlataforma(p) }}</option>
+        }
+      </select>
+    </xa-campo>
+    <button xa-boton type="button" variante="secundario" class="limpiar" [deshabilitado]="!conFiltros()" (click)="limpiar()">
+      {{ textos.limpiar }}
+    </button>
+  </div>
+</form>

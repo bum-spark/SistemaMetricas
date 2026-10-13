@@ -106,6 +106,8 @@
   --opacidad-deshabilitado: 0.45;
   --opacidad-atenuado: 0.6;     /* imagen del mapa de calor (§5) y velo del menú móvil */
   --padding-tarjeta: 20px;
+  --retraso-tooltip: 150ms;     /* §4: tooltip con retraso de 150 ms */
+  --tooltip-ancho-max: 320px;   /* S-55 */
   --tactil-min: 40px;
 
   /* Marca */

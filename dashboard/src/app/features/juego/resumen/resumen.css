@@ -1,0 +1,80 @@
+.encabezado {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.titulo {
+  font-family: var(--font-display);
+  font-size: var(--fs-titulo-pagina);
+  line-height: var(--lh-titulo-pagina);
+  font-weight: var(--fw-semibold);
+}
+
+/* KPIs en fila de 4 (2 en tablet, 1 en móvil) (§3). */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.graficas {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.col-6 {
+  grid-column: span 6;
+}
+
+@media (max-width: 1023px) {
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .col-6 { grid-column: span 12; }
+}
+
+@media (max-width: 639px) {
+  .kpis { grid-template-columns: minmax(0, 1fr); }
+}
+
+.esqueleto-grafica {
+  height: calc(var(--space-8) * 3);
+}
+
+.caida {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.caida__tramo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-size: var(--fs-titulo-seccion);
+  line-height: var(--lh-titulo-seccion);
+  font-family: var(--font-display);
+  font-weight: var(--fw-semibold);
+}
+
+.caida__flecha {
+  color: var(--text-3);
+}
+
+.caida__cifra {
+  font-family: var(--font-display);
+  font-size: var(--fs-kpi);
+  line-height: var(--lh-kpi);
+  font-weight: var(--fw-semibold);
+  color: var(--danger);
+}
+
+.caida__detalle {
+  color: var(--text-2);
+  font-size: var(--fs-secundario);
+  line-height: var(--lh-secundario);
+}

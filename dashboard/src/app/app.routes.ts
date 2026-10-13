@@ -15,6 +15,11 @@ export const routes: Routes = [
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'juegos' },
       { path: 'juegos', loadComponent: () => import('./features/juegos/juegos').then((m) => m.Juegos) },
+      {
+        path: 'juegos/:slug',
+        loadComponent: () => import('./features/juego/juego').then((m) => m.Juego),
+        children: [{ path: '', loadComponent: () => import('./features/juego/resumen/resumen').then((m) => m.Resumen) }],
+      },
     ],
   },
   { path: '**', redirectTo: 'juegos' },

@@ -58,6 +58,8 @@ export class Marco {
     { initialValue: this.router.url },
   );
   protected readonly slug = computed(() => slugDeUrl(this.url()));
+  // Las secciones solo se muestran para un juego que existe en la lista del admin.
+  protected readonly slugValido = computed(() => (this.juegos.porSlug(this.slug()) ? this.slug() : null));
 
   constructor() {
     // El selector y la traducción slug → juegoId usan la lista; un error se muestra en /juegos.
@@ -66,7 +68,8 @@ export class Marco {
   }
 
   protected rutaSeccion(seccion: Seccion): string[] {
-    return seccion.ruta ? ['/juegos', this.slug()!, seccion.ruta] : ['/juegos', this.slug()!];
+    const slug = this.slugValido()!;
+    return seccion.ruta ? ['/juegos', slug, seccion.ruta] : ['/juegos', slug];
   }
 
   protected salir(): void {

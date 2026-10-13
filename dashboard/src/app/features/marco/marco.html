@@ -5,7 +5,7 @@
       <xa-marca class="marca-icono" variante="icono" />
     </a>
 
-    @if (slug()) {
+    @if (slugValido()) {
       <nav class="sidebar__nav" [attr.aria-label]="textos.navegacion">
         <ul>
           @for (seccion of secciones; track seccion.ruta) {

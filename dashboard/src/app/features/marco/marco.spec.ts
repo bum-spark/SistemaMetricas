@@ -39,6 +39,7 @@ async function montar(url: string) {
     total: 2,
     origen: 'todos',
   });
+  await new Promise((r) => setTimeout(r));
   await fixture.whenStable();
   return { fixture, el: fixture.nativeElement as HTMLElement, router };
 }
@@ -81,6 +82,11 @@ describe('Marco', () => {
     const selector = el.querySelector('xa-selector-juego')!;
     expect(selector.textContent).toContain('Juego Uno');
     expect(selector.querySelector('img')?.getAttribute('src')).toBe('/logos/juego-uno/logo.png');
+  });
+
+  it('con un slug que no existe no muestra las secciones', async () => {
+    const { el } = await montar('/juegos/no-existe');
+    expect(el.querySelector('nav')).toBeNull();
   });
 
   it('el selector lista los juegos y se cierra con Escape', async () => {
