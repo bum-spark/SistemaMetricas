@@ -190,7 +190,10 @@ con icono llevan `aria-label` y tooltip.
 Altura 36 px, fondo `--bg-3`, borde 1px `--border-default`, radio `--radius-sm`, texto 14.
 Hover: borde `--border-strong`. Foco: borde `--petal` + `--focus-ring`. Error: borde
 `--danger` y mensaje de 12 px en `--danger` debajo. Etiqueta arriba (12/500, `--text-2`),
-nunca solo placeholder.
+nunca solo placeholder. **Excepción, barra de filtros:** la etiqueta va visible a la
+izquierda *dentro* del control ("Build: Todas", 12/500 `--text-3` + valor 14 `--text-1`) y el
+control conserva un nombre accesible (`<label>` asociado o `aria-label` con la etiqueta
+completa); nunca es solo placeholder.
 
 ### Tarjeta
 Fondo `--bg-1`, borde 1px `--border-default`, radio `--radius-md`, padding 20.
@@ -207,10 +210,25 @@ mediana · 18:42 · esperado ~20:00". El valor "esperado" sale de
 
 ### Tabs y filtros
 Tabs de texto con subrayado de 2 px `--accent` en la activa. **Barra de filtros** (fija bajo
-la barra superior): rango de fechas (con atajos: 7 días, 30 días, Todo), versión de build,
-plataforma. Las opciones de build y plataforma salen de `filtros: { buildVersions,
-plataformas }` de `GET /juegos/:juegoId`. Los filtros viajan en la URL (`?desde=&hasta=&buildVersion=&plataforma=`) para
-poder compartir una vista. Botón secundario "Limpiar filtros".
+la barra superior, en **una sola fila** en escritorio; puede envolver en móvil): rango de
+fechas (con atajos: 7 días, 30 días, Todo), versión de build, plataforma y **origen de los
+datos** (Todos · Reales · Demo → `origen=todos|real|seed`, por defecto Todos). Las opciones
+de build y plataforma salen de `filtros: { buildVersions, plataformas }` de
+`GET /juegos/:juegoId`. Los filtros viajan en la URL
+(`?desde=&hasta=&buildVersion=&plataforma=&origen=`) para poder compartir una vista.
+"Limpiar filtros" es un botón de icono al final de la fila, con `aria-label` y tooltip
+"Limpiar filtros"; deshabilitado si no hay filtros.
+
+### Cabecera de página
+Título de página (28/36) con la versión actual como badge cuando aplica, debajo la pregunta
+que responde la vista (13, `--text-2`) y a la derecha "Datos cargados hace X min" (12,
+`--text-3`; reloj del cliente, se actualiza cada minuto, se reinicia al recargar datos). La
+cabecera nunca queda tapada por la barra de filtros.
+
+### Insignias de diagnóstico
+Badges calculados con umbrales que viven en **un solo archivo** (`umbrales.ts`). El tooltip
+muestra siempre la regla y el tamaño de la muestra (n); con menos de 20 sesiones o jugadores
+no se muestra insignia.
 
 ### Tabla
 Cabecera sticky, 12/500 `--text-3`, fondo `--bg-1`; filas de 44 px, separador
@@ -283,8 +301,9 @@ en `--success`, muerte en `--danger`, abandono en `--warning`). Eje en mm:ss.
 Se muestran todos los logros del catálogo, también los que nadie ha obtenido (0 %).
 
 **Mapa de calor de muertes** (canvas): imagen del nivel de fondo (`imagenUrl`) a 100 % de
-ancho de la tarjeta, atenuada al 60 %; encima, celdas coloreadas con escala secuencial
-`#3B1E12 → #8A3A12 → #F08A3C → #FFD08A` con transparencia. Las coordenadas del mundo se
+ancho de la tarjeta, atenuada al 60 %; encima, cada celda se dibuja como un **degradado
+radial** centrado en la celda (calor suavizado), con la escala secuencial
+`#3B1E12 → #8A3A12 → #F08A3C → #FFD08A` y transparencia hacia el borde. Las coordenadas del mundo se
 escalan con `limites` del catálogo (eje Y invertido: en Unity crece hacia arriba). Selector
 de nivel y de tamaño de celda arriba; leyenda de escala abajo; tooltip con muertes y
 causa dominante. Si el nivel no tiene `imagenUrl`, usar un fondo `--bg-2` con cuadrícula y
