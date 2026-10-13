@@ -10,6 +10,28 @@ const listaSeparadaPorComas = z
       .filter((origen) => origen.length > 0),
   );
 
+function esOrigen(valor: string): boolean {
+  try {
+    const url = new URL(valor);
+    return (url.protocol === 'https:' || url.protocol === 'http:') && url.origin === valor;
+  } catch {
+    return false;
+  }
+}
+
+// Un origen es esquema + dominio (+ puerto), sin ruta ni "/" final: "https://x.vercel.app/"
+// nunca coincidiría con el header Origin y CORS fallaría en silencio. "*" no se permite.
+function validarOrigenes(origenes: string[], ctx: z.RefinementCtx): void {
+  if (origenes.length === 0) {
+    ctx.addIssue({ code: 'custom', message: 'indica al menos un origen' });
+  }
+  for (const origen of origenes) {
+    if (!esOrigen(origen)) {
+      ctx.addIssue({ code: 'custom', message: `"${origen}" no es un origen válido (usa https://dominio, sin ruta ni "/" final)` });
+    }
+  }
+}
+
 // Nombres válidos de base de datos en MongoDB (sin / \ . " $ espacios, máx. 63 bytes).
 const PATRON_NOMBRE_BD = /^[A-Za-z0-9_-]{1,63}$/;
 
@@ -19,7 +41,8 @@ const esquemaEntorno = z
     PORT: z.coerce.number().int().min(1).max(65535).default(3000),
     // Único lugar donde vive el nombre del estudio: valor por defecto de APP_NAME.
     APP_NAME: z.string().trim().min(1).default('Estudio Xolos'),
-    CORS_ORIGIN: listaSeparadaPorComas.default(['http://localhost:4200']),
+    // Uno o varios orígenes del dashboard separados por coma (p. ej. el de Vercel y el local).
+    CORS_ORIGIN: listaSeparadaPorComas.pipe(z.array(z.string()).superRefine(validarOrigenes)).default(['http://localhost:4200']),
     MONGODB_URI: z
       .string({ error: 'es obligatoria' })
       .regex(/^mongodb(\+srv)?:\/\//, 'debe empezar con mongodb:// o mongodb+srv://'),

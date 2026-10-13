@@ -24,4 +24,21 @@ describe('GET /api/v1/salud', () => {
     const ajeno = await request(app).get('/api/v1/salud').set('Origin', 'https://malicioso.com');
     expect(ajeno.headers['access-control-allow-origin']).toBeUndefined();
   });
+
+  it('con varios orígenes en CORS_ORIGIN permite cada uno (también en el preflight) y ninguno más', async () => {
+    const { app } = crearAppDePrueba({ CORS_ORIGIN: 'https://xolos.vercel.app, http://localhost:4200' });
+    for (const origen of ['https://xolos.vercel.app', 'http://localhost:4200']) {
+      const res = await request(app).get('/api/v1/salud').set('Origin', origen);
+      expect(res.headers['access-control-allow-origin']).toBe(origen);
+      const preflight = await request(app)
+        .options('/api/v1/juegos')
+        .set('Origin', origen)
+        .set('Access-Control-Request-Method', 'GET')
+        .set('Access-Control-Request-Headers', 'authorization');
+      expect(preflight.status).toBe(204);
+      expect(preflight.headers['access-control-allow-origin']).toBe(origen);
+    }
+    const ajeno = await request(app).get('/api/v1/salud').set('Origin', 'https://xolos.vercel.app.malicioso.com');
+    expect(ajeno.headers['access-control-allow-origin']).toBeUndefined();
+  });
 });
