@@ -130,6 +130,43 @@ Resumen · Progresión · Niveles · Muertes · Logros y exploración.
 Arriba el logotipo (marca + nombre del estudio); abajo el nombre del admin y "Salir".
 Elemento activo: fondo `--accent-soft`, texto `--accent`, barra de 2 px a la izquierda.
 
+### Marca
+
+Originales en `logos/` (no se modifican); variantes aprobadas en `logos/variantes/`; el
+dashboard solo usa las copias optimizadas de `dashboard/public/` (R-55, S-53).
+
+| Archivo en `public/`                         | Origen                       | Tamaño      | Uso                                  |
+|----------------------------------------------|------------------------------|-------------|--------------------------------------|
+| `marca/estudio-xolos.png` / `@2x.png`        | `estudio-xolos-claro.png`    | 64 / 128 px | Sidebar y login (`srcset` 1x/2x)     |
+| `marca/favicon-32.png`                       | `favicon-32.png`             | 32 px       | Favicon                              |
+| `marca/apple-touch-icon.png`                 | `favicon-180.png`            | 180 px      | Icono de iOS                          |
+| `marca/icono-512.png`                        | `favicon-512.png`            | 512 px      | Icono grande (manifest, si se usa)   |
+| `juegos/<slug>/logo.png` / `logo@2x.png`     | `casa-del-bosque-limpia.png` | 40 / 80 px  | Logo del juego (`logoUrl`)           |
+
+- **Logo del estudio:** siempre la silueta clara (`#E8EAEE`, igual a `--text-1`) sobre las
+  superficies oscuras; el xolo negro original no se usa en el dashboard.
+  - Sidebar expandida: logo de 28 × 28 px + `APP_NAME` (14/600, `--text-1`), separación
+    `--space-3`. Sidebar colapsada: solo el logo, con tooltip y `aria-label` de `APP_NAME`.
+  - Login: logo de 64 × 64 px centrado arriba de la tarjeta, debajo `APP_NAME` como título
+    de sección (20/28) y "Analytics" en texto secundario (`--text-2`).
+- **Título de la pestaña:** `<APP_NAME> Analytics` (de `environment.ts`).
+- **Logo del juego:** se lee siempre de `logoUrl` (`GET /juegos`, `GET /juegos/:juegoId`),
+  nunca de una ruta escrita en el código. Va siempre dentro de un recuadro `--bg-3` con
+  `--radius-md`:
+  - Tarjeta de `/juegos`: recuadro de 56 px con padding `--space-2` (imagen de 40 px).
+  - Selector de la barra superior: recuadro de 28 px con padding `--space-1` (imagen de 20 px).
+  - Si `logoUrl` es una ruta del dashboard (`/juegos/<slug>/logo.png`), se agrega
+    `srcset` con `logo@2x.png`; si es una URL https externa, solo `src`.
+  - Sin `logoUrl` (o si la imagen falla al cargar): el mismo recuadro con la inicial del
+    nombre del juego en Space Grotesk 600, `--text-2`, centrada (16 px en la tarjeta, 12 px
+    en el selector).
+- **Imágenes:** todo `<img>` lleva `alt` descriptivo ("Logo de La Casa del Bosque",
+  "Logo de Estudio Xolos"; vacío solo si el nombre ya está escrito junto al logo) y
+  `width`/`height` explícitos para no mover el layout al cargar.
+- **Colores del logo y paleta:** la flor usa cian, verde azulado y azul marino que no están
+  en los tokens. La paleta **no se cambia** por los colores de los logos (decisión del
+  equipo, R-55).
+
 ---
 
 ## 4. Componentes
