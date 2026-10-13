@@ -143,6 +143,12 @@ export const ES = {
     jugadores: 'jugadores',
     sesiones: 'sesiones',
   },
+  tabla: {
+    ordenar: (columna: string) => `Ordenar por ${columna}`,
+    anterior: 'Página anterior',
+    siguiente: 'Página siguiente',
+    pagina: (actual: number, total: number) => `Página ${actual} de ${total}`,
+  },
   estados: {
     errorTitulo: 'No se pudieron cargar los datos',
     errorAyuda: 'Revisa tu conexión e inténtalo otra vez.',

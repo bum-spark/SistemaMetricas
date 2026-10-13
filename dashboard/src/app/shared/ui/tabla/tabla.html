@@ -1,0 +1,44 @@
+<div class="desplazable">
+  <table>
+    <caption class="solo-lector">{{ titulo() }}</caption>
+    <thead>
+      <tr>
+        @for (col of columnas(); track col.clave) {
+          <th scope="col" [class.numerica]="col.numerica" [attr.aria-sort]="col.ordenable ? ariaSort(col.clave) : null">
+            @if (col.ordenable) {
+              <button type="button" class="ordenar" [attr.aria-label]="textos.ordenar(col.titulo)" (click)="ordenarPor(col.clave)">
+                {{ col.titulo }}
+                <span class="flecha" aria-hidden="true">{{ ariaSort(col.clave) === 'ascending' ? '↑' : ariaSort(col.clave) === 'descending' ? '↓' : '↕' }}</span>
+              </button>
+            } @else {
+              {{ col.titulo }}
+            }
+          </th>
+        }
+      </tr>
+    </thead>
+    <tbody>
+      @for (fila of visibles(); track $index) {
+        <tr>
+          @for (col of columnas(); track col.clave) {
+            <td [class.numerica]="col.numerica" [class.cifras]="col.numerica">
+              @if (plantillas().get(col.clave); as plantilla) {
+                <ng-container [ngTemplateOutlet]="plantilla" [ngTemplateOutletContext]="{ $implicit: fila }" />
+              } @else {
+                {{ texto(fila, col) }}
+              }
+            </td>
+          }
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+@if (totalPaginas() > 1) {
+  <nav class="paginacion" [attr.aria-label]="titulo()">
+    <button type="button" class="pagina" [attr.aria-label]="textos.anterior" [disabled]="pagina() === 0" (click)="pagina.set(pagina() - 1)">‹</button>
+    <span class="pagina__texto">{{ textos.pagina(pagina() + 1, totalPaginas()) }}</span>
+    <button type="button" class="pagina" [attr.aria-label]="textos.siguiente" [disabled]="pagina() + 1 >= totalPaginas()" (click)="pagina.set(pagina() + 1)">›</button>
+  </nav>
+}
