@@ -1,7 +1,8 @@
 import { Router, type RequestHandler } from 'express';
 import type { z } from 'zod';
 import { esquemaPaginacion } from '../admin/esquemas';
-import { esquemaRespuestaError } from '../errores';
+import type { Config } from '../config';
+import { AppError, esquemaRespuestaError } from '../errores';
 import {
   esquemaActualizacionInvitado,
   esquemaInvitacionAceptada,
@@ -29,14 +30,37 @@ import { validar } from './admin';
 // logs de acceso del hosting ni en el historial (S-67).
 export const HEADER_TOKEN_INVITACION = 'X-Invitacion-Token';
 
-export function crearRutasInvitados(opciones: { jwtSecret: string; dashboardUrl: string; limiteInvitacion: RequestHandler }): Router {
+const HOSTS_LOCALES = new Set(['localhost', '127.0.0.1', '[::1]', '0.0.0.0']);
+
+function esLocal(origen: string): boolean {
+  const host = new URL(origen).hostname;
+  return HOSTS_LOCALES.has(host) || host.endsWith('.localhost');
+}
+
+// Origen del dashboard para los enlaces de invitación. En desarrollo, sin DASHBOARD_URL se usa el
+// primer origen de CORS. En producción es obligatoria y no puede ser local: mejor un error claro
+// que un enlace a localhost que el invitado no puede abrir. Se llama ANTES de crear la cuenta o
+// el token, así un error no deja nada a medias.
+export function baseEnlacesInvitacion(config: Pick<Config, 'entorno' | 'dashboardUrl' | 'corsOrigenes'>): string {
+  if (config.entorno === 'production' && (!config.dashboardUrl || esLocal(config.dashboardUrl))) {
+    throw new AppError(
+      500,
+      'DASHBOARD_URL_NO_CONFIGURADA',
+      'No se pueden generar enlaces de invitación: configura la variable DASHBOARD_URL de la API con el dominio público del dashboard (por ejemplo https://sistemametricas-dashboard.vercel.app).',
+    );
+  }
+  return config.dashboardUrl ?? config.corsOrigenes[0]!;
+}
+
+export function crearRutasInvitados(opciones: { jwtSecret: string; baseEnlaces: () => string; limiteInvitacion: RequestHandler }): Router {
   const router = Router();
   const soloAdmin = [crearAutenticarAdmin(opciones.jwtSecret), exigirRolAdmin];
 
   // ---------- Solo rol admin ----------
   router.post('/invitados', ...soloAdmin, async (req, res) => {
     const datos = validar(esquemaSolicitudInvitado, req.body, 'El cuerpo de la invitación');
-    res.status(201).json(await invitar(adminAutenticado(res), datos, opciones.dashboardUrl));
+    const base = opciones.baseEnlaces();
+    res.status(201).json(await invitar(adminAutenticado(res), datos, base));
   });
 
   router.get('/invitados', ...soloAdmin, async (req, res) => {
@@ -52,7 +76,8 @@ export function crearRutasInvitados(opciones: { jwtSecret: string; dashboardUrl:
 
   router.post('/invitados/:email/restablecer', ...soloAdmin, async (req, res) => {
     const { email } = validar(esquemaParamsInvitado, req.params, 'El correo');
-    res.json(await restablecerInvitado(adminAutenticado(res), email, opciones.dashboardUrl));
+    const base = opciones.baseEnlaces();
+    res.json(await restablecerInvitado(adminAutenticado(res), email, base));
   });
 
   // ---------- Públicas (con rate limit propio por IP) ----------
@@ -106,6 +131,7 @@ export const openApiInvitados: RutasOpenApi = {
         '400': error('VALIDACION_FALLIDA'),
         ...comunes,
         '409': error('CORREO_YA_REGISTRADO: ya existe un usuario (admin o invitado) con ese correo.'),
+        '500': error('DASHBOARD_URL_NO_CONFIGURADA: en producción falta DASHBOARD_URL o apunta a localhost (no se crea nada).'),
       },
     },
     get: {
@@ -150,6 +176,7 @@ export const openApiInvitados: RutasOpenApi = {
         ...comunes,
         '404': error('INVITADO_NO_ENCONTRADO (también si el correo es de un admin).'),
         '409': error('INVITADO_DESACTIVADO: hay que activarlo antes.'),
+        '500': error('DASHBOARD_URL_NO_CONFIGURADA: en producción falta DASHBOARD_URL o apunta a localhost (no se genera enlace).'),
       },
     },
   },

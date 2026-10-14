@@ -67,7 +67,7 @@ usuario, con permiso solo sobre esa base** (R-41).
    | `RATE_LIMIT_PUBLICO_IP` | `600` (o vacío = 600) | no |
    | `RATE_LIMIT_LOGIN_IP` | `5` (o vacío = 5): intentos fallidos de login por IP cada 15 min | no |
    | `RATE_LIMIT_INVITACION_IP` | `10` (o vacío = 10): intentos de validar o aceptar una invitación por IP cada 15 min | no |
-   | `DASHBOARD_URL` | `https://sistemametricas-dashboard.vercel.app` (sin `/` final). Arma los enlaces de invitación; vacío = el primer origen de `CORS_ORIGIN`, que puede ser `http://localhost:4200` | no |
+   | `DASHBOARD_URL` | `https://sistemametricas-dashboard.vercel.app` (sin `/` final). Arma los enlaces de invitación. **Obligatoria para invitar en producción:** si falta o es localhost, `POST /invitados` y `/restablecer` responden `500 DASHBOARD_URL_NO_CONFIGURADA` (no se crea nada ni se genera un enlace roto) | no |
 
    Para generar `JWT_SECRET` en tu computadora:
    ```bash

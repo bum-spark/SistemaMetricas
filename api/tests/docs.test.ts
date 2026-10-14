@@ -69,7 +69,7 @@ describe('OpenAPI de invitados', () => {
     const { body } = await request(app).get('/api/v1/docs/openapi.json');
     expect(body.paths['/invitados'].post.security).toEqual([{ BearerAuth: [] }]);
     expect(body.paths['/invitados'].post.requestBody.content['application/json'].schema).toEqual({ $ref: '#/components/schemas/SolicitudInvitado' });
-    expect(Object.keys(body.paths['/invitados'].post.responses as object).sort()).toEqual(['201', '400', '401', '403', '409']);
+    expect(Object.keys(body.paths['/invitados'].post.responses as object).sort()).toEqual(['201', '400', '401', '403', '409', '500']);
     expect(body.paths['/invitados'].get.security).toEqual([{ BearerAuth: [] }]);
     expect(body.paths['/invitados/{email}'].patch).toBeDefined();
     expect(body.paths['/invitados/{email}/restablecer'].post).toBeDefined();

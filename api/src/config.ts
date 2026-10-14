@@ -62,7 +62,8 @@ const esquemaEntorno = z
     // Intentos de validar o aceptar una invitación por IP en 15 min (S-67).
     RATE_LIMIT_INVITACION_IP: z.coerce.number().int().min(1).default(10),
     // Origen del dashboard para armar los enlaces de invitación (<origen>/invitacion#token=…).
-    // Sin valor se usa el primer origen de CORS_ORIGIN.
+    // Sin valor se usa el primer origen de CORS_ORIGIN, salvo en producción, donde es
+    // obligatoria para invitar (rutas/invitados.ts, baseEnlacesInvitacion).
     DASHBOARD_URL: z
       .string()
       .refine(esOrigen, 'no es un origen válido (usa https://dominio, sin ruta ni "/" final)')
@@ -97,7 +98,8 @@ export interface Config {
     loginPorIp: number;
     invitacionPorIp: number;
   };
-  dashboardUrl: string;
+  // Tal como viene del entorno; la base de los enlaces la decide baseEnlacesInvitacion.
+  dashboardUrl: string | undefined;
   jwtSecret: string | undefined;
 }
 
@@ -137,7 +139,7 @@ export function cargarConfig(entorno: NodeJS.ProcessEnv = process.env): Config {
       loginPorIp: env.RATE_LIMIT_LOGIN_IP,
       invitacionPorIp: env.RATE_LIMIT_INVITACION_IP,
     },
-    dashboardUrl: env.DASHBOARD_URL ?? env.CORS_ORIGIN[0]!,
+    dashboardUrl: env.DASHBOARD_URL,
     jwtSecret: env.JWT_SECRET,
   };
 }

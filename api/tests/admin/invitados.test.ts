@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 import { AdminModelo } from '../../src/modelos';
 import { crearAdmin } from '../../src/scripts/crearAdmin';
+import { baseEnlacesInvitacion } from '../../src/rutas/invitados';
 import { hashTokenInvitacion } from '../../src/seguridad/invitacion';
 import * as password from '../../src/seguridad/password';
 import { crearAppDePrueba } from '../helpers';
@@ -420,5 +421,50 @@ describe('el enlace no queda en logs ni en respuestas posteriores', () => {
     } finally {
       espias.forEach((e) => e.mockRestore());
     }
+  });
+});
+
+describe('DASHBOARD_URL en producción', () => {
+  const appProduccion = (dashboardUrl?: string) =>
+    crearAppDePrueba({ NODE_ENV: 'production', CORS_ORIGIN: 'http://localhost:4200', ...(dashboardUrl ? { DASHBOARD_URL: dashboardUrl } : {}) }).app;
+  const tokenEn = async (a: ReturnType<typeof appProduccion>) =>
+    (await request(a).post('/api/v1/auth/login').send({ email: 'admin@xolos.mx', password: PASSWORD_ADMIN })).body.token as string;
+
+  it.each([
+    ['falta', undefined],
+    ['es localhost', 'http://localhost:4200'],
+    ['es 127.0.0.1', 'http://127.0.0.1:4200'],
+  ])('si %s, invitar y restablecer responden 500 claro y no crean nada', async (_caso, url) => {
+    const prod = appProduccion(url);
+    const jwt = await tokenEn(prod);
+    const { token: original } = await invitar('ana@ejemplo.mx'); // creado con la app de desarrollo
+    const hashAntes = (await AdminModelo.findOne({ email: 'ana@ejemplo.mx' }).lean())?.tokenInvitacionHash;
+
+    const inv = await request(prod).post('/api/v1/invitados').set('Authorization', `Bearer ${jwt}`).send({ email: 'beto@ejemplo.mx', juegos: [casa.juegoId] });
+    expect(inv.status).toBe(500);
+    expect(inv.body.error.codigo).toBe('DASHBOARD_URL_NO_CONFIGURADA');
+    expect(inv.body.error.mensaje).toContain('DASHBOARD_URL');
+    expect(JSON.stringify(inv.body)).not.toContain('localhost');
+    expect(await AdminModelo.exists({ email: 'beto@ejemplo.mx' })).toBeNull();
+
+    const rest = await request(prod).post('/api/v1/invitados/ana@ejemplo.mx/restablecer').set('Authorization', `Bearer ${jwt}`);
+    expect(rest.status).toBe(500);
+    expect(rest.body.error.codigo).toBe('DASHBOARD_URL_NO_CONFIGURADA');
+    // El enlace vigente no se tocó.
+    expect((await AdminModelo.findOne({ email: 'ana@ejemplo.mx' }).lean())?.tokenInvitacionHash).toBe(hashAntes);
+    expect((await validar(original)).status).toBe(200);
+  });
+
+  it('con un dominio público, el enlace usa ese dominio', async () => {
+    const prod = appProduccion('https://panel.ejemplo.mx');
+    const jwt = await tokenEn(prod);
+    const res = await request(prod).post('/api/v1/invitados').set('Authorization', `Bearer ${jwt}`).send({ email: 'beto@ejemplo.mx', juegos: [casa.juegoId] });
+    expect(res.status).toBe(201);
+    expect(res.body.enlace).toMatch(/^https:\/\/panel\.ejemplo\.mx\/invitacion#token=/);
+  });
+
+  it('en desarrollo, sin DASHBOARD_URL usa el primer origen de CORS', () => {
+    expect(baseEnlacesInvitacion({ entorno: 'development', dashboardUrl: undefined, corsOrigenes: ['http://localhost:4200', 'https://b.mx'] })).toBe('http://localhost:4200');
+    expect(baseEnlacesInvitacion({ entorno: 'production', dashboardUrl: 'https://a.mx', corsOrigenes: ['http://localhost:4200'] })).toBe('https://a.mx');
   });
 });

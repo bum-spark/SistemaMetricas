@@ -139,6 +139,11 @@ comparten a mano con un enlace de un solo uso. Queda **fuera de alcance**, y as�
 | Cambiar la propia contraseña | Se cubre con Restablecer | Endpoint autenticado que pide la contraseña actual; ya existe `passwordCambiadaEn` para cerrar sesiones viejas |
 | Doble factor | Agrega flujo y almacenamiento de secretos | TOTP por usuario, obligatorio para admins |
 
+**No existe borrado de invitados**, solo desactivar (y reactivar): se conserva quién invitó y
+cuándo, y desactivar ya corta la sesión y el enlace al instante. Borrar (por ejemplo, a pedido
+de la persona) sería un endpoint de admin que elimine el documento; los invitados no generan
+datos de juego, así que no hay nada más que limpiar.
+
 ### Qué ya está preparado y qué no
 
 - **Preparado desde la entrega 1:** `juegoId` en todo (clave de partición), `eventoId`

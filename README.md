@@ -154,7 +154,7 @@ repositorio. Plantilla con comentarios: [`api/.env.example`](api/.env.example).
 | `RATE_LIMIT_PUBLICO_IP` | no | `/salud` y `/docs` por minuto e IP (600) |
 | `RATE_LIMIT_LOGIN_IP` | no | Logins fallidos por IP cada 15 min (5) |
 | `RATE_LIMIT_INVITACION_IP` | no | Intentos de validar o aceptar una invitación por IP cada 15 min (10) |
-| `DASHBOARD_URL` | no | Origen del dashboard para los enlaces de invitación (por defecto, el primero de `CORS_ORIGIN`) |
+| `DASHBOARD_URL` | en producción, para invitar | Origen del dashboard para los enlaces de invitación (`https://sistemametricas-dashboard.vercel.app`). En local, sin valor se usa el primero de `CORS_ORIGIN`; en producción, si falta o es localhost, invitar responde `500 DASHBOARD_URL_NO_CONFIGURADA` |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NOMBRE` | solo `crear-admin` | Primer admin; borra la contraseña del `.env` al terminar |
 
 El dashboard no usa variables de entorno: la URL de la API está en
@@ -189,6 +189,9 @@ no puede borrar datos ni gestionar invitados.
    el login normal.
 3. El admin no ve ni edita contraseñas. **Restablecer** genera un enlace nuevo e invalida el
    anterior; **desactivar** corta al instante la sesión y el enlace pendiente.
+
+**No existe borrado de invitados:** solo desactivar (y volver a activar). Así queda el registro de
+quién invitó y cuándo, y el correo sigue ocupado (invitarlo otra vez responde 409; se reactiva).
 
 Los admins creados antes de esta función (sin campo `rol`) siguen siendo admins. Detalle en
 [`docs/ESQUEMA_EVENTOS.md`](docs/ESQUEMA_EVENTOS.md) §7.3 y S-67.

@@ -66,7 +66,9 @@ CLAUDE.md
 - Niveles y logros viven en la BD (catálogo por juego), NO escritos fijos en Angular.
 - El dashboard debe poder mostrar un segundo juego sin cambiar código del frontend.
 - Jugador identificado por la pareja `juegoId + playerId`.
-- Admins con campo `juegosPermitidos` (un solo rol por ahora, pero el campo existe).
+- Usuarios del dashboard en `admins`, con `juegosPermitidos` y **dos roles** (`rol`, S-67):
+  `admin` (gestiona invitados y puede borrar datos de jugadores) e `invitado` (solo lectura
+  sobre los juegos que un admin le asigna). Un documento sin `rol` cuenta como admin.
 
 ### Jugadores y sesiones
 - **Sin login de jugadores.** Jugador anónimo con UUID generado por el cliente (Unity,
@@ -80,6 +82,8 @@ CLAUDE.md
 ### Seguridad
 - **Dashboard**: login de admin con JWT (expiración razonable), contraseñas con bcrypt,
   rutas `/estadisticas/*` protegidas. Primer admin por script seed, SIN registro público.
+  Los invitados crean su contraseña con un enlace de un solo uso (72 h) que genera un admin;
+  no hay envío de correos ni borrado de invitados (solo desactivar).
 - **Ingesta (la usa Unity)**: header `X-Api-Key`, validación estricta del esquema
   (rechazar tipos desconocidos, campos faltantes, payloads grandes), rate limiting
   (express-rate-limit), CORS solo para el dominio del dashboard.

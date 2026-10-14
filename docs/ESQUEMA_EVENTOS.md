@@ -617,6 +617,7 @@ JWT: HS256 firmado con `JWT_SECRET`, expira en 8 h (S-13), emisor `xolos-analyti
 
 `invitado` = `{ email, nombre, estado: "pendiente" | "activo" | "desactivado", juegos, invitadoPor, invitadoEn, ultimoAcceso, enlaceExpiraEn }`; `enlaceExpiraEn` es `null` si no hay enlace vigente.
 
+- **`DASHBOARD_URL` en producción:** obligatoria y no local. Si falta o es `localhost`, `POST /invitados` y `/restablecer` responden `500 DASHBOARD_URL_NO_CONFIGURADA` con un mensaje que dice qué variable configurar, **antes** de crear la cuenta o el token. En desarrollo, sin valor se usa el primer origen de `CORS_ORIGIN`.
 - **Enlace:** `<DASHBOARD_URL>/invitacion#token=<43 caracteres base64url>` (32 bytes aleatorios). El token va en el **fragmento**, que el navegador no manda al servidor; la página lo lee y lo borra de la URL. Se guarda solo su SHA-256, vence a las **72 h** y es de **un solo uso**: `aceptar` crea la contraseña (bcrypt, 12 rondas) y consume el token en la misma operación atómica.
 - **Errores genéricos:** token inexistente, mal formado, vencido, usado, invalidado o de una cuenta desactivada → el mismo `400 INVITACION_INVALIDA` con el mismo mensaje. `aceptar` calcula el bcrypt antes de buscar el token, así que tarda lo mismo en todos los casos.
 - **Rate limit:** `validar` y `aceptar` comparten un límite de **10 peticiones por IP cada 15 min** (`RATE_LIMIT_INVITACION_IP`), contando todas.
@@ -711,6 +712,7 @@ Formato uniforme:
 | 404  | `RUTA_NO_ENCONTRADA`       | La ruta o el método no existen.                              |
 | 413  | `PAYLOAD_DEMASIADO_GRANDE` | Body mayor a 100 KB (S-04, S-11).                            |
 | 429  | `LIMITE_EXCEDIDO`          | Rate limit (sección 1.5).                                    |
+| 500  | `DASHBOARD_URL_NO_CONFIGURADA` | En producción, invitar o restablecer sin `DASHBOARD_URL` (o con localhost). No se crea nada. |
 | 500  | `ERROR_INTERNO`            | Error inesperado. El mensaje es genérico; el detalle solo va al log del servidor. |
 
 ### 9.2 Rechazos por evento (dentro de `rechazados` en `POST /eventos`)

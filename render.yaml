@@ -36,3 +36,9 @@ services:
         sync: false
       - key: RATE_LIMIT_LOGIN_IP
         sync: false
+      - key: RATE_LIMIT_INVITACION_IP
+        sync: false
+      # Dominio público del dashboard para los enlaces de invitación (ej. https://sistemametricas-dashboard.vercel.app).
+      # Obligatoria para invitar: sin ella (o con localhost) POST /invitados responde 500 DASHBOARD_URL_NO_CONFIGURADA.
+      - key: DASHBOARD_URL
+        sync: false

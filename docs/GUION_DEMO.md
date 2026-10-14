@@ -26,7 +26,7 @@ pantalla: la historia es la misma.
 
 | Tiempo | Pantalla | Qué decir (pregunta que responde) | Qué mostrar con el seed |
 |---|---|---|---|
-| 0:00–0:40 | **Login** | "Solo entran admins del estudio, con JWT; no hay registro público. El chip confirma que la API está despierta." | Chip "API: en línea"; entrar con el admin. |
+| 0:00–0:40 | **Login** | "Entran el equipo del estudio y sus invitados, con JWT; no hay registro público. El chip confirma que la API está despierta." | Chip "API: en línea"; entrar con el admin. |
 | 0:40–1:20 | **Juegos** | "La plataforma es multi-juego: cada juego manda sus eventos con su propia API key." | Dos tarjetas: La Casa del Bosque (300 jugadores, 326 sesiones, 31 % completado) y Faro Nocturno (demo) sin logo, con su inicial. |
 | 1:20–2:20 | **Resumen** de La Casa del Bosque | "¿Cuánto juega la gente comparado con lo esperado y dónde se pierde?" | Duración mediana **20:45** contra **~20:00** esperado; **31 %** termina (93 de 300). Mayor caída: **Cuarto de hospital → Habitación en llamas, −36 %** (76 jugadores), con insignias "Mayor fuga" y "Alta". Pasar el puntero por la insignia para mostrar la regla y la n. |
 | 2:20–3:00 | **Progresión** | "¿Dónde se pierde la gente, paso por paso?" | Embudo 300 → 209 → 133 → 93 y la tabla con % del paso anterior. |
@@ -40,6 +40,36 @@ Frases de cierre: "Escalable (multi-juego, API sin estado, plan de crecimiento m
 completo (ingesta, estadísticas, dashboard, Postman, SDK de Unity), bien integrado (el mismo
 catálogo alimenta API y dashboard) y con visión de futuro (qué quedó fuera y cómo crece está en
 ARQUITECTURA.md)."
+
+---
+
+## Invitados (2 minutos)
+
+Se presenta al final o cuando pregunten "¿quién más puede ver esto?". Requiere que
+`DASHBOARD_URL` esté configurada en Render (si no, invitar responde un error que lo dice).
+
+**Antes de presentar:** ten lista una **ventana privada** (o un segundo navegador) para hacer
+de invitado; en esa ventana no hay sesión. Usa un correo nuevo cada vez (por ejemplo
+`invitado.demo+<hora>@ejemplo.mx`): un correo ya usado responde "Ya existe una cuenta".
+
+| Tiempo | Paso en vivo | Qué decir |
+|---|---|---|
+| 0:00–0:20 | Como admin, sidebar → **Invitados**. Señalar los estados (pendiente, activo, desactivado). | "Podemos dar acceso a alguien de fuera del estudio, por ejemplo al profesor, sin darle control: solo lectura de los juegos que le asignemos." |
+| 0:20–0:50 | **Invitar** → correo nuevo, marcar **La Casa del Bosque** → **Crear invitación**. En el modal, **Copiar enlace**. | "El enlace se muestra una sola vez: 32 bytes aleatorios; en la base solo queda su SHA-256. Vence en 72 h y sirve una vez. No mandamos correos: el admin lo comparte por un canal privado." |
+| 0:50–1:20 | En la ventana privada, pegar el enlace. Señalar la barra de direcciones (el `#token=…` desaparece). Escribir la contraseña y ver las reglas en verde → **Crear contraseña**. | "El token va después del `#`, que el navegador nunca manda al servidor, y la página lo borra de la URL en cuanto lo lee." |
+| 1:20–1:40 | **Ir a iniciar sesión** con el invitado. En `/juegos` solo aparece La Casa del Bosque y no está el menú Invitados. Escribir `/invitados` en la URL: regresa a `/juegos`. | "Ve solo lo asignado. Si alguien llama a la API directo, responde 403: no depende de esconder botones." |
+| 1:40–2:00 | Volver a la ventana del admin → **Desactivar** al invitado. En la ventana privada, cambiar de sección: la sesión se corta y vuelve al login. | "Desactivar corta la sesión al instante. **No hay borrado**, solo desactivar, así queda el registro de quién invitó y cuándo. Restablecer genera otro enlace e invalida el anterior." |
+
+**Plan B de esta sección**
+
+| Problema | Qué hacer |
+|---|---|
+| La API está dormida | Despiértala antes (paso 1 de "Antes de empezar"). Si invitar tarda, cuenta el modelo de seguridad mientras responde. |
+| Invitar responde "configura la variable DASHBOARD_URL" | Falta la variable en Render: explicar que es la protección contra enlaces rotos y seguir con las capturas `09-invitados.png` y `10-invitacion.png`. |
+| "Copiar enlace" no copia | Clic en el campo del enlace (se selecciona completo) y Ctrl+C. |
+| El enlace no abre o dice "Este enlace ya no sirve" | Revisar que se copió completo (con `#token=…`). Si ya se usó o se pegó mal: **Restablecer** en la fila y abrir el nuevo; el anterior ya no sirve. |
+| No hay ventana privada | Usar otro navegador. Si el enlace se abre en una pestaña normal, funciona igual (la sesión del admin vive en su pestaña), pero cierra esa pestaña antes de volver al admin. |
+| Nada funciona | Capturas `09-invitados.png` y `10-invitacion.png`, y la carpeta "Invitados" de Postman (16 requests con sus pruebas). |
 
 ---
 
