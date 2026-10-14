@@ -1,0 +1,177 @@
+<div class="encabezado">
+  <xa-cabecera [titulo]="textos.titulo" [pregunta]="textos.subtitulo" [cargadoEn]="cargadoEn()" />
+  <button xa-boton type="button" variante="primario" class="encabezado__accion" (click)="abrirInvitar()">
+    <span class="con-icono">
+      <lucide-icon [img]="iconos.invitar" [size]="16" [strokeWidth]="1.75" aria-hidden="true" />
+      {{ textos.invitar }}
+    </span>
+  </button>
+</div>
+
+<div class="avisos" aria-live="polite">
+  @if (errorAccion(); as error) {
+    <p class="aviso-error" role="alert">{{ error }}</p>
+  }
+</div>
+
+<div aria-live="polite" [attr.aria-busy]="estado() === 'cargando'">
+  @switch (estado()) {
+    @case ('error') {
+      <xa-estado-error [titulo]="textos.errorTitulo" (reintentar)="cargar()" />
+    }
+    @case ('listo') {
+      @if (invitados().length === 0) {
+        <xa-estado-vacio [titulo]="textos.vacioTitulo" [ayuda]="textos.vacioAyuda" [icono]="iconos.vacio" />
+      } @else {
+        <div class="tarjeta-tabla">
+          <xa-tabla [columnas]="columnas" [filas]="invitados()" [titulo]="textos.tablaTitulo" [porPagina]="20">
+            <ng-template xaCelda="correo" let-fila>
+              <span class="correo">{{ fila.email }}</span>
+              @if (fila.nombre) {
+                <span class="secundario">{{ fila.nombre }}</span>
+              }
+            </ng-template>
+            <ng-template xaCelda="estado" let-fila>
+              <xa-badge [tono]="tonoDe(fila)">{{ estadoDe(fila) }}</xa-badge>
+              @if (fila.estado === 'pendiente') {
+                <span class="secundario">{{ fila.enlaceExpiraEn ? textos.enlaceVence(fechaHora(fila.enlaceExpiraEn)) : textos.enlaceVencido }}</span>
+              }
+            </ng-template>
+            <ng-template xaCelda="juegos" let-fila>
+              @let j = juegosDe(fila);
+              <span>{{ j.nombres.join(', ') }}</span>
+              @if (j.ajenos > 0) {
+                <span class="secundario">{{ textos.juegosAjenos(j.ajenos) }}</span>
+              }
+            </ng-template>
+            <ng-template xaCelda="acciones" let-fila>
+              <div class="acciones">
+                <button xa-boton type="button" tamano="compacto" variante="secundario" [attr.aria-label]="textos.cambiarJuegosAyuda(fila.email)" [deshabilitado]="!!enCurso()" (click)="abrirJuegos(fila)">
+                  {{ textos.cambiarJuegos }}
+                </button>
+                @if (fila.estado !== 'desactivado') {
+                  <button
+                    xa-boton
+                    type="button"
+                    tamano="compacto"
+                    variante="secundario"
+                    [attr.title]="textos.restablecerAyuda(fila.email)"
+                    [attr.aria-label]="textos.restablecerAyuda(fila.email)"
+                    [deshabilitado]="!!enCurso()"
+                    (click)="restablecer(fila)"
+                  >
+                    {{ textos.restablecer }}
+                  </button>
+                }
+                <button
+                  xa-boton
+                  type="button"
+                  tamano="compacto"
+                  [variante]="fila.estado === 'desactivado' ? 'secundario' : 'peligro'"
+                  [cargando]="enCurso() === fila.email"
+                  [deshabilitado]="!!enCurso() && enCurso() !== fila.email"
+                  (click)="cambiarActivo(fila)"
+                >
+                  {{ fila.estado === 'desactivado' ? textos.activar : textos.desactivar }}
+                </button>
+              </div>
+            </ng-template>
+          </xa-tabla>
+        </div>
+      }
+    }
+    @default {
+      <div class="tarjeta-tabla tarjeta-tabla--esqueleto">
+        <xa-skeleton class="esqueleto-fila" />
+        <xa-skeleton class="esqueleto-fila" />
+        <xa-skeleton class="esqueleto-fila" />
+      </div>
+    }
+  }
+</div>
+
+<!-- Invitar / cambiar juegos -->
+<xa-modal
+  [abierto]="formularioAbierto()"
+  [titulo]="editando() ? textos.modalJuegos(editando()!.email) : textos.modalInvitar"
+  [ayuda]="editando() ? null : textos.modalInvitarAyuda"
+  (cerrar)="cerrarModal()"
+>
+  @if (formularioAbierto()) {
+    <form class="formulario" [formGroup]="formulario" novalidate (ngSubmit)="enviarFormulario()">
+      @if (!editando()) {
+        <xa-campo [etiqueta]="textos.correo" para="invitar-email" [error]="errorEmail()">
+          <input
+            id="invitar-email"
+            type="email"
+            formControlName="email"
+            autocomplete="off"
+            inputmode="email"
+            [attr.aria-invalid]="errorEmail() ? true : null"
+            [attr.aria-describedby]="errorEmail() ? 'invitar-email-error' : null"
+          />
+        </xa-campo>
+        <xa-campo [etiqueta]="textos.nombre" para="invitar-nombre">
+          <input id="invitar-nombre" type="text" formControlName="nombre" autocomplete="off" maxlength="100" />
+        </xa-campo>
+      }
+
+      <fieldset class="juegos" [attr.aria-describedby]="errorJuegos() ? 'invitar-juegos-error' : null">
+        <legend class="juegos__titulo">{{ textos.juegos }}</legend>
+        <ul class="juegos__lista">
+          @for (juego of misJuegos(); track juego.juegoId) {
+            <li>
+              <label class="juego">
+                <input type="checkbox" [checked]="seleccion().has(juego.juegoId)" (change)="alMarcar(juego.juegoId, $event)" />
+                <xa-logo-juego [nombre]="juego.nombre" [logoUrl]="juego.logoUrl" tamano="selector" [decorativo]="true" />
+                <span>{{ juego.nombre }}</span>
+              </label>
+            </li>
+          }
+        </ul>
+        @if (errorJuegos(); as e) {
+          <p class="juegos__error" id="invitar-juegos-error">{{ e }}</p>
+        }
+      </fieldset>
+
+      @if (errorModal(); as e) {
+        <p class="aviso-error" role="alert">{{ e }}</p>
+      }
+
+      <div class="pie">
+        <button xa-boton type="button" variante="fantasma" (click)="cerrarModal()">{{ textos.cancelar }}</button>
+        <button xa-boton type="submit" variante="primario" [cargando]="guardando()">
+          @if (editando()) {
+            {{ guardando() ? textos.guardando : textos.guardar }}
+          } @else {
+            {{ guardando() ? textos.creando : textos.crearInvitacion }}
+          }
+        </button>
+      </div>
+    </form>
+  }
+</xa-modal>
+
+<!-- Enlace: se muestra una sola vez -->
+<xa-modal [abierto]="!!emitida()" [titulo]="textos.enlaceTitulo" [ayuda]="emitida() ? textos.enlaceAyuda(emitida()!.invitado.email) : null" (cerrar)="cerrarModal()">
+  @if (emitida(); as e) {
+    <div class="enlace">
+      <xa-campo [etiqueta]="textos.enlaceEtiqueta" para="invitacion-enlace">
+        <input id="invitacion-enlace" type="text" readonly [value]="e.enlace" (focus)="seleccionarTodo($event)" />
+      </xa-campo>
+      <p class="secundario">{{ textos.enlaceVigencia(fechaHora(e.expiraEn)) }}</p>
+      <p class="aviso-una-vez">{{ textos.enlaceUnaVez }}</p>
+      <p class="copiado" aria-live="polite">
+        @if (copiado() === 'error') {
+          {{ textos.copiaManual }}
+        }
+      </p>
+      <div class="pie">
+        <button xa-boton type="button" variante="secundario" (click)="copiar(e.enlace)">
+          {{ copiado() === 'si' ? textos.copiado : textos.copiar }}
+        </button>
+        <button xa-boton type="button" variante="primario" (click)="cerrarModal()">{{ textos.listo }}</button>
+      </div>
+    </div>
+  }
+</xa-modal>

@@ -1667,6 +1667,700 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Invitados",
+      "description": "Invitados de solo lectura (S-67). Usa el token del admin de \"Login (credenciales del entorno)\". Crea un invitado nuevo en cada corrida (postman-<fecha>@prueba.local) y lo deja desactivado. Validar y aceptar tienen límite de 10 intentos por IP cada 15 min: esta carpeta usa 6.",
+      "item": [
+        {
+          "name": "Invitar (responde el enlace una sola vez)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/invitados",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "invitados"
+              ]
+            },
+            "description": "Guarda el token del enlace (#token=…) en invitacionToken. No se envían correos: el admin copia y comparte el enlace.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{invitadoEmail}}\",\n  \"nombre\": \"Invitado de Postman\",\n  \"juegos\": [\n    \"{{juegoId}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.set('invitadoEmail', `postman-${Date.now()}@prueba.local`);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const tokenDe = (enlace) => enlace.split('#token=')[1];",
+                  "pm.test('201 con el enlace en el fragmento y la cuenta pendiente', () => {",
+                  "  pm.response.to.have.status(201);",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r.enlace).to.include('/invitacion#token=');",
+                  "  pm.expect(r.invitado).to.include({ email: pm.environment.get('invitadoEmail'), estado: 'pendiente' });",
+                  "  pm.expect(r.invitado.juegos).to.eql([pm.environment.get('juegoId')]);",
+                  "  pm.environment.set('invitacionToken', tokenDe(r.enlace));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Invitar el mismo correo (409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/invitados",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "invitados"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{invitadoEmail}}\",\n  \"juegos\": [\n    \"{{juegoId}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('409 CORREO_YA_REGISTRADO', () => {",
+                  "  pm.response.to.have.status(409);",
+                  "  pm.expect(pm.response.json().error.codigo).to.eql('CORREO_YA_REGISTRADO');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Validar el enlace (público)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Invitacion-Token",
+                "value": "{{invitacionToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/invitacion/validar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "invitacion",
+                "validar"
+              ]
+            },
+            "description": "Sin JWT. El token va en un header (no en la URL) para que no quede en logs."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 con el correo invitado', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().email).to.eql(pm.environment.get('invitadoEmail'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Aceptar con contraseña corta (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/invitacion/aceptar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "invitacion",
+                "aceptar"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{invitacionToken}}\",\n  \"password\": \"corta\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 VALIDACION_FALLIDA (no consume el enlace)', () => {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().error.codigo).to.eql('VALIDACION_FALLIDA');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Aceptar (crea la contraseña)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/invitacion/aceptar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "invitacion",
+                "aceptar"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{invitacionToken}}\",\n  \"password\": \"{{invitadoPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.set('invitadoPassword', `pm-${Date.now()}-${Math.random().toString(36).slice(2)}`);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 con el correo', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().email).to.eql(pm.environment.get('invitadoEmail'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Aceptar otra vez con el mismo enlace (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/invitacion/aceptar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "invitacion",
+                "aceptar"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{invitacionToken}}\",\n  \"password\": \"{{invitadoPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 INVITACION_INVALIDA (mismo error para vencido, usado o inventado)', () => {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().error.codigo).to.eql('INVITACION_INVALIDA');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login del invitado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{invitadoEmail}}\",\n  \"password\": \"{{invitadoPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 con rol invitado y solo su juego', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  const r = pm.response.json();",
+                  "  pm.expect(r.admin.rol).to.eql('invitado');",
+                  "  pm.expect(r.admin.juegosPermitidos).to.eql([pm.environment.get('juegoId')]);",
+                  "  pm.environment.set('tokenInvitado', r.token);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Invitado: sus juegos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenInvitado}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/juegos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "juegos"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 y solo los juegos asignados', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().datos.map((j) => j.juegoId)).to.eql([pm.environment.get('juegoId')]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Invitado: lista de invitados (403)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenInvitado}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/invitados",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "invitados"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403 SIN_PERMISO: /invitados es solo para admins', () => {",
+                  "  pm.response.to.have.status(403);",
+                  "  pm.expect(pm.response.json().error.codigo).to.eql('SIN_PERMISO');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Invitado: borrar un jugador (403)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenInvitado}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/jugadores/{{juegoId}}/{{$guid}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "jugadores",
+                "{{juegoId}}",
+                "{{$guid}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403 SIN_PERMISO: el invitado es de solo lectura', () => {",
+                  "  pm.response.to.have.status(403);",
+                  "  pm.expect(pm.response.json().error.codigo).to.eql('SIN_PERMISO');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Lista de invitados (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/invitados",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "invitados"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200, el invitado está activo y no aparece ningún enlace', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  const i = pm.response.json().datos.find((d) => d.email === pm.environment.get('invitadoEmail'));",
+                  "  pm.expect(i.estado).to.eql('activo');",
+                  "  pm.expect(pm.response.text()).to.not.include(pm.environment.get('invitacionToken'));",
+                  "  pm.expect(pm.response.text()).to.not.include('#token=');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Restablecer (enlace nuevo)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/invitados/{{invitadoEmail}}/restablecer",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "invitados",
+                "{{invitadoEmail}}",
+                "restablecer"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const tokenDe = (enlace) => enlace.split('#token=')[1];",
+                  "pm.test('200 con un enlace distinto', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  const t = tokenDe(pm.response.json().enlace);",
+                  "  pm.expect(t).to.not.eql(pm.environment.get('invitacionToken'));",
+                  "  pm.environment.set('invitacionTokenNuevo', t);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Validar el enlace anterior (400)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Invitacion-Token",
+                "value": "{{invitacionToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/invitacion/validar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "invitacion",
+                "validar"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 INVITACION_INVALIDA (mismo error para vencido, usado o inventado)', () => {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().error.codigo).to.eql('INVITACION_INVALIDA');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Desactivar al invitado",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/invitados/{{invitadoEmail}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "invitados",
+                "{{invitadoEmail}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"activo\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 desactivado y sin enlace vigente', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json()).to.include({ estado: 'desactivado', enlaceExpiraEn: null });",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Validar el enlace nuevo tras desactivar (400)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Invitacion-Token",
+                "value": "{{invitacionTokenNuevo}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/invitacion/validar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "invitacion",
+                "validar"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 INVITACION_INVALIDA (mismo error para vencido, usado o inventado)', () => {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().error.codigo).to.eql('INVITACION_INVALIDA');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Invitado desactivado: su sesión ya no sirve (401)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenInvitado}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/yo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "yo"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('401 NO_AUTENTICADO al instante', () => {",
+                  "  pm.response.to.have.status(401);",
+                  "  pm.expect(pm.response.json().error.codigo).to.eql('NO_AUTENTICADO');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
     }
   ]
 }

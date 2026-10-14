@@ -38,7 +38,11 @@ const ESPERADOS: Record<string, IndiceEsperado[]> = {
     { llaves: { juegoId: 1, playerId: 1, logroId: 1 }, unico: true },
     { llaves: { juegoId: 1, logroId: 1 } },
   ],
-  admins: [{ llaves: { email: 1 }, unico: true }],
+  admins: [
+    { llaves: { email: 1 }, unico: true },
+    // Enlace de invitación vigente (S-67): solo los documentos que tienen uno.
+    { llaves: { tokenInvitacionHash: 1 }, unico: true, parcial: { tokenInvitacionHash: { $type: 'string' } } },
+  ],
 };
 
 describe('índices de las colecciones', () => {

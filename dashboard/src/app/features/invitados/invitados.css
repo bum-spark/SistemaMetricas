@@ -1,0 +1,180 @@
+/* Cabecera de página con la acción principal ("Invitar") a la derecha. */
+.encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+/* El espacio de abajo lo pone .encabezado (así el botón no queda pegado a la tabla en móvil). */
+.encabezado xa-cabecera {
+  flex: 1 1 auto;
+  margin-bottom: 0;
+}
+
+.con-icono {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.avisos:empty {
+  display: none;
+}
+
+.avisos {
+  margin-bottom: var(--space-4);
+}
+
+.aviso-error {
+  padding: var(--space-2) var(--space-3);
+  background: var(--danger-soft);
+  border: var(--borde) solid var(--danger);
+  border-radius: var(--radius-sm);
+  color: var(--danger);
+  font-size: var(--fs-secundario);
+  line-height: var(--lh-secundario);
+}
+
+/* La tabla va en una tarjeta (§4: fondo --bg-1, borde, --radius-md, padding 20). */
+.tarjeta-tabla {
+  padding: var(--padding-tarjeta);
+  background: var(--bg-1);
+  border: var(--borde) solid var(--border-default);
+  border-radius: var(--radius-md);
+}
+
+.tarjeta-tabla--esqueleto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.esqueleto-fila {
+  height: var(--fila-tabla-alto);
+}
+
+.correo {
+  display: block;
+  color: var(--text-1);
+}
+
+.secundario {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--text-2);
+  font-size: var(--fs-secundario);
+  line-height: var(--lh-secundario);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* ---------- Modal de invitar / cambiar juegos ---------- */
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.juegos {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.juegos__titulo {
+  margin-bottom: var(--space-2);
+  padding: 0;
+  font-size: var(--fs-etiqueta);
+  line-height: var(--lh-etiqueta);
+  font-weight: var(--fw-medium);
+  color: var(--text-2);
+}
+
+.juegos__lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.juego {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--tactil-min);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.juego:hover {
+  background: var(--bg-2);
+}
+
+.juego input {
+  width: var(--icono-control);
+  height: var(--icono-control);
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.juego input:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.juegos__error {
+  margin-top: var(--space-1);
+  font-size: var(--fs-etiqueta);
+  line-height: var(--lh-etiqueta);
+  color: var(--danger);
+}
+
+.pie {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+/* ---------- Modal del enlace ---------- */
+.enlace {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.enlace input {
+  font-family: var(--font-mono);
+  font-size: var(--fs-mono);
+}
+
+.aviso-una-vez {
+  padding: var(--space-2) var(--space-3);
+  background: var(--warning-soft);
+  border: var(--borde) solid var(--warning);
+  border-radius: var(--radius-sm);
+  color: var(--warning);
+  font-size: var(--fs-secundario);
+  line-height: var(--lh-secundario);
+}
+
+.copiado:empty {
+  display: none;
+}
+
+.copiado {
+  color: var(--text-2);
+  font-size: var(--fs-secundario);
+  line-height: var(--lh-secundario);
+}

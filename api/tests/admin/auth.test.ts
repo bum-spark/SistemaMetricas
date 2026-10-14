@@ -23,7 +23,7 @@ describe('POST /api/v1/auth/login', () => {
     const res = await login('Admin@Xolos.MX', PASSWORD);
 
     expect(res.status).toBe(200);
-    expect(res.body.admin).toEqual({ email: 'admin@xolos.mx', nombre: 'Admin Xolos', juegosPermitidos: [] });
+    expect(res.body.admin).toEqual({ email: 'admin@xolos.mx', nombre: 'Admin Xolos', rol: 'admin', juegosPermitidos: [] });
     const carga = jwt.verify(res.body.token as string, SECRETO, { algorithms: ['HS256'] }) as jwt.JwtPayload;
     expect(carga.sub).toBe('admin@xolos.mx');
     expect(carga).not.toHaveProperty('juegosPermitidos');
@@ -79,7 +79,7 @@ describe('rutas protegidas con JWT (GET /auth/yo)', () => {
     const { body } = await login('admin@xolos.mx', PASSWORD);
     const res = await yo(body.token as string);
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ email: 'admin@xolos.mx', nombre: 'Admin Xolos', juegosPermitidos: [] });
+    expect(res.body).toEqual({ email: 'admin@xolos.mx', nombre: 'Admin Xolos', rol: 'admin', juegosPermitidos: [] });
   });
 
   it('sin token responde 401 NO_AUTENTICADO', async () => {

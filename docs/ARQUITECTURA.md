@@ -125,6 +125,20 @@ conexiones, porque se calcula recorriendo los eventos crudos.
 | **Eventos de alto volumen y poco valor** (`rendimiento`) | Muestreo en el SDK (por ejemplo 10 % de las sesiones), configurable desde el catálogo. |
 | **Observabilidad** | Métricas de la propia API (latencia, tasa de rechazo, tamaño de cola) y alertas. |
 
+### Usuarios del dashboard
+
+Hoy hay dos roles (`admin` e `invitado` de solo lectura, S-67) y las invitaciones se
+comparten a mano con un enlace de un solo uso. Queda **fuera de alcance**, y así crecería:
+
+| Fuera de alcance hoy | Por qué no ahora | Cómo crece |
+|---|---|---|
+| Envío de correos | Requiere un proveedor (SES, Resend…), dominio verificado y plantillas; con pocos invitados, copiar el enlace basta | La API ya genera el enlace: un servicio de correo lo envía en lugar de mostrarlo, sin cambiar el modelo |
+| Autorregistro | El dashboard tiene datos internos del estudio; toda cuenta la crea un admin | Solicitud de acceso que un admin aprueba (reusa la invitación) |
+| "Olvidé mi contraseña" | Sin correo no hay un canal seguro para mandar el enlace; hoy el admin usa **Restablecer** | Con correo: el mismo token de un solo uso, pedido por el usuario |
+| Más roles | Con admin + solo lectura alcanza para la entrega | `rol` pasa a una lista de permisos por juego (por ejemplo "editor de catálogo"); el middleware ya centraliza el control |
+| Cambiar la propia contraseña | Se cubre con Restablecer | Endpoint autenticado que pide la contraseña actual; ya existe `passwordCambiadaEn` para cerrar sesiones viejas |
+| Doble factor | Agrega flujo y almacenamiento de secretos | TOTP por usuario, obligatorio para admins |
+
 ### Qué ya está preparado y qué no
 
 - **Preparado desde la entrega 1:** `juegoId` en todo (clave de partición), `eventoId`

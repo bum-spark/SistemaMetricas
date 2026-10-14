@@ -14,9 +14,17 @@ describe('cargarConfig', () => {
       mongoUri: URI,
       mongoDb: 'xolos_analytics',
       trustProxy: 1,
-      limites: { ingestaPorIp: 300, ingestaPorKey: 1000, publicoPorIp: 600, loginPorIp: 5 },
+      limites: { ingestaPorIp: 300, ingestaPorKey: 1000, publicoPorIp: 600, loginPorIp: 5, invitacionPorIp: 10 },
+      // Sin DASHBOARD_URL: el primer origen de CORS.
+      dashboardUrl: 'http://localhost:4200',
       jwtSecret: undefined,
     });
+  });
+
+  it('DASHBOARD_URL arma los enlaces de invitación y debe ser un origen', () => {
+    expect(cargarConfig({ ...BASE, DASHBOARD_URL: 'https://panel.ejemplo.mx' }).dashboardUrl).toBe('https://panel.ejemplo.mx');
+    expect(cargarConfig({ ...BASE, CORS_ORIGIN: 'https://a.mx,https://b.mx' }).dashboardUrl).toBe('https://a.mx');
+    expect(() => cargarConfig({ ...BASE, DASHBOARD_URL: 'https://panel.ejemplo.mx/' })).toThrow(/DASHBOARD_URL/);
   });
 
   it('JWT_SECRET es opcional para los scripts pero, si viene, debe tener al menos 32 caracteres', () => {

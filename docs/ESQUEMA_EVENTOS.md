@@ -511,14 +511,20 @@ Los campos de la sección 2 más `recibidoEn` y `origen` (`"real"` \| `"seed"`, 
 | Campo              | Tipo     | Notas                                             |
 |--------------------|----------|---------------------------------------------------|
 | `email`            | string   | En minúsculas.                                    |
-| `passwordHash`     | string   | bcrypt.                                           |
-| `nombre`           | string   |                                                   |
+| `rol`              | `"admin"` \| `"invitado"` | Sin el campo = admin (documentos anteriores a S-67, sin migración). |
+| `passwordHash`     | string \| null | bcrypt (12 rondas). `null` = invitación pendiente. |
+| `nombre`           | string   | Vacío si el invitado no lo dio.                   |
 | `juegosPermitidos` | string[] | Lista de `juegoId`.                               |
 | `activo`           | boolean  |                                                   |
 | `creadoEn`         | Date     |                                                   |
 | `ultimoLogin`      | Date \| null |                                               |
+| `invitadoPor`      | string \| null | Email del admin que invitó.                 |
+| `invitadoEn`       | Date \| null |                                               |
+| `tokenInvitacionHash` | string \| null | SHA-256 del enlace vigente (nunca el token). |
+| `tokenInvitacionExpiraEn` | Date \| null | Vencimiento del enlace (72 h).       |
+| `passwordCambiadaEn` | Date \| null | Los JWT emitidos antes ya no sirven.         |
 
-Índices: `{ email: 1 }` único.
+Índices: `{ email: 1 }` único · `{ tokenInvitacionHash: 1 }` único parcial (solo si es string).
 
 ### Campo `origen` (R-32)
 
@@ -564,11 +570,11 @@ Si la ruta lleva `:juegoId`: si no es UUID v4 → `400`; si no está en `juegosP
 
 | Método | Ruta                                  | Auth | Body / query                         | Respuesta                                                                                  |
 |--------|---------------------------------------|------|--------------------------------------|--------------------------------------------------------------------------------------------|
-| POST   | `/auth/login`                         | no   | `{ email, password }`                | `200 { token, expiraEn, admin: { email, nombre, juegosPermitidos } }` · `401 CREDENCIALES_INVALIDAS` |
-| GET    | `/auth/yo`                            | JWT  | —                                    | `200 { email, nombre, juegosPermitidos }`                                                  |
+| POST   | `/auth/login`                         | no   | `{ email, password }`                | `200 { token, expiraEn, admin: { email, nombre, rol, juegosPermitidos } }` · `401 CREDENCIALES_INVALIDAS` |
+| GET    | `/auth/yo`                            | JWT  | —                                    | `200 { email, nombre, rol, juegosPermitidos }` — `rol`: `admin` \| `invitado`             |
 | GET    | `/juegos`                             | JWT  | `?pagina=1&limite=20&origen=todos`   | `200 { datos: [{ juegoId, nombre, slug, logoUrl, versionActual, activo, resumen: { jugadores, sesiones, tasaCompletado } }], pagina, limite, total, origen }` — solo juegos permitidos; `origen` = `real` \| `seed` \| `todos` (default) decide qué datos cuenta el resumen |
 | GET    | `/juegos/:juegoId`                    | JWT  | —                                    | `200 { juegoId, nombre, slug, logoUrl, versionActual, activo, catalogo, filtros: { buildVersions, plataformas }, contieneDatosSeed }` (sin `apiKeyHash`). `logoUrl` es `null` si el juego no tiene logo (igual en `GET /juegos`). `contieneDatosSeed` = `true` si el juego tiene jugadores, sesiones o eventos con `origen: "seed"` (el dashboard puede avisar que hay datos de prueba). `catalogo` incluye `duracionEsperadaMs` si existe. `filtros` = valores distintos de `buildVersion` y `plataforma` en `sesiones` del juego, ordenados, para llenar los selectores del dashboard. |
-| DELETE | `/jugadores/:juegoId/:playerId`       | JWT  | —                                    | `200 { eliminados: { jugador, sesiones, eventos, logros } }` · `404 JUGADOR_NO_ENCONTRADO` (S-17) |
+| DELETE | `/jugadores/:juegoId/:playerId`       | JWT  | —                                    | `200 { eliminados: { jugador, sesiones, eventos, logros } }` · `404 JUGADOR_NO_ENCONTRADO` (S-17). **Solo rol admin** (invitado → `403 SIN_PERMISO`) |
 | GET    | `/estadisticas/:juegoId/sesiones`     | JWT  | filtros comunes                      | Sección 10.1                                                                               |
 | GET    | `/estadisticas/:juegoId/tiempo-nivel` | JWT  | filtros comunes                      | Sección 10.2                                                                               |
 | GET    | `/estadisticas/:juegoId/embudo`       | JWT  | filtros comunes                      | Sección 10.3                                                                               |
@@ -594,7 +600,28 @@ Si la ruta lleva `:juegoId`: si no es UUID v4 → `400`; si no está en `juegosP
 **Forma de respuesta de `/estadisticas/*`:**
 `200 { juegoId, filtros: { desde, hasta, buildVersion, plataforma, origen }, datos: … }`
 
-JWT: HS256 firmado con `JWT_SECRET`, expira en 8 h (S-13), emisor `xolos-analytics-api`, payload `{ sub: email }`. Los permisos (`juegosPermitidos`) y el estado del admin **no** van en el token: se releen de la base en cada petición, así desactivar un admin o quitarle un juego surte efecto al instante (S-42). Token ausente, inválido, de otro emisor, con `alg: none` o expirado → `401 NO_AUTENTICADO` (el mensaje distingue "expiró"). Login: mismo `401 CREDENCIALES_INVALIDAS` ("Correo o contraseña incorrectos.") para email inexistente, contraseña incorrecta o admin desactivado, con tiempo de respuesta equivalente.
+JWT: HS256 firmado con `JWT_SECRET`, expira en 8 h (S-13), emisor `xolos-analytics-api`, payload `{ sub: email }`. Los permisos (`juegosPermitidos`) y el estado del admin **no** van en el token: se releen de la base en cada petición, así desactivar un admin o quitarle un juego surte efecto al instante (S-42). Token ausente, inválido, de otro emisor, con `alg: none` o expirado → `401 NO_AUTENTICADO` (el mensaje distingue "expiró"). Login: mismo `401 CREDENCIALES_INVALIDAS` ("Correo o contraseña incorrectos.") para email inexistente, contraseña incorrecta, cuenta pendiente (invitación sin aceptar) o desactivada, con tiempo de respuesta equivalente (siempre se compara contra un hash bcrypt de 12 rondas). Un JWT emitido antes del último cambio de contraseña (`passwordCambiadaEn`) → `401 NO_AUTENTICADO`.
+
+**Roles (S-67).** `admin` e `invitado`. El invitado es de **solo lectura sobre sus juegos**: usa `GET /juegos`, `/juegos/:juegoId`, `/estadisticas/*` y `/auth/yo` igual que un admin (filtrados por sus `juegosPermitidos`), y recibe `403 SIN_PERMISO` en `DELETE /jugadores/...` y en todo `/invitados`. `crear-juego` y `seed-datos` dan cada juego nuevo solo a los admins activos, nunca a invitados.
+
+### 7.3 Invitados — auth: JWT de rol admin, salvo las dos rutas públicas
+
+| Método | Ruta | Auth | Body / query | Respuesta |
+|--------|------|------|--------------|-----------|
+| POST   | `/invitados` | admin | `{ email, nombre?, juegos: [juegoId, …] }` (al menos uno) | `201 { invitado, enlace, expiraEn }` — el enlace se responde **una sola vez** · `403` si asigna un juego que el admin no tiene · `409 CORREO_YA_REGISTRADO` |
+| GET    | `/invitados` | admin | `?pagina=1&limite=20` | `200 { datos: [invitado], pagina, limite, total }` — solo cuentas `rol: "invitado"`, sin enlaces |
+| PATCH  | `/invitados/:email` | admin | `{ juegos?, activo? }` (al menos uno) | `200 invitado`. Desactivar invalida el enlace pendiente y corta la sesión al instante; reactivar no revive el enlace. Los juegos que el admin no tiene se conservan |
+| POST   | `/invitados/:email/restablecer` | admin | — | `200 { invitado, enlace, expiraEn }` — enlace nuevo; el anterior deja de servir · `409 INVITADO_DESACTIVADO` |
+| GET    | `/auth/invitacion/validar` | no | header `X-Invitacion-Token` | `200 { email, nombre, expiraEn }` · `400 INVITACION_INVALIDA` |
+| POST   | `/auth/invitacion/aceptar` | no | `{ token, password }` | `200 { email }` · `400 VALIDACION_FALLIDA` (contraseña de menos de 12) · `400 INVITACION_INVALIDA` |
+
+`invitado` = `{ email, nombre, estado: "pendiente" | "activo" | "desactivado", juegos, invitadoPor, invitadoEn, ultimoAcceso, enlaceExpiraEn }`; `enlaceExpiraEn` es `null` si no hay enlace vigente.
+
+- **Enlace:** `<DASHBOARD_URL>/invitacion#token=<43 caracteres base64url>` (32 bytes aleatorios). El token va en el **fragmento**, que el navegador no manda al servidor; la página lo lee y lo borra de la URL. Se guarda solo su SHA-256, vence a las **72 h** y es de **un solo uso**: `aceptar` crea la contraseña (bcrypt, 12 rondas) y consume el token en la misma operación atómica.
+- **Errores genéricos:** token inexistente, mal formado, vencido, usado, invalidado o de una cuenta desactivada → el mismo `400 INVITACION_INVALIDA` con el mismo mensaje. `aceptar` calcula el bcrypt antes de buscar el token, así que tarda lo mismo en todos los casos.
+- **Rate limit:** `validar` y `aceptar` comparten un límite de **10 peticiones por IP cada 15 min** (`RATE_LIMIT_INVITACION_IP`), contando todas.
+- **Límites del admin:** solo asigna juegos que él tiene; sobre su propia cuenta → `403`; sobre otro admin (con o sin `rol`) → `404 INVITADO_NO_ENCONTRADO` (estos endpoints solo ven invitados).
+- **Restablecer** no borra la contraseña actual: sigue valiendo hasta que se use el enlace nuevo; al usarlo, las sesiones anteriores dejan de servir.
 
 ---
 
@@ -673,10 +700,14 @@ Formato uniforme:
 | 401  | `API_KEY_INVALIDA`         | Falta la `X-Api-Key`, no existe, fue revocada o el juego está inactivo. |
 | 401  | `NO_AUTENTICADO`           | Falta el JWT, es inválido o expiró.                          |
 | 401  | `CREDENCIALES_INVALIDAS`   | Login con email o contraseña incorrectos.                    |
-| 403  | `SIN_PERMISO`              | El admin no tiene ese juego en `juegosPermitidos`.           |
+| 400  | `INVITACION_INVALIDA`      | Enlace de invitación inexistente, vencido, usado, invalidado o de cuenta desactivada (mismo error en todos los casos). |
+| 403  | `SIN_PERMISO`              | El usuario no tiene ese juego en `juegosPermitidos`; un invitado en una acción de admin; un admin que asigna un juego que no tiene o actúa sobre sí mismo. |
 | 403  | `JUEGO_NO_COINCIDE`        | En `/sesiones`, `juegoId` distinto al de la key (S-01).      |
 | 404  | `JUEGO_NO_ENCONTRADO`      | `:juegoId` no existe.                                        |
 | 404  | `JUGADOR_NO_ENCONTRADO`    | Borrado de un `playerId` que no existe.                      |
+| 404  | `INVITADO_NO_ENCONTRADO`   | `/invitados/:email` de un correo que no es de un invitado.   |
+| 409  | `CORREO_YA_REGISTRADO`     | Invitar un correo que ya tiene cuenta.                       |
+| 409  | `INVITADO_DESACTIVADO`     | Restablecer el enlace de un invitado desactivado.            |
 | 404  | `RUTA_NO_ENCONTRADA`       | La ruta o el método no existen.                              |
 | 413  | `PAYLOAD_DEMASIADO_GRANDE` | Body mayor a 100 KB (S-04, S-11).                            |
 | 429  | `LIMITE_EXCEDIDO`          | Rate limit (sección 1.5).                                    |

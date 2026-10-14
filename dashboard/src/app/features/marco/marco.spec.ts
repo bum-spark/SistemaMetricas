@@ -13,14 +13,15 @@ class Vacia {}
 
 const SESION = { token: 't', expiraEn: '2099-01-01T00:00:00.000Z', admin: { email: 'a@x.mx', nombre: 'Admin Uno', juegosPermitidos: [] } };
 
-async function montar(url: string) {
-  sessionStorage.setItem('xa.sesion', JSON.stringify(SESION));
+async function montar(url: string, sesion: object = SESION) {
+  sessionStorage.setItem('xa.sesion', JSON.stringify(sesion));
   TestBed.configureTestingModule({
     imports: [Marco],
     providers: [
       provideRouter([
         { path: 'login', component: Vacia },
         { path: 'juegos', component: Vacia },
+        { path: 'invitados', component: Vacia },
         { path: 'juegos/:slug', component: Vacia },
         { path: 'juegos/:slug/:seccion', component: Vacia },
       ]),
@@ -63,16 +64,16 @@ describe('Marco', () => {
     const { el } = await montar('/juegos');
     expect(el.querySelector('.sidebar__marca')?.textContent).toContain(CONFIG.appName);
     expect(el.querySelector('.sidebar__admin')?.textContent).toBe('Admin Uno');
-    expect(el.querySelector('nav')).toBeNull();
+    expect(el.querySelector('.sidebar__nav--juego')).toBeNull();
     expect(el.querySelector('xa-selector-juego')?.textContent).toContain(ES.selector.elegir);
   });
 
   it('dentro de un juego: solo las secciones construidas, con la activa marcada, y el juego en el selector', async () => {
     const { el } = await montar('/juegos/juego-uno');
-    const items = [...el.querySelectorAll<HTMLAnchorElement>('nav a')];
+    const items = [...el.querySelectorAll<HTMLAnchorElement>('.sidebar__nav--juego a')];
     expect(items.map((a) => a.textContent?.trim())).toEqual([ES.marco.secciones.resumen, ES.marco.secciones.progresion, ES.marco.secciones.niveles, ES.marco.secciones.muertes, ES.marco.secciones.logros]);
     expect(items.map((a) => a.getAttribute('href'))).toEqual(['/juegos/juego-uno', '/juegos/juego-uno/progresion', '/juegos/juego-uno/niveles', '/juegos/juego-uno/muertes', '/juegos/juego-uno/logros']);
-    expect(el.querySelector('nav [aria-current="page"]')?.textContent?.trim()).toBe(ES.marco.secciones.resumen);
+    expect(el.querySelector('.sidebar__nav--juego [aria-current="page"]')?.textContent?.trim()).toBe(ES.marco.secciones.resumen);
     const selector = el.querySelector('xa-selector-juego')!;
     expect(selector.textContent).toContain('Juego Uno');
     expect(selector.querySelector('img')?.getAttribute('src')).toBe('/logos/juego-uno/logo.png');
@@ -80,7 +81,7 @@ describe('Marco', () => {
 
   it('con un slug que no existe no muestra las secciones', async () => {
     const { el } = await montar('/juegos/no-existe');
-    expect(el.querySelector('nav')).toBeNull();
+    expect(el.querySelector('.sidebar__nav--juego')).toBeNull();
   });
 
   it('el selector lista los juegos y se cierra con Escape', async () => {
@@ -114,5 +115,19 @@ describe('Marco', () => {
     await fixture.whenStable();
     expect(boton.getAttribute('aria-expanded')).toBe('true');
     expect(el.querySelector('.marco')?.classList.contains('marco--menu-abierto')).toBe(true);
+  });
+
+  it('un admin ve "Invitados" en Administración; un invitado no', async () => {
+    const { el } = await montar('/invitados');
+    const enlace = el.querySelector<HTMLAnchorElement>('.sidebar__nav--admin a');
+    expect(enlace?.textContent?.trim()).toBe(ES.marco.invitados);
+    expect(enlace?.getAttribute('href')).toBe('/invitados');
+    expect(enlace?.getAttribute('aria-current')).toBe('page');
+  });
+
+  it('un invitado no ve el menú "Invitados"', async () => {
+    const { el } = await montar('/juegos', { ...SESION, admin: { ...SESION.admin, rol: 'invitado' } });
+    expect(el.querySelector('.sidebar__nav--admin')).toBeNull();
+    expect(el.textContent).not.toContain(ES.marco.invitados);
   });
 });

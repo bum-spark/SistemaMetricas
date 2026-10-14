@@ -96,6 +96,7 @@
   --topbar-alto: 56px;
   --contenido-max: 1280px;
   --login-ancho: 400px;
+  --modal-ancho: 480px;          /* modal (S-68): invitar, cambiar juegos, enlace */
 
   /* Controles (§4) */
   --control-alto: 36px;

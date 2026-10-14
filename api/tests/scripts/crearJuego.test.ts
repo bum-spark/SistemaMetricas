@@ -39,6 +39,17 @@ describe('crearJuego', () => {
     expect(faro?.logoUrl).toBeUndefined();
   });
 
+  it('no da el juego nuevo a los invitados; un admin sin campo rol sí lo recibe (S-67)', async () => {
+    const invitado = await AdminModelo.create({ email: 'inv@x.mx', rol: 'invitado', passwordHash: 'x', nombre: 'I' });
+    const sinRol = await AdminModelo.collection.insertOne({ email: 'viejo@x.mx', passwordHash: 'x', nombre: 'V', juegosPermitidos: [], activo: true });
+
+    const r = await crearJuego({ slug: 'faro-nocturno-demo' });
+
+    expect(r.adminsConAcceso).toBe(1);
+    expect((await AdminModelo.findById(invitado._id).lean())?.juegosPermitidos).toEqual([]);
+    expect((await AdminModelo.findById(sinRol.insertedId).lean())?.juegosPermitidos).toEqual([r.juegoId]);
+  });
+
   it('con --sin-acceso no modifica a los admins', async () => {
     await crearAdminDirecto();
     const r = await crearJuego({ slug: 'faro-nocturno-demo', darAccesoAAdmins: false });

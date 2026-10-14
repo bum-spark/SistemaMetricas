@@ -42,7 +42,9 @@ describe('prueba de carga (S-31)', () => {
   });
 
   it('con límites altos mide la ingesta y la lectura sin 429', async () => {
-    const { escenarios, condiciones } = await ejecutarPrueba(config('1000000'), 1, 2, 5);
+    // 3 s y no 1: con la suite completa en paralelo (bcrypt de los tests de invitados), en 1 s
+    // a veces no terminaba ninguna petición.
+    const { escenarios, condiciones } = await ejecutarPrueba(config('1000000'), 3, 2, 5);
     const [ingesta, lectura] = escenarios;
     expect(ingesta!.respuestas2xx).toBeGreaterThan(0);
     expect(ingesta!.respuestas429).toBe(0);

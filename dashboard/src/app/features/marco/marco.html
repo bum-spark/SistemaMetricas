@@ -6,7 +6,7 @@
     </a>
 
     @if (slugValido()) {
-      <nav class="sidebar__nav" [attr.aria-label]="textos.navegacion">
+      <nav class="sidebar__nav sidebar__nav--juego" [attr.aria-label]="textos.navegacion">
         <ul>
           @for (seccion of secciones; track seccion.ruta) {
             <li>
@@ -23,6 +23,19 @@
               </a>
             </li>
           }
+        </ul>
+      </nav>
+    }
+
+    @if (esAdmin()) {
+      <nav class="sidebar__nav sidebar__nav--admin" [attr.aria-label]="textos.administracion">
+        <ul>
+          <li>
+            <a class="nav-item" routerLink="/invitados" routerLinkActive="nav-item--activo" ariaCurrentWhenActive="page" [attr.title]="textos.invitados">
+              <lucide-icon [img]="iconos.invitados" [size]="20" [strokeWidth]="1.75" aria-hidden="true" />
+              <span class="nav-item__texto">{{ textos.invitados }}</span>
+            </a>
+          </li>
         </ul>
       </nav>
     }
