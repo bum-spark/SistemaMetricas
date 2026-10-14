@@ -41,7 +41,7 @@ describe('Login', () => {
   it('muestra la marca con APP_NAME, los campos con etiqueta y el botón Entrar', async () => {
     const { el } = await montar();
     expect(el.querySelector('xa-marca')?.textContent).toContain(CONFIG.appName);
-    const logo = el.querySelector('img')!;
+    const logo = el.querySelector('xa-marca img')!;
     expect(logo.getAttribute('width')).toBe('64');
     expect(logo.getAttribute('height')).toBe('64');
     expect(el.querySelector('label[for="login-email"]')?.textContent).toBe(ES.login.email);

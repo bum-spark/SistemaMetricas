@@ -67,6 +67,13 @@ describe('seed-datos contra la base', () => {
     expect(juego.logoUrl).toBe('/logos/la-casa-del-bosque/logo.png');
   });
 
+  it('no pisa el logoUrl que ya tiene un juego existente', async () => {
+    const { juegoId } = await crearJuego({ slug: 'la-casa-del-bosque' });
+    await JuegoModelo.updateOne({ juegoId }, { $set: { logoUrl: 'https://cdn.ejemplo.com/propio.png' } });
+    await ejecutarSeed(OPCIONES);
+    expect((await JuegoModelo.findOne({ juegoId }).lean())!.logoUrl).toBe('https://cdn.ejemplo.com/propio.png');
+  });
+
   it('da acceso a Faro Nocturno (demo) a los admins activos cuando lo crea', async () => {
     await crearAdmin({ email: 'admin@xolos.mx', password: 'contraseña-larga-de-prueba', nombre: 'Admin' });
     await ejecutarSeed(OPCIONES);

@@ -1,0 +1,57 @@
+/* Fondo animado del login: excepción SOLO de esta pantalla (DISENO_DASHBOARD.md §6, S-66). */
+:host {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: var(--bg-0);
+}
+
+.fondo {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity var(--login-fundido) var(--ease);
+}
+
+.fondo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1);
+}
+
+.fondo--activo {
+  opacity: 1;
+}
+
+/* Zoom muy sutil (1 → 1.05) mientras la imagen está activa. */
+.fondo--activo img {
+  animation: acercar var(--login-zoom) linear forwards;
+}
+
+@keyframes acercar {
+  from { transform: scale(1); }
+  to { transform: scale(1.05); }
+}
+
+/* Capa oscura para la legibilidad. */
+.capa {
+  position: absolute;
+  inset: 0;
+  background: var(--login-capa);
+}
+
+/* Movimiento reducido: una sola imagen fija, sin zoom ni fundido. */
+:host(.fondo--quieto) .fondo {
+  transition: none;
+}
+
+:host(.fondo--quieto) .fondo--activo img {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fondo { transition: none; }
+  .fondo--activo img { animation: none; }
+}

@@ -11,13 +11,14 @@ import { Badge, TonoBadge } from '../../shared/ui/badge/badge';
 import { Boton } from '../../shared/ui/boton/boton';
 import { Campo } from '../../shared/ui/campo/campo';
 import { Marca } from '../../shared/ui/marca/marca';
+import { FondoLogin } from './fondo-login';
 
 // /login (DISENO_DASHBOARD.md §6): tarjeta de 400 px con marca, correo, contraseña y "Entrar".
 // Error genérico ante credenciales incorrectas (no revela si falló el correo o la contraseña).
 @Component({
   selector: 'xa-login',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, Badge, Boton, Campo, Marca],
+  imports: [ReactiveFormsModule, Badge, Boton, Campo, FondoLogin, Marca],
   templateUrl: './login.html',
   styleUrl: './login.css',
 })

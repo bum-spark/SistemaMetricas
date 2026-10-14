@@ -18,6 +18,7 @@
     "postman:produccion": "newman run ../postman/coleccion.postman_collection.json -e ../postman/entorno-produccion.postman_environment.json --folder Salud",
     "crear-admin": "tsx ../scripts/crear-admin.ts",
     "crear-juego": "tsx ../scripts/crear-juego.ts",
+    "actualizar-juego": "tsx ../scripts/actualizar-juego.ts",
     "rotar-api-key": "tsx ../scripts/rotar-api-key.ts",
     "revocar-api-key": "tsx ../scripts/revocar-api-key.ts",
     "limpiar-seed": "tsx ../scripts/limpiar-seed.ts",

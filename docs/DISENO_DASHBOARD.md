@@ -21,7 +21,8 @@
 5. **Accesible por defecto.** Contraste mínimo 4.5:1 en texto, foco visible, navegable con
    teclado, y el color nunca es el único canal de información.
 6. **Identidad:** marca "Estudio Xolos" (nombre de `APP_NAME`). Tono sobrio, ligeramente
-   melancólico; sin adornos ni degradados llamativos.
+   melancólico; sin adornos ni degradados llamativos. Única excepción: el fondo animado y el
+   desenfoque del login (§6, S-66); el resto del dashboard sigue sobrio.
 
 ---
 
@@ -332,7 +333,7 @@ abajo como *(cuando exista)* se agregan cuando se implemente su endpoint.
 
 | Ruta                          | Contenido y endpoints                                                                 |
 |-------------------------------|---------------------------------------------------------------------------------------|
-| `/login`                      | Tarjeta centrada de 400 px: marca, email, contraseña, botón primario "Entrar". Error genérico "Correo o contraseña incorrectos" (no revelar cuál). `POST /auth/login`. |
+| `/login`                      | Tarjeta centrada de 400 px: marca, email, contraseña, botón primario "Entrar". Error genérico "Correo o contraseña incorrectos" (no revelar cuál). Fondo animado con arte del juego (ver "Excepción visual del login" abajo). `POST /auth/login`. |
 | `/juegos`                     | Cuadrícula de tarjetas, una por juego: nombre, versión actual, badge de estado, y 3 mini-KPIs (jugadores, sesiones, % completado). Clic entra al juego. `GET /juegos`. |
 | `/juegos/:slug` (Resumen)     | `versionActual` como badge junto al nombre del juego. Fila de 4 KPIs (jugadores, sesiones, duración mediana con "esperado" si hay `duracionEsperadaMs`, % terminaron); embudo compacto (6 col); tarjeta "Dónde se pierde la gente" (6 col) con la **mayor caída entre dos pasos del embudo** y un enlace a Muertes con ese nivel preseleccionado. `GET /juegos/:juegoId`, `/estadisticas/*/sesiones`, `embudo`. |
 | `/progresion`                 | Embudo completo con insignias y tabla por paso (jugadores, % del inicio, % del paso anterior, caída). *(cuando exista)* abandono (antes del primer nivel, dentro de cada nivel, entre niveles) y completado del tutorial si el juego tiene uno. `embudo` · *(cuando exista)* `abandono`, `tutorial`. |
@@ -342,6 +343,38 @@ abajo como *(cuando exista)* se agregan cuando se implemente su endpoint.
 
 "Builds y rendimiento" (`/builds`: tabla por versión y plataforma, FPS, cargas y crashes;
 endpoints `versiones` y `rendimiento`) **queda fuera de la entrega 1**.
+
+### Excepción visual del login (S-66)
+
+El fondo animado y el desenfoque son **solo del login**. Ninguna otra pantalla usa
+imágenes de fondo, transparencias ni `backdrop-filter`; el resto del dashboard sigue sobrio
+(principio 6).
+
+- **Fondo** (`xa-fondo-login`): arte del juego a pantalla completa (`object-fit: cover`),
+  WebP de `public/login/` (`fondo-0N.webp` de hasta 1920 px y `fondo-0N-960.webp` para
+  pantallas de hasta 767 px, con `<picture>`). Fundido cruzado de `--login-fundido` cada 7 s
+  y zoom 1 → 1.05 durante `--login-zoom`. Encima, una capa `--login-capa` (`--bg-0` al 60 %).
+- **Carga:** al abrir solo se pide la primera imagen (`fetchpriority="high"`); las demás se
+  precargan cuando el formulario ya es interactivo y la siguiente se asegura antes de
+  mostrarse. Se pausa con la pestaña oculta.
+- **Movimiento reducido:** una sola imagen fija, sin fundido, zoom ni precargas.
+- **Decorativo:** `alt=""` y `aria-hidden="true"` en el contenedor.
+- **Tarjeta y chip `/salud`:** fondo `--login-tarjeta` (`--bg-1` al 86 %) con
+  `backdrop-filter: blur(var(--login-desenfoque))`; sin soporte, `--login-tarjeta-solida`
+  (94 %). Borde y radio de siempre. El recuadro de error lleva `--danger-soft` sobre `--bg-1`
+  sólido.
+- **Contraste:** se mide contra el píxel más claro de cada imagen detrás de cada texto; todo
+  texto ≥ 4.5:1 con todas las imágenes (valores en S-66). Una imagen nueva se agrega solo si
+  pasa esa medición.
+
+```css
+--login-capa: rgba(14, 16, 19, 0.6);
+--login-tarjeta: rgba(20, 23, 28, 0.86);
+--login-tarjeta-solida: rgba(20, 23, 28, 0.94);
+--login-desenfoque: 16px;
+--login-fundido: 1.2s;
+--login-zoom: 8.2s;
+```
 
 **Prioridad de construcción** (si falta tiempo, en este orden): login → juegos →
 Resumen → Progresión (embudo) → Niveles (tiempo) → Muertes (barras) → Logros → mapa de calor.
