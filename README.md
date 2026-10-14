@@ -167,7 +167,8 @@ producción; es pública, no es un secreto).
 |---|---|
 | `npm run crear-admin [-- --juegos slug1,slug2]` | Crea un admin (sin `--juegos`, con acceso a todos los juegos). No hay registro público. |
 | `npm run crear-juego -- --juego <slug> [--version x.y.z]` | Crea un juego con su catálogo (`la-casa-del-bosque` o `faro-nocturno-demo`) y muestra la API key una sola vez. |
-| `npm run actualizar-juego -- --juego <slug> --logo-url <ruta>` | Cambia solo los campos indicados de un juego existente (hoy: `logoUrl`), con la misma validación que la API. En Git Bash antepón `MSYS_NO_PATHCONV=1`. |
+| `npm run actualizar-juego -- --juego <slug> --logo-url <ruta>` | Cambia solo los campos indicados de un juego existente, con la misma validación que la API. En Git Bash antepón `MSYS_NO_PATHCONV=1`. |
+| `npm run actualizar-juego -- --juego <slug> --nivel <nivelId> [--imagen-url <ruta>] [--limites minX,maxX,minY,maxY]` | Cambia la imagen y/o los límites de **un** nivel del catálogo (mapa de calor). Imprime antes y después y avisa si la proporción de la imagen difiere más de 2 % de la de los límites. Con un número negativo al inicio: `--limites=-2,118,0,30`. Procedimiento completo en [`docs/MAPAS_NIVELES.md`](docs/MAPAS_NIVELES.md). |
 | `npm run rotar-api-key -- --juego <slug>` | Genera una key nueva; la anterior deja de servir al instante. |
 | `npm run revocar-api-key -- --juego <slug>` | Revoca la key (el juego ya no puede mandar datos; sus datos se conservan). |
 | `npm run seed-datos` / `npm run limpiar-seed` | Datos de prueba (`origen: "seed"`) y su borrado. |
