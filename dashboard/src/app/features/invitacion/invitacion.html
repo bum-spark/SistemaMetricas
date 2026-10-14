@@ -1,0 +1,69 @@
+<main class="invitacion">
+  <section class="invitacion__tarjeta" aria-labelledby="invitacion-titulo" aria-live="polite">
+    <div class="invitacion__marca">
+      <xa-marca variante="login" />
+    </div>
+
+    @switch (estado()) {
+      @case ('validando') {
+        <h1 id="invitacion-titulo" class="invitacion__titulo">{{ textos.titulo }}</h1>
+        <p class="invitacion__texto">{{ textos.validando }}</p>
+        <xa-skeleton class="esqueleto" />
+      }
+      @case ('invalido') {
+        <h1 id="invitacion-titulo" class="invitacion__titulo">{{ textos.invalidoTitulo }}</h1>
+        <p class="invitacion__texto" role="alert">{{ motivoInvalido() }}</p>
+      }
+      @case ('listo') {
+        <h1 id="invitacion-titulo" class="invitacion__titulo">{{ textos.listoTitulo }}</h1>
+        <p class="invitacion__texto">{{ textos.listoAyuda }}</p>
+        <a class="invitacion__ir" routerLink="/login">{{ textos.irALogin }}</a>
+      }
+      @default {
+        <h1 id="invitacion-titulo" class="invitacion__titulo">{{ textos.titulo }}</h1>
+        @if (invitacion(); as i) {
+          <div class="invitacion__datos">
+            <p class="invitacion__cuenta">{{ textos.para(i.email) }}</p>
+            <p class="invitacion__texto">{{ textos.vence(vence()!) }}</p>
+          </div>
+        }
+
+        <form class="invitacion__formulario" [formGroup]="formulario" (ngSubmit)="crear()" novalidate>
+          <!-- Campo de usuario oculto: el gestor de contraseñas guarda la nueva con el correo correcto. -->
+          <input class="solo-lector" type="email" name="username" autocomplete="username" [value]="invitacion()?.email ?? ''" tabindex="-1" aria-hidden="true" readonly />
+
+          <xa-campo [etiqueta]="textos.password" para="invitacion-password">
+            <input id="invitacion-password" type="password" formControlName="password" autocomplete="new-password" aria-describedby="invitacion-reglas" />
+          </xa-campo>
+          <xa-campo [etiqueta]="textos.confirmacion" para="invitacion-confirmacion">
+            <input id="invitacion-confirmacion" type="password" formControlName="confirmacion" autocomplete="new-password" aria-describedby="invitacion-reglas" />
+          </xa-campo>
+
+          <div class="reglas" id="invitacion-reglas">
+            <p class="reglas__titulo">{{ textos.reglasTitulo }}</p>
+            <ul class="reglas__lista">
+              <li class="regla" [class.regla--ok]="reglas().longitud" [class.regla--falta]="intentoEnviar() && !reglas().longitud">
+                <lucide-icon [img]="reglas().longitud ? iconos.cumple : iconos.noCumple" [size]="16" [strokeWidth]="1.75" aria-hidden="true" />
+                <span>{{ textos.reglaLongitud(minimo) }}</span>
+                <span class="solo-lector">({{ reglas().longitud ? textos.cumple : textos.noCumple }})</span>
+              </li>
+              <li class="regla" [class.regla--ok]="reglas().coinciden" [class.regla--falta]="intentoEnviar() && !reglas().coinciden">
+                <lucide-icon [img]="reglas().coinciden ? iconos.cumple : iconos.noCumple" [size]="16" [strokeWidth]="1.75" aria-hidden="true" />
+                <span>{{ textos.reglaCoinciden }}</span>
+                <span class="solo-lector">({{ reglas().coinciden ? textos.cumple : textos.noCumple }})</span>
+              </li>
+            </ul>
+          </div>
+
+          @if (errorGeneral(); as e) {
+            <p class="invitacion__error" role="alert">{{ e }}</p>
+          }
+
+          <button xa-boton type="submit" variante="primario" [bloque]="true" [cargando]="enviando()">
+            {{ enviando() ? textos.creando : textos.crear }}
+          </button>
+        </form>
+      }
+    }
+  </section>
+</main>

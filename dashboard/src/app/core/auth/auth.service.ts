@@ -20,6 +20,8 @@ export class AuthService {
 
   readonly admin = computed(() => this.sesion()?.admin ?? null);
   readonly token = computed(() => this.sesion()?.token ?? null);
+  // Sin rol = admin (como en la API, S-67). Solo decide qué se muestra: la API vuelve a validar.
+  readonly esAdmin = computed(() => this.sesion()?.admin.rol !== 'invitado');
 
   // Se consulta en cada navegación: un token vencido cuenta como sin sesión.
   estaAutenticado(ahora = Date.now()): boolean {

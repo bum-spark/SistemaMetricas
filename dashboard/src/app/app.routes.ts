@@ -1,12 +1,17 @@
 import { Routes } from '@angular/router';
-import { authGuard, soloInvitadoGuard } from './core/auth/auth.guard';
+import { authGuard, soloAdminGuard, soloSinSesionGuard } from './core/auth/auth.guard';
 
 // Rutas del dashboard (DISENO_DASHBOARD.md §6). Cada pantalla se agrega en su propio commit.
 export const routes: Routes = [
   {
     path: 'login',
-    canActivate: [soloInvitadoGuard],
+    canActivate: [soloSinSesionGuard],
     loadComponent: () => import('./features/login/login').then((m) => m.Login),
+  },
+  // Pública: crear la contraseña con el enlace de invitación (#token=…), con o sin sesión.
+  {
+    path: 'invitacion',
+    loadComponent: () => import('./features/invitacion/invitacion').then((m) => m.Invitacion),
   },
   {
     path: '',
@@ -15,6 +20,11 @@ export const routes: Routes = [
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'juegos' },
       { path: 'juegos', loadComponent: () => import('./features/juegos/juegos').then((m) => m.Juegos) },
+      {
+        path: 'invitados',
+        canActivate: [soloAdminGuard],
+        loadComponent: () => import('./features/invitados/invitados').then((m) => m.Invitados),
+      },
       {
         path: 'juegos/:slug',
         loadComponent: () => import('./features/juego/juego').then((m) => m.Juego),

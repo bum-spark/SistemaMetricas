@@ -343,8 +343,10 @@ Con los datos del seed (semilla 42), verificadas con la misma CSP de producción
 | Progresión: embudo e insignias | Niveles: tiempo por resultado e intentos |
 | ![Muertes](docs/capturas/06-muertes.png) | ![Logros](docs/capturas/07-logros.png) |
 | Muertes y mapa de calor | Logros con rareza |
-| ![Segundo juego](docs/capturas/08-segundo-juego.png) | |
-| El segundo juego (4 niveles) sin cambiar código | |
+| ![Segundo juego](docs/capturas/08-segundo-juego.png) | ![Invitados](docs/capturas/09-invitados.png) |
+| El segundo juego (4 niveles) sin cambiar código | Invitados: pendiente, activo y desactivado (solo admins) |
+| ![Invitación](docs/capturas/10-invitacion.png) | |
+| El invitado crea su contraseña con reglas visibles | |
 
 ## Documentación
 

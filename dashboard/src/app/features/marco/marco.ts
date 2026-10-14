@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { Funnel, LayoutDashboard, LogOut, LucideAngularModule, LucideIconData, Menu, Skull, Timer, Trophy, X } from 'lucide-angular';
+import { Funnel, LayoutDashboard, LogOut, LucideAngularModule, LucideIconData, Menu, Skull, Timer, Trophy, Users, X } from 'lucide-angular';
 import { filter, map } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { JuegosService } from '../../core/juegos/juegos.service';
@@ -47,8 +47,10 @@ export class Marco {
   protected readonly textos = ES.marco;
   protected readonly textosMarca = ES.marca;
   protected readonly secciones = SECCIONES;
-  protected readonly iconos = { menu: Menu, cerrar: X, salir: LogOut };
+  protected readonly iconos = { menu: Menu, cerrar: X, salir: LogOut, invitados: Users };
   protected readonly admin = this.auth.admin;
+  // "Invitados" solo para rol admin (S-67); la API también lo protege.
+  protected readonly esAdmin = this.auth.esAdmin;
   protected readonly menuAbierto = signal(false);
 
   private readonly url = toSignal(

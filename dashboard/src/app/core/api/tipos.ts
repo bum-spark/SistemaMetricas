@@ -4,10 +4,49 @@ export interface ErrorApi {
   error: { codigo: string; mensaje: string; detalles: unknown[] };
 }
 
+export type Rol = 'admin' | 'invitado';
+
 export interface Admin {
   email: string;
   nombre: string;
+  // Sesiones guardadas antes de los invitados no lo traen: cuentan como admin (S-67).
+  rol?: Rol;
   juegosPermitidos: string[];
+}
+
+// ---------- Invitados (ESQUEMA_EVENTOS.md §7.3) ----------
+
+export type EstadoInvitado = 'pendiente' | 'activo' | 'desactivado';
+
+export interface Invitado {
+  email: string;
+  nombre: string;
+  estado: EstadoInvitado;
+  juegos: string[];
+  invitadoPor: string | null;
+  invitadoEn: string | null;
+  ultimoAcceso: string | null;
+  enlaceExpiraEn: string | null;
+}
+
+export interface ListaInvitados {
+  datos: Invitado[];
+  pagina: number;
+  limite: number;
+  total: number;
+}
+
+// El enlace llega una sola vez (al invitar o restablecer); no se puede volver a consultar.
+export interface InvitacionEmitida {
+  invitado: Invitado;
+  enlace: string;
+  expiraEn: string;
+}
+
+export interface InvitacionValida {
+  email: string;
+  nombre: string;
+  expiraEn: string;
 }
 
 export interface RespuestaLogin {

@@ -12,9 +12,15 @@ export const authGuard: CanActivateFn = (_ruta, estado) => {
 };
 
 // /login: con sesión válida no tiene caso mostrarlo.
-export const soloInvitadoGuard: CanActivateFn = () => {
+export const soloSinSesionGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   return auth.estaAutenticado() ? inject(Router).createUrlTree(['/juegos']) : true;
+};
+
+// Pantallas solo para rol admin (/invitados): un invitado vuelve a /juegos. La API también
+// responde 403; esto solo evita mostrarle una pantalla que no puede usar (S-67).
+export const soloAdminGuard: CanActivateFn = () => {
+  return inject(AuthService).esAdmin() ? true : inject(Router).createUrlTree(['/juegos']);
 };
 
 // Solo se aceptan destinos internos (evita redirecciones abiertas con ?destino=https://…).

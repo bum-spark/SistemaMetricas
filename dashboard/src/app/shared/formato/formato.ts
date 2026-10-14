@@ -52,6 +52,13 @@ export function formatearFecha(iso: string | Date): string {
   return `${dos(d.getDate())}/${dos(d.getMonth() + 1)}/${d.getFullYear()}`;
 }
 
+// Fecha y hora local en 24 h: dd/MM/yyyy HH:mm (§7).
+export function formatearFechaHora(iso: string | Date): string {
+  const d = typeof iso === 'string' ? new Date(iso) : iso;
+  const dos = (n: number) => String(n).padStart(2, '0');
+  return `${formatearFecha(d)} ${dos(d.getHours())}:${dos(d.getMinutes())}`;
+}
+
 // Inicial para el avatar de un juego sin logo (primera letra o dígito del nombre).
 export function inicial(nombre: string): string {
   const letra = [...nombre.trim()].find((c) => /[\p{L}\p{N}]/u.test(c));

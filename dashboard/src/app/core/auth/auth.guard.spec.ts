@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRouteSnapshot, provideRouter, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
-import { authGuard, destinoSeguro } from './auth.guard';
+import { authGuard, destinoSeguro, soloAdminGuard } from './auth.guard';
 
 function ejecutar(url: string): boolean | UrlTree {
   return TestBed.runInInjectionContext(() =>
@@ -28,6 +28,27 @@ describe('authGuard', () => {
       JSON.stringify({ token: 't', expiraEn: '2099-01-01T00:00:00.000Z', admin: { email: 'a', nombre: 'A', juegosPermitidos: [] } }),
     );
     expect(ejecutar('/juegos')).toBe(true);
+  });
+});
+
+describe('soloAdminGuard', () => {
+  const sesion = (rol?: string) =>
+    sessionStorage.setItem('xa.sesion', JSON.stringify({ token: 't', expiraEn: '2099-01-01T00:00:00.000Z', admin: { email: 'a', nombre: 'A', juegosPermitidos: [], ...(rol ? { rol } : {}) } }));
+  const ejecutarAdmin = () => TestBed.runInInjectionContext(() => soloAdminGuard({} as ActivatedRouteSnapshot, { url: '/invitados' } as RouterStateSnapshot));
+
+  beforeEach(() => {
+    sessionStorage.clear();
+    TestBed.configureTestingModule({ providers: [provideRouter([]), provideHttpClient()] });
+  });
+
+  it('un invitado vuelve a /juegos', () => {
+    sesion('invitado');
+    expect(TestBed.inject(Router).serializeUrl(ejecutarAdmin() as UrlTree)).toBe('/juegos');
+  });
+
+  it.each([['admin'], [undefined]])('rol %s (sin rol = admin) deja pasar', (rol) => {
+    sesion(rol);
+    expect(ejecutarAdmin()).toBe(true);
   });
 });
 

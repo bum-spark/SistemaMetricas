@@ -131,6 +131,8 @@ Resumen · Progresión · Niveles · Muertes · Logros y exploración.
 ("Builds y rendimiento" queda fuera de la entrega 1.) Solo se listan pantallas construidas y
 solo cuando la URL es de un juego que existe. Colapsada, cada icono usa `title` como tooltip.
 Arriba el logotipo (marca + nombre del estudio); abajo el nombre del admin y "Salir".
+Justo encima del usuario, un grupo **Administración** con "Invitados" (icono `Users`),
+**solo para rol admin** (S-67, S-68); un invitado no lo ve.
 Elemento activo: fondo `--accent-soft`, texto `--accent`, barra de 2 px a la izquierda.
 
 ### Marca
@@ -257,6 +259,19 @@ texto 12–13. Aparece al foco y al hover, con retraso de 150 ms.
   despertando, puede tardar un minuto" (plan gratuito de hosting).
 - **Toasts:** esquina inferior derecha, 4 s, `--bg-2` con borde del color semántico.
 
+### Modal (S-68)
+`<dialog>` nativo (`xa-modal`): ancho `--modal-ancho` (480 px, sin pasar de la pantalla menos
+16 px por lado), fondo `--bg-1`, borde 1px `--border-default`, `--radius-lg`,
+`--shadow-popover`, padding 24. Fondo de la página: `--bg-0` con `--opacidad-atenuado`.
+Cabecera: título de sección (Space Grotesk 20/28) y una línea de ayuda (13, `--text-2`).
+Acciones abajo a la derecha (fantasma "Cancelar" + primario). Atrapa el foco, Esc lo cierra y el
+foco vuelve al botón que lo abrió.
+
+### Casillas (S-68)
+Casilla nativa de 16 px con `accent-color: --accent` y foco `--focus-ring`, dentro de una fila
+clicable de 40 px (hover `--bg-2`) con el logo del juego (recuadro del selector) y su nombre.
+Van en un `fieldset` con `legend` como etiqueta (12/500, `--text-2`).
+
 ### Iconos
 `lucide-angular`, trazo de 1.75 px, 16 px en controles y 20 px en navegación.
 
@@ -334,6 +349,8 @@ abajo como *(cuando exista)* se agregan cuando se implemente su endpoint.
 | Ruta                          | Contenido y endpoints                                                                 |
 |-------------------------------|---------------------------------------------------------------------------------------|
 | `/login`                      | Tarjeta centrada de 400 px: marca, email, contraseña, botón primario "Entrar". Error genérico "Correo o contraseña incorrectos" (no revelar cuál). Fondo animado con arte del juego (ver "Excepción visual del login" abajo). `POST /auth/login`. |
+| `/invitacion`                 | **Pública.** Misma tarjeta de 400 px que el login, sobre `--bg-0` y **sin** fondo animado. Lee el token del fragmento (`#token=…`) y lo borra de la URL con `history.replaceState`. Muestra la cuenta y el vencimiento, contraseña + confirmación y las reglas visibles (icono ✓/✗ + texto: 12 caracteres, coinciden). Enlace inválido, vencido o usado: un solo aviso genérico. Al terminar: "Ir a iniciar sesión". `GET /auth/invitacion/validar` · `POST /auth/invitacion/aceptar` (S-67, S-68). |
+| `/invitados`                  | **Solo rol admin** (guard + 403 de la API). Cabecera con "Invitar" (primario) a la derecha; tabla: correo (+ nombre), estado (badge: pendiente `warning` con "Enlace vigente hasta…", activo `success`, desactivado neutro), juegos (nombres de los juegos del admin + "N juegos que no administras"), último acceso, y acciones compactas: Juegos, Restablecer (no en desactivados) y Activar/Desactivar (peligro). Modal de invitar (correo, nombre opcional, casillas de juegos) y modal del enlace **una sola vez** (campo de solo lectura, "Copiar enlace", vigencia y aviso `warning`). `GET/POST/PATCH /invitados`, `POST /invitados/:email/restablecer`. |
 | `/juegos`                     | Cuadrícula de tarjetas, una por juego: nombre, versión actual, badge de estado, y 3 mini-KPIs (jugadores, sesiones, % completado). Clic entra al juego. `GET /juegos`. |
 | `/juegos/:slug` (Resumen)     | `versionActual` como badge junto al nombre del juego. Fila de 4 KPIs (jugadores, sesiones, duración mediana con "esperado" si hay `duracionEsperadaMs`, % terminaron); embudo compacto (6 col); tarjeta "Dónde se pierde la gente" (6 col) con la **mayor caída entre dos pasos del embudo** y un enlace a Muertes con ese nivel preseleccionado. `GET /juegos/:juegoId`, `/estadisticas/*/sesiones`, `embudo`. |
 | `/progresion`                 | Embudo completo con insignias y tabla por paso (jugadores, % del inicio, % del paso anterior, caída). *(cuando exista)* abandono (antes del primer nivel, dentro de cada nivel, entre niveles) y completado del tutorial si el juego tiene uno. `embudo` · *(cuando exista)* `abandono`, `tutorial`. |
@@ -410,7 +427,7 @@ dashboard/src/
                      skeleton, estado-vacio, estado-error, toast  (prefijo xa-)
     shared/ui/       … + cabecera, insignia, tabs (y umbrales.ts, formato/, carga.ts en shared/)
     shared/charts/   xa-chart (+ chart-theme.ts), xa-embudo, xa-mapa-calor
-    features/        login, marco (sidebar y barra superior), juegos,
+    features/        login, invitacion, marco (sidebar y barra superior), juegos, invitados,
                      juego (resumen, progresion, niveles, muertes, logros)
     i18n/es.ts
 ```

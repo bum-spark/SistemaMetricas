@@ -93,6 +93,15 @@
   text-overflow: ellipsis;
 }
 
+/* Administración: va abajo, justo antes del usuario. */
+.sidebar__nav--admin {
+  margin-top: auto;
+}
+
+.sidebar__nav--admin + .sidebar__usuario {
+  margin-top: 0;
+}
+
 .sidebar__usuario {
   display: flex;
   flex-direction: column;
