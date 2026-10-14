@@ -117,6 +117,16 @@
   --tooltip-ancho-max: 320px;   /* S-55 */
   --tactil-min: 40px;
 
+  /* Login (excepción visual SOLO de esa pantalla, §6 y S-66): fondo animado y tarjeta con
+     desenfoque. Los colores son --bg-0 (#0E1013) y --bg-1 (#14171C) con transparencia;
+     las opacidades salen de la medición de contraste contra la imagen más clara. */
+  --login-capa: rgba(14, 16, 19, 0.6);
+  --login-tarjeta: rgba(20, 23, 28, 0.86);
+  --login-tarjeta-solida: rgba(20, 23, 28, 0.94);  /* sin backdrop-filter */
+  --login-desenfoque: 16px;
+  --login-fundido: 1.2s;
+  --login-zoom: 8.2s;  /* intervalo de 7 s + fundido de 1.2 s */
+
   /* Marca */
   --logo-estudio-sidebar: 28px;
   --logo-estudio-login: 64px;

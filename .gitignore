@@ -20,3 +20,6 @@ xolos-metricas.json
 sdk-unity/**/bin/
 sdk-unity/**/obj/
 sdk-unity/Pruebas/salida/
+
+# Originales de las imágenes de fondo del login (no se versionan; solo las WebP de public/login/)
+dashboard/originales-sin-optimizar/
