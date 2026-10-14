@@ -121,6 +121,22 @@ Los scripts corren en tu máquina contra Atlas. La URI **solo** va en tu `api/.e
    quita con `npm run limpiar-seed -- --confirmar`. El dashboard puede filtrarlos con
    `origen=real`.
 
+### Logo de un juego creado antes de `logoUrl`
+
+Si `GET /juegos` devuelve `logoUrl: null` para La Casa del Bosque (el juego se creó en Atlas
+antes de que existiera el campo), complétalo sin tocar nada más. Primero **sin**
+`--confirmar` para revisar el destino:
+
+```powershell
+cd api
+npm run actualizar-juego -- --juego la-casa-del-bosque --logo-url /logos/la-casa-del-bosque/logo.png
+npm run actualizar-juego -- --juego la-casa-del-bosque --logo-url /logos/la-casa-del-bosque/logo.png --confirmar
+```
+
+En Git Bash antepón `MSYS_NO_PATHCONV=1` (si no, convierte `/logos/…` en una ruta de Windows y
+el script lo rechaza). `seed-datos` y `crear-juego` también completan el logo si falta, sin
+pisar uno existente.
+
 ## 4. Comprobar el deploy
 
 La primera petición después de un rato puede tardar ~1 minuto (el plan gratuito "duerme").

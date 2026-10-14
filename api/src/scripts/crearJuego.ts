@@ -26,7 +26,12 @@ export async function crearJuego(opciones: OpcionesCrearJuego): Promise<Resultad
     throw new ErrorScript(`No hay catálogo para "${opciones.slug}". Disponibles: ${Object.keys(CATALOGOS).join(', ')}.`);
   }
   if (await JuegoModelo.exists({ slug: definicion.slug })) {
-    throw new ErrorScript(`El juego "${definicion.slug}" ya existe. Si necesitas otra API key, usa rotar-api-key.`);
+    // No se recrea; solo se completa el logo si el juego se creó antes de existir logoUrl.
+    const completado = definicion.logoUrl
+      ? await JuegoModelo.updateOne({ slug: definicion.slug, logoUrl: { $in: [null, ''] } }, { $set: { logoUrl: definicion.logoUrl } })
+      : null;
+    const nota = completado?.modifiedCount ? ` Se completó su logoUrl (${definicion.logoUrl}).` : '';
+    throw new ErrorScript(`El juego "${definicion.slug}" ya existe.${nota} Si necesitas otra API key, usa rotar-api-key.`);
   }
   const catalogo = esquemaCatalogo.safeParse(definicion.catalogo);
   if (!catalogo.success) {

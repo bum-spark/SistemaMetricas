@@ -51,6 +51,22 @@ describe('crearJuego', () => {
     expect((await JuegoModelo.findOne({ slug: 'la-casa-del-bosque' }).lean())?.apiKeyHash).toBe(hashApiKey(primero.apiKey));
   });
 
+  it('con un juego existente sin logo, completa su logoUrl (sin recrearlo ni cambiar la key)', async () => {
+    const primero = await crearJuego({ slug: 'la-casa-del-bosque' });
+    await JuegoModelo.updateOne({ slug: 'la-casa-del-bosque' }, { $unset: { logoUrl: '' } });
+    await expect(crearJuego({ slug: 'la-casa-del-bosque' })).rejects.toThrow(/Se completó su logoUrl/);
+    const juego = (await JuegoModelo.findOne({ slug: 'la-casa-del-bosque' }).lean())!;
+    expect(juego.logoUrl).toBe('/logos/la-casa-del-bosque/logo.png');
+    expect(juego.apiKeyHash).toBe(hashApiKey(primero.apiKey));
+  });
+
+  it('no pisa un logoUrl que ya tiene valor', async () => {
+    await crearJuego({ slug: 'la-casa-del-bosque' });
+    await JuegoModelo.updateOne({ slug: 'la-casa-del-bosque' }, { $set: { logoUrl: 'https://cdn.ejemplo.com/propio.png' } });
+    await expect(crearJuego({ slug: 'la-casa-del-bosque' })).rejects.toThrow(/ya existe\. Si necesitas/);
+    expect((await JuegoModelo.findOne({ slug: 'la-casa-del-bosque' }).lean())!.logoUrl).toBe('https://cdn.ejemplo.com/propio.png');
+  });
+
   it('falla con la lista de catálogos disponibles si el slug no tiene catálogo', async () => {
     await expect(crearJuego({ slug: 'otro-juego' })).rejects.toThrow(
       'No hay catálogo para "otro-juego". Disponibles: la-casa-del-bosque, faro-nocturno-demo.',
