@@ -18,7 +18,7 @@ describe('crearAdmin', () => {
     expect(r).toEqual({ creado: true, email: 'admin@xolos.mx', juegosPermitidos: expect.arrayContaining([a.juegoId, b.juegoId]) });
     const admin = await AdminModelo.findOne({ email: 'admin@xolos.mx' }).lean();
     expect(admin?.passwordHash).not.toContain(PASSWORD);
-    await expect(verificarPassword(PASSWORD, admin!.passwordHash)).resolves.toBe(true);
+    await expect(verificarPassword(PASSWORD, admin!.passwordHash!)).resolves.toBe(true);
   });
 
   it('con --juegos limita el acceso a esos juegos', async () => {
@@ -40,7 +40,7 @@ describe('crearAdmin', () => {
     expect(r).toEqual({ creado: false, email: 'a@x.mx' });
     const admin = await AdminModelo.findOne({ email: 'a@x.mx' }).lean();
     expect(admin?.nombre).toBe('Original');
-    await expect(verificarPassword(PASSWORD, admin!.passwordHash)).resolves.toBe(true);
+    await expect(verificarPassword(PASSWORD, admin!.passwordHash!)).resolves.toBe(true);
   });
 
   it.each([

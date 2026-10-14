@@ -1,11 +1,12 @@
 import { z } from 'zod';
 import { PATRON_UUID_V4 } from '../dominio/constantes';
 import { esquemaOrigenFiltro, ORIGENES_FILTRO } from '../estadisticas/filtros';
+import { ROLES } from '../modelos/admin';
 import { registrarEsquema } from '../openapi/registro';
 
 // Cuerpos, parámetros y respuestas de la administración (ESQUEMA_EVENTOS.md §7.2).
 
-const uuidV4 = z.string().regex(PATRON_UUID_V4, 'debe ser un UUID v4');
+export const uuidV4 = z.string().regex(PATRON_UUID_V4, 'debe ser un UUID v4');
 
 export const esquemaSolicitudLogin = registrarEsquema(
   'SolicitudLogin',
@@ -14,7 +15,8 @@ export const esquemaSolicitudLogin = registrarEsquema(
 
 export const esquemaAdmin = registrarEsquema(
   'Admin',
-  z.object({ email: z.string(), nombre: z.string(), juegosPermitidos: z.array(uuidV4) }),
+  // rol: "admin" o "invitado" (solo lectura sobre sus juegos, S-67).
+  z.object({ email: z.string(), nombre: z.string(), rol: z.enum(ROLES), juegosPermitidos: z.array(uuidV4) }),
 );
 
 export const esquemaRespuestaLogin = registrarEsquema(

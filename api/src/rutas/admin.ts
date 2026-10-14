@@ -14,10 +14,10 @@ import {
 import { borrarJugador, detalleJuego, iniciarSesion, listarJuegos } from '../admin/servicio';
 import { describirIssue } from '../dominio/zodEs';
 import { AppError, esquemaRespuestaError } from '../errores';
-import { adminAutenticado, crearAutenticarAdmin, verificarAccesoJuego } from '../middlewares/autenticarAdmin';
+import { adminAutenticado, crearAutenticarAdmin, exigirRolAdmin, verificarAccesoJuego } from '../middlewares/autenticarAdmin';
 import { refEsquema, type RutasOpenApi } from '../openapi/registro';
 
-function validar<T extends z.ZodType>(esquema: T, valor: unknown, que: string): z.infer<T> {
+export function validar<T extends z.ZodType>(esquema: T, valor: unknown, que: string): z.infer<T> {
   const resultado = esquema.safeParse(valor);
   if (!resultado.success) {
     throw new AppError(400, 'VALIDACION_FALLIDA', `${que} no es válido.`, resultado.error.issues.map((i) => describirIssue(i)));
@@ -49,7 +49,8 @@ export function crearRutasAdmin(opciones: { jwtSecret: string; limiteLogin: Requ
     res.json(await detalleJuego(juegoId));
   });
 
-  router.delete('/jugadores/:juegoId/:playerId', autenticar, async (req, res) => {
+  // Borrar datos es escritura: solo rol admin (un invitado es de solo lectura, S-67).
+  router.delete('/jugadores/:juegoId/:playerId', autenticar, exigirRolAdmin, async (req, res) => {
     const { juegoId, playerId } = validar(esquemaParamsJugador, req.params, 'La ruta');
     verificarAccesoJuego(adminAutenticado(res), juegoId);
     res.json(await borrarJugador(juegoId, playerId));
@@ -67,7 +68,7 @@ const ok = (descripcion: string, esquema: z.ZodType) => ({
   content: { 'application/json': { schema: refEsquema(esquema) } },
 });
 const noAutenticado = error('NO_AUTENTICADO: falta el token, es inválido o expiró.');
-const sinPermiso = error('SIN_PERMISO: el juego no está en juegosPermitidos del admin.');
+const sinPermiso = error('SIN_PERMISO: el juego no está en juegosPermitidos del usuario.');
 const paramJuego = { name: 'juegoId', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } };
 const seguridad = [{ BearerAuth: [] }];
 
@@ -81,7 +82,7 @@ export const openApiAdmin: RutasOpenApi = {
       responses: {
         '200': ok('Sesión iniciada.', esquemaRespuestaLogin),
         '400': error('VALIDACION_FALLIDA'),
-        '401': error('CREDENCIALES_INVALIDAS: correo o contraseña incorrectos (mismo mensaje en todos los casos).'),
+        '401': error('CREDENCIALES_INVALIDAS: correo o contraseña incorrectos (mismo mensaje y tiempo para correo inexistente, contraseña incorrecta, cuenta pendiente o desactivada).'),
         '429': error('LIMITE_EXCEDIDO: demasiados intentos fallidos.'),
       },
     },
@@ -89,7 +90,7 @@ export const openApiAdmin: RutasOpenApi = {
   '/auth/yo': {
     get: {
       tags: ['Administración'],
-      summary: 'Datos del admin autenticado',
+      summary: 'Datos del usuario autenticado (incluye su rol)',
       security: seguridad,
       responses: { '200': ok('Admin autenticado.', esquemaAdmin), '401': noAutenticado },
     },
@@ -131,14 +132,14 @@ export const openApiAdmin: RutasOpenApi = {
     delete: {
       tags: ['Administración'],
       summary: 'Borra todos los datos de un jugador (privacidad)',
-      description: 'Elimina el jugador y sus sesiones, eventos y logros en ese juego.',
+      description: 'Elimina el jugador y sus sesiones, eventos y logros en ese juego. Solo rol admin.',
       security: seguridad,
       parameters: [paramJuego, { name: 'playerId', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
       responses: {
         '200': ok('Datos eliminados.', esquemaRespuestaBorrado),
         '400': error('VALIDACION_FALLIDA'),
         '401': noAutenticado,
-        '403': sinPermiso,
+        '403': error('SIN_PERMISO: el usuario es invitado (solo lectura) o el juego no está en sus juegosPermitidos.'),
         '404': error('JUGADOR_NO_ENCONTRADO'),
       },
     },

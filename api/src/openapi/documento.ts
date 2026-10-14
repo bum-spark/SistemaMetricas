@@ -2,13 +2,14 @@ import type { Config } from '../config';
 import { openApiAdmin } from '../rutas/admin';
 import { openApiEstadisticas } from '../rutas/estadisticas';
 import { openApiIngesta } from '../rutas/ingesta';
+import { openApiInvitados } from '../rutas/invitados';
 import { openApiSalud } from '../rutas/salud';
 import { generarComponentes, type RutasOpenApi } from './registro';
 // Registra el esquema de error aunque ninguna ruta lo importe todavía.
 import '../errores';
 
 // Cada módulo de rutas agrega aquí su fragmento de `paths`.
-const fragmentos: RutasOpenApi[] = [openApiSalud, openApiIngesta, openApiAdmin, openApiEstadisticas()];
+const fragmentos: RutasOpenApi[] = [openApiSalud, openApiIngesta, openApiAdmin, openApiInvitados, openApiEstadisticas()];
 
 export function crearDocumentoOpenApi(config: Config): Record<string, unknown> {
   return {

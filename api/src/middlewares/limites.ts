@@ -24,6 +24,7 @@ export interface Limitadores {
   ingestaPorKey: RequestHandler;
   publicoPorIp: RequestHandler;
   loginPorIp: RequestHandler;
+  invitacionPorIp: RequestHandler;
 }
 
 export function crearLimitadores(config: Config): Limitadores {
@@ -45,6 +46,13 @@ export function crearLimitadores(config: Config): Limitadores {
       windowMs: 15 * 60_000,
       limit: config.limites.loginPorIp,
       skipSuccessfulRequests: true,
+    }),
+    // Validar y aceptar invitaciones: TODOS los intentos por IP en 15 min (S-67), contra
+    // quien pruebe tokens al azar.
+    invitacionPorIp: rateLimit({
+      ...responder429,
+      windowMs: 15 * 60_000,
+      limit: config.limites.invitacionPorIp,
     }),
   };
 }

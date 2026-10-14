@@ -62,3 +62,23 @@ describe('OpenAPI de la ingesta', () => {
     expect(body.components.schemas.RespuestaEventos.properties.rechazados.items.properties.codigo.enum).toContain('SIN_CONSENTIMIENTO');
   });
 });
+
+describe('OpenAPI de invitados', () => {
+  it('documenta las rutas de invitados (JWT) y las públicas de la invitación (sin JWT)', async () => {
+    const { app } = crearAppDePrueba();
+    const { body } = await request(app).get('/api/v1/docs/openapi.json');
+    expect(body.paths['/invitados'].post.security).toEqual([{ BearerAuth: [] }]);
+    expect(body.paths['/invitados'].post.requestBody.content['application/json'].schema).toEqual({ $ref: '#/components/schemas/SolicitudInvitado' });
+    expect(Object.keys(body.paths['/invitados'].post.responses as object).sort()).toEqual(['201', '400', '401', '403', '409']);
+    expect(body.paths['/invitados'].get.security).toEqual([{ BearerAuth: [] }]);
+    expect(body.paths['/invitados/{email}'].patch).toBeDefined();
+    expect(body.paths['/invitados/{email}/restablecer'].post).toBeDefined();
+    expect(body.paths['/auth/invitacion/validar'].get.security).toBeUndefined();
+    expect(body.paths['/auth/invitacion/validar'].get.parameters[0]).toMatchObject({ name: 'X-Invitacion-Token', in: 'header' });
+    expect(body.paths['/auth/invitacion/aceptar'].post.responses['429']).toBeDefined();
+    expect(body.components.schemas.Invitado.properties.estado.enum).toEqual(['pendiente', 'activo', 'desactivado']);
+    expect(body.components.schemas.Admin.properties.rol.enum).toEqual(['admin', 'invitado']);
+    // Ningún esquema de respuesta de la lista expone el enlace.
+    expect(Object.keys(body.components.schemas.Invitado.properties as object)).not.toContain('enlace');
+  });
+});

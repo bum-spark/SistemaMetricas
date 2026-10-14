@@ -59,6 +59,14 @@ const esquemaEntorno = z
     RATE_LIMIT_PUBLICO_IP: z.coerce.number().int().min(1).default(600),
     // Intentos fallidos de login por IP en 15 min (S-18).
     RATE_LIMIT_LOGIN_IP: z.coerce.number().int().min(1).default(5),
+    // Intentos de validar o aceptar una invitación por IP en 15 min (S-67).
+    RATE_LIMIT_INVITACION_IP: z.coerce.number().int().min(1).default(10),
+    // Origen del dashboard para armar los enlaces de invitación (<origen>/invitacion#token=…).
+    // Sin valor se usa el primer origen de CORS_ORIGIN.
+    DASHBOARD_URL: z
+      .string()
+      .refine(esOrigen, 'no es un origen válido (usa https://dominio, sin ruta ni "/" final)')
+      .optional(),
     // Firma de los JWT del dashboard. Opcional aquí porque los scripts no la usan;
     // la API no arranca sin ella (crearApp). Mínimo 32 caracteres.
     JWT_SECRET: z.string().min(32, 'debe tener al menos 32 caracteres').optional(),
@@ -87,7 +95,9 @@ export interface Config {
     ingestaPorKey: number;
     publicoPorIp: number;
     loginPorIp: number;
+    invitacionPorIp: number;
   };
+  dashboardUrl: string;
   jwtSecret: string | undefined;
 }
 
@@ -125,7 +135,9 @@ export function cargarConfig(entorno: NodeJS.ProcessEnv = process.env): Config {
       ingestaPorKey: env.RATE_LIMIT_INGESTA_KEY,
       publicoPorIp: env.RATE_LIMIT_PUBLICO_IP,
       loginPorIp: env.RATE_LIMIT_LOGIN_IP,
+      invitacionPorIp: env.RATE_LIMIT_INVITACION_IP,
     },
+    dashboardUrl: env.DASHBOARD_URL ?? env.CORS_ORIGIN[0]!,
     jwtSecret: env.JWT_SECRET,
   };
 }

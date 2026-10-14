@@ -3,6 +3,7 @@ import { condicionOrigen, type OrigenFiltro } from '../estadisticas/filtros';
 import { AppError } from '../errores';
 import type { AdminAutenticado } from '../middlewares/autenticarAdmin';
 import { AdminModelo, EventoModelo, JuegoModelo, JugadorModelo, LogroObtenidoModelo, SesionModelo } from '../modelos';
+import { rolDe } from '../modelos/admin';
 import { firmarToken, type TokenFirmado } from '../seguridad/jwt';
 import { hashPassword, verificarPassword } from '../seguridad/password';
 
@@ -15,16 +16,18 @@ const obtenerHashFalso = () => (hashFalso ??= hashPassword('contraseña-que-nunc
 
 export async function iniciarSesion(email: string, password: string, jwtSecret: string): Promise<TokenFirmado & { admin: AdminAutenticado }> {
   const admin = await AdminModelo.findOne({ email: email.trim().toLowerCase() }).lean();
+  // Una invitación pendiente (sin contraseña) también compara contra el hash falso: misma
+  // respuesta y mismo tiempo que una contraseña incorrecta (S-67).
   const hash = admin?.passwordHash ?? (await obtenerHashFalso());
   const coincide = await verificarPassword(password, hash);
-  if (!admin || !coincide || !admin.activo) {
-    // Mismo mensaje para email inexistente, contraseña incorrecta o admin desactivado.
+  if (!admin?.passwordHash || !coincide || !admin.activo) {
+    // Mismo mensaje para email inexistente, contraseña incorrecta, cuenta pendiente o desactivada.
     throw new AppError(401, 'CREDENCIALES_INVALIDAS', 'Correo o contraseña incorrectos.');
   }
   await AdminModelo.updateOne({ email: admin.email }, { $set: { ultimoLogin: new Date() } });
   return {
     ...firmarToken(admin.email, jwtSecret),
-    admin: { email: admin.email, nombre: admin.nombre, juegosPermitidos: admin.juegosPermitidos },
+    admin: { email: admin.email, nombre: admin.nombre, rol: rolDe(admin), juegosPermitidos: admin.juegosPermitidos },
   };
 }
 

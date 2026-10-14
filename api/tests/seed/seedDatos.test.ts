@@ -76,9 +76,12 @@ describe('seed-datos contra la base', () => {
 
   it('da acceso a Faro Nocturno (demo) a los admins activos cuando lo crea', async () => {
     await crearAdmin({ email: 'admin@xolos.mx', password: 'contraseña-larga-de-prueba', nombre: 'Admin' });
+    // Un invitado solo ve lo que un admin le asigna: el seed no le da juegos (S-67).
+    await AdminModelo.create({ email: 'inv@xolos.mx', rol: 'invitado', nombre: 'Invitado' });
     await ejecutarSeed(OPCIONES);
     const faro = (await JuegoModelo.findOne({ slug: 'faro-nocturno-demo' }).lean())!;
     expect((await AdminModelo.findOne({ email: 'admin@xolos.mx' }).lean())?.juegosPermitidos).toContain(faro.juegoId);
+    expect((await AdminModelo.findOne({ email: 'inv@xolos.mx' }).lean())?.juegosPermitidos).toEqual([]);
   });
 
   it('los datos sirven para las métricas: duraciones de sesión y resumen con origen=seed', async () => {

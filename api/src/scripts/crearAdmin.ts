@@ -44,6 +44,7 @@ export async function crearAdmin(datos: DatosAdmin): Promise<ResultadoCrearAdmin
   const juegosPermitidos = juegos.map((j) => j.juegoId);
   await AdminModelo.create({
     email,
+    rol: 'admin',
     nombre: datos.nombre.trim(),
     passwordHash: await hashPassword(datos.password),
     juegosPermitidos,

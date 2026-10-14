@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { CATALOGOS, type DefinicionJuego } from '../catalogos';
 import { esquemaCatalogo, type Catalogo } from '../dominio/catalogo';
+import { FILTRO_ADMINS_ACTIVOS } from '../modelos/admin';
 import { AdminModelo, EventoModelo, JuegoModelo, JugadorModelo, LogroObtenidoModelo, SesionModelo } from '../modelos';
 import { generarDatosSeed, type DatosSeed } from '../seed/generador';
 import { medirSeed, type MetricasSeed } from '../seed/metricas';
@@ -52,7 +53,7 @@ async function asegurarJuego(def: DefinicionJuego): Promise<{ juegoId: string; c
       catalogo: constante,
     });
     creado = true;
-    await AdminModelo.updateMany({ activo: true }, { $addToSet: { juegosPermitidos: juego.juegoId } });
+    await AdminModelo.updateMany(FILTRO_ADMINS_ACTIVOS, { $addToSet: { juegosPermitidos: juego.juegoId } });
   } else {
     let cambio = false;
     if (def.logoUrl && !juego.logoUrl) {

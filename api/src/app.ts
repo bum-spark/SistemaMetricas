@@ -10,6 +10,7 @@ import { crearDocumentoOpenApi } from './openapi/documento';
 import { crearRutasAdmin } from './rutas/admin';
 import { crearRutasEstadisticas } from './rutas/estadisticas';
 import { crearRutasIngesta } from './rutas/ingesta';
+import { crearRutasInvitados } from './rutas/invitados';
 import { crearRutasSalud } from './rutas/salud';
 
 export interface OpcionesApp {
@@ -37,6 +38,7 @@ export function crearApp(config: Config, opciones: OpcionesApp = {}): Express {
   v1.use(crearRutasSalud());
   v1.use(crearRutasIngesta(limitadores));
   v1.use(crearRutasAdmin({ jwtSecret: config.jwtSecret, limiteLogin: limitadores.loginPorIp }));
+  v1.use(crearRutasInvitados({ jwtSecret: config.jwtSecret, dashboardUrl: config.dashboardUrl, limiteInvitacion: limitadores.invitacionPorIp }));
   v1.use(crearRutasEstadisticas(config.jwtSecret));
 
   const documento = crearDocumentoOpenApi(config);

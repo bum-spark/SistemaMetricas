@@ -153,6 +153,8 @@ repositorio. Plantilla con comentarios: [`api/.env.example`](api/.env.example).
 | `RATE_LIMIT_INGESTA_KEY` | no | Peticiones de ingesta por minuto y API key (1000) |
 | `RATE_LIMIT_PUBLICO_IP` | no | `/salud` y `/docs` por minuto e IP (600) |
 | `RATE_LIMIT_LOGIN_IP` | no | Logins fallidos por IP cada 15 min (5) |
+| `RATE_LIMIT_INVITACION_IP` | no | Intentos de validar o aceptar una invitación por IP cada 15 min (10) |
+| `DASHBOARD_URL` | no | Origen del dashboard para los enlaces de invitación (por defecto, el primero de `CORS_ORIGIN`) |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NOMBRE` | solo `crear-admin` | Primer admin; borra la contraseña del `.env` al terminar |
 
 El dashboard no usa variables de entorno: la URL de la API está en
@@ -174,6 +176,23 @@ producción; es pública, no es un secreto).
 Todos imprimen a qué base van a escribir, sin credenciales; si no es local piden `--confirmar`.
 El detalle está en [`docs/ESQUEMA_EVENTOS.md`](docs/ESQUEMA_EVENTOS.md) §8.
 
+### Invitados (solo lectura)
+
+Un admin invita a otras personas desde la pantalla **Invitados** del dashboard (o con
+`POST /invitados`) y les asigna juegos que él mismo tiene. El invitado ve solo esos juegos y
+no puede borrar datos ni gestionar invitados.
+
+1. Al invitar se genera un enlace `<dashboard>/invitacion#token=…` de **un solo uso**,
+   vigente **72 h**. Se muestra **una sola vez**: el admin lo copia y lo comparte (la API no
+   manda correos). En la base solo queda el SHA-256 del token.
+2. El invitado abre el enlace y crea su contraseña (mínimo 12 caracteres). Después entra por
+   el login normal.
+3. El admin no ve ni edita contraseñas. **Restablecer** genera un enlace nuevo e invalida el
+   anterior; **desactivar** corta al instante la sesión y el enlace pendiente.
+
+Los admins creados antes de esta función (sin campo `rol`) siguen siendo admins. Detalle en
+[`docs/ESQUEMA_EVENTOS.md`](docs/ESQUEMA_EVENTOS.md) §7.3 y S-67.
+
 ## Pruebas: tests, lint y Newman
 
 ```bash
@@ -194,6 +213,10 @@ npm run build       # build de producción
 cd api
 npm run postman -- --env-var juegoId=<juegoId> --env-var apiKey=<apiKey> \
   --env-var adminEmail=<correo> --env-var adminPassword="$ADMIN_PASSWORD"
+
+# La carpeta "Invitados" crea un invitado nuevo en cada corrida y usa 6 de los 10 intentos
+# por IP cada 15 min de validar/aceptar: para correrla varias veces seguidas en local,
+# sube RATE_LIMIT_INVITACION_IP en tu .env.
 
 # Newman contra producción: solo la carpeta "Salud" (no crea datos)
 npm run postman:produccion -- --env-var baseUrl=https://xolos-analytics-api.onrender.com/api/v1

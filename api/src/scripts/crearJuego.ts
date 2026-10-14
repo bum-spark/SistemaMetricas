@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { CATALOGOS } from '../catalogos';
 import { describirProblemas, esquemaCatalogo } from '../dominio/catalogo';
+import { FILTRO_ADMINS_ACTIVOS } from '../modelos/admin';
 import { AdminModelo, JuegoModelo } from '../modelos';
 import { generarApiKey, hashApiKey } from '../seguridad/apiKey';
 import { ejecutarScript, ErrorScript, mostrarSecretoUnaVez, texto } from './comun';
@@ -52,7 +53,7 @@ export async function crearJuego(opciones: OpcionesCrearJuego): Promise<Resultad
 
   let adminsConAcceso = 0;
   if (opciones.darAccesoAAdmins !== false) {
-    const resultado = await AdminModelo.updateMany({ activo: true }, { $addToSet: { juegosPermitidos: juego.juegoId } });
+    const resultado = await AdminModelo.updateMany(FILTRO_ADMINS_ACTIVOS, { $addToSet: { juegosPermitidos: juego.juegoId } });
     adminsConAcceso = resultado.modifiedCount;
   }
   return { juegoId: juego.juegoId, slug: juego.slug, nombre: juego.nombre, apiKey, adminsConAcceso };
