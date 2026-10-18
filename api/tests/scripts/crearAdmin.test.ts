@@ -43,6 +43,24 @@ describe('crearAdmin', () => {
     await expect(verificarPassword(PASSWORD, admin!.passwordHash!)).resolves.toBe(true);
   });
 
+  it('con un correo distinto crea un segundo admin y no toca al primero', async () => {
+    const a = await JuegoModelo.create(datosJuego());
+    const b = await JuegoModelo.create(datosJuego());
+    await crearAdmin({ email: 'primero@x.mx', password: PASSWORD, nombre: 'Primero' });
+    const primeroAntes = (await AdminModelo.findOne({ email: 'primero@x.mx' }).lean())!;
+
+    const r = await crearAdmin({ email: 'segundo@x.mx', password: 'otra-contraseña-distinta', nombre: 'Segundo', juegos: [b.slug] });
+
+    expect(r).toEqual({ creado: true, email: 'segundo@x.mx', juegosPermitidos: [b.juegoId] });
+    expect(await AdminModelo.countDocuments()).toBe(2);
+    const primeroDespues = (await AdminModelo.findOne({ email: 'primero@x.mx' }).lean())!;
+    expect(primeroDespues).toEqual(primeroAntes);
+    expect(primeroDespues.juegosPermitidos).toEqual(expect.arrayContaining([a.juegoId, b.juegoId]));
+    const segundo = (await AdminModelo.findOne({ email: 'segundo@x.mx' }).lean())!;
+    expect(segundo.rol).toBe('admin');
+    await expect(verificarPassword('otra-contraseña-distinta', segundo.passwordHash!)).resolves.toBe(true);
+  });
+
   it.each([
     [{ email: 'no-es-correo', password: PASSWORD, nombre: 'A' }, /ADMIN_EMAIL/],
     [{ email: 'a@x.mx', password: 'corta', nombre: 'A' }, /ADMIN_PASSWORD: la contraseña debe tener al menos 12/],

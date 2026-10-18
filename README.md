@@ -165,7 +165,9 @@ producción; es pública, no es un secreto).
 
 | Comando (desde `/api`) | Qué hace |
 |---|---|
-| `npm run crear-admin [-- --juegos slug1,slug2]` | Crea un admin (sin `--juegos`, con acceso a todos los juegos). No hay registro público. |
+| `npm run crear-admin [-- --juegos slug1,slug2]` | Crea un admin (sin `--juegos`, con acceso a todos los juegos). No hay registro público. Con otro correo crea otro admin sin tocar a los demás (ver abajo). |
+| `npm run desactivar-admin -- --email <correo>` | Desactiva un admin: no puede entrar y sus sesiones dejan de servir al instante. No borra nada. Avisa si no queda ningún admin activo. |
+| `npm run reactivar-admin -- --email <correo>` | Lo vuelve a activar con su misma contraseña y sus juegos. |
 | `npm run crear-juego -- --juego <slug> [--version x.y.z]` | Crea un juego con su catálogo (`la-casa-del-bosque` o `faro-nocturno-demo`) y muestra la API key una sola vez. |
 | `npm run actualizar-juego -- --juego <slug> --logo-url <ruta>` | Cambia solo los campos indicados de un juego existente, con la misma validación que la API. En Git Bash antepón `MSYS_NO_PATHCONV=1`. |
 | `npm run actualizar-juego -- --juego <slug> --nivel <nivelId> [--imagen-url <ruta>] [--limites minX,maxX,minY,maxY]` | Cambia la imagen y/o los límites de **un** nivel del catálogo (mapa de calor). Imprime antes y después y avisa si la proporción de la imagen difiere más de 2 % de la de los límites. Con un número negativo al inicio: `--limites=-2,118,0,30`. Procedimiento completo en [`docs/MAPAS_NIVELES.md`](docs/MAPAS_NIVELES.md). |
@@ -176,6 +178,33 @@ producción; es pública, no es un secreto).
 
 Todos imprimen a qué base van a escribir, sin credenciales; si no es local piden `--confirmar`.
 El detalle está en [`docs/ESQUEMA_EVENTOS.md`](docs/ESQUEMA_EVENTOS.md) §8.
+
+### Agregar otro admin y darle acceso a juegos
+
+`crear-admin` con un correo **distinto** crea un admin nuevo y no modifica a los existentes
+(verificado con un test y con el script real). Con un correo que ya existe no hace nada. Los
+datos se leen de `ADMIN_EMAIL`, `ADMIN_PASSWORD` (mín. 12) y `ADMIN_NOMBRE`; las variables de la
+terminal tienen prioridad sobre el `.env`, así que no hace falta editarlo. En PowerShell, desde
+`api/`:
+
+```powershell
+$env:ADMIN_EMAIL = "otra.persona@ejemplo.com"
+$env:ADMIN_NOMBRE = "Otra Persona"
+# La contraseña se escribe sin mostrarse y no queda en el historial.
+$env:ADMIN_PASSWORD = [System.Net.NetworkCredential]::new('', (Read-Host -AsSecureString 'Contraseña (mín. 12)')).Password
+npm run crear-admin -- --juegos la-casa-del-bosque      # sin --juegos: todos los juegos existentes
+Remove-Item Env:ADMIN_PASSWORD, Env:ADMIN_EMAIL, Env:ADMIN_NOMBRE
+```
+
+Contra Atlas, primero sin `--confirmar` (para revisar el destino) y luego con `--confirmar`.
+
+Acceso a juegos:
+- **Al crearlo:** `--juegos slug1,slug2`, o nada para darle todos los existentes.
+- **Juegos nuevos:** `crear-juego` y `seed-datos` se los dan a todos los admins activos (a los
+  invitados, no). `crear-juego --sin-acceso` no se los da a nadie.
+- **Cambiar los juegos de un admin que ya existe:** hoy no hay script ni pantalla para eso; queda
+  en "Cómo crece" de [`docs/ARQUITECTURA.md`](docs/ARQUITECTURA.md) (CRUD de admins). Las personas
+  que solo necesitan ver datos se invitan desde el dashboard, donde sí se cambian sus juegos.
 
 ### Invitados (solo lectura)
 

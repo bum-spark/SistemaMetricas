@@ -19,6 +19,8 @@
     "crear-admin": "tsx ../scripts/crear-admin.ts",
     "crear-juego": "tsx ../scripts/crear-juego.ts",
     "actualizar-juego": "tsx ../scripts/actualizar-juego.ts",
+    "desactivar-admin": "tsx ../scripts/desactivar-admin.ts",
+    "reactivar-admin": "tsx ../scripts/reactivar-admin.ts",
     "rotar-api-key": "tsx ../scripts/rotar-api-key.ts",
     "revocar-api-key": "tsx ../scripts/revocar-api-key.ts",
     "limpiar-seed": "tsx ../scripts/limpiar-seed.ts",
