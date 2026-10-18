@@ -81,7 +81,7 @@ usuario, con permiso solo sobre esa base** (R-41).
    [Estudio Xolos] API escuchando en el puerto 10000 (production)
    ```
    Si aparece `Configuración inválida: ...`, el mensaje dice qué variable falta o está mal.
-4. Anota la URL del servicio: `https://<tu-servicio>.onrender.com`.
+4. Anota la URL del servicio (la de este proyecto es `https://xolos-analytics-api.onrender.com`).
 
 ## 3. Desde tu computadora: crear el juego y el admin en Atlas
 
@@ -166,19 +166,19 @@ La primera petición después de un rato puede tardar ~1 minuto (el plan gratuit
 
 1. Salud:
    ```bash
-   curl https://<tu-servicio>.onrender.com/api/v1/salud
+   curl https://xolos-analytics-api.onrender.com/api/v1/salud
    # {"estado":"ok"}
    ```
-2. Documentación: abre `https://<tu-servicio>.onrender.com/api/v1/docs` en el navegador.
+2. Documentación: abre `https://xolos-analytics-api.onrender.com/api/v1/docs` en el navegador.
 3. Seguridad de la ingesta (no crea datos):
    ```bash
-   curl -X POST https://<tu-servicio>.onrender.com/api/v1/eventos -H "Content-Type: application/json" -d "{}"
+   curl -X POST https://xolos-analytics-api.onrender.com/api/v1/eventos -H "Content-Type: application/json" -d "{}"
    # {"error":{"codigo":"API_KEY_INVALIDA",...}}
    ```
 4. Postman/Newman contra producción, solo la carpeta "Salud" (no crea datos reales):
    ```bash
    cd api
-   npm run postman:produccion -- --env-var baseUrl=https://<tu-servicio>.onrender.com/api/v1
+   npm run postman:produccion -- --env-var baseUrl=https://xolos-analytics-api.onrender.com/api/v1
    ```
    La colección completa crea un jugador de prueba con `origen: "real"` y al final lo borra
    (carpeta "Administración" → "Borrar el jugador de prueba"). Necesita también `adminEmail` y
