@@ -265,3 +265,57 @@ login tarda ~1 minuto y el dashboard muestra "El servidor se está despertando".
 | `CORS_ORIGIN: "…" no es un origen válido` | Un origen tiene `/` final, ruta o le falta `https://` (sección 6). |
 | El navegador dice *blocked by CORS policy* | El dominio del dashboard no está en `CORS_ORIGIN` o no coincide exacto (sección 6). |
 | Recargar `/juegos/...` en Vercel da 404 | *Root Directory* no es `dashboard` y Vercel no leyó `vercel.json` (sección 5). |
+
+## 8. Si algo falla el día de la demo
+
+Orden recomendado: primero descartar que la API esté dormida, después revisar las tres variables
+de abajo y, solo si un deploy reciente rompió algo, volver al anterior. Las capturas de
+`docs/capturas/` y el plan B de [`GUION_DEMO.md`](GUION_DEMO.md) sirven si nada de esto alcanza.
+
+### La API está dormida
+
+1. Abre https://xolos-analytics-api.onrender.com/api/v1/salud y espera `{"estado":"ok"}`. La
+   primera respuesta puede tardar ~1 minuto (plan gratuito); no recargues a cada rato.
+2. El chip del login debe pasar de "API: despertando…" a "API: en línea".
+3. Si a los ~2 minutos sigue sin responder: Render → servicio `xolos-analytics-api` → **Logs**.
+   Un error de configuración aparece al arrancar (sección 7). **Events** muestra si el último
+   deploy falló.
+
+Para que no pase en plena demo: abre `/salud` 10 minutos antes y otra vez 2–3 minutos antes
+(no se usan monitores de ping 24/7, R-43).
+
+### Variables que hay que revisar primero
+
+En Render → servicio → **Environment**. Guardar un cambio vuelve a desplegar el servicio (tarda
+unos minutos).
+
+| Variable | Valor correcto | Qué pasa si está mal |
+|---|---|---|
+| `DASHBOARD_URL` | `https://sistemametricas-dashboard.vercel.app` (sin `/` final) | Invitar o restablecer responde `500 DASHBOARD_URL_NO_CONFIGURADA`; el mensaje dice qué variable configurar. El resto del dashboard funciona. |
+| `CORS_ORIGIN` | `https://sistemametricas-dashboard.vercel.app,http://localhost:4200` | El navegador dice *blocked by CORS policy* y el dashboard no carga datos (ni el login). Si el valor tiene `/` final o ruta, la API no arranca y el log lo dice. |
+| `MONGODB_DB` | `xolos_analytics` | Con otra base, la API arranca pero no hay juegos ni datos (o el login dice "Correo o contraseña incorrectos" porque el admin está en otra base). Si no coincide con la base de la URI, la API no arranca. |
+
+### Volver a un deploy anterior
+
+Solo si un deploy reciente rompió algo que antes funcionaba. No cambia la base de datos ni las
+variables de entorno: solo el código que se sirve.
+
+**Render (API):**
+1. Render → servicio `xolos-analytics-api` → **Events**.
+2. Busca el último deploy que terminó bien antes del problema ("Deploy live") y usa su opción
+   **Rollback** (o **Redeploy** de ese commit).
+3. Espera a que diga "Deploy live" y vuelve a abrir `/salud`.
+4. Después de la demo, revisa en **Settings** si *Auto-Deploy* quedó como lo quieres: con
+   *Auto-Deploy* activo, el siguiente push a `main` vuelve a desplegar el código nuevo.
+
+**Vercel (dashboard):**
+1. Vercel → proyecto del dashboard → **Deployments**.
+2. Elige el último despliegue de producción en estado *Ready* anterior al problema → menú **⋯** →
+   **Promote to Production** (o **Instant Rollback** desde la vista del proyecto).
+3. Recarga https://sistemametricas-dashboard.vercel.app (si el navegador muestra lo viejo,
+   recarga sin caché con Ctrl+F5).
+4. Después de un rollback, Vercel puede dejar de promover solos los despliegues nuevos hasta que
+   promuevas uno a mano: revísalo antes del siguiente push.
+
+**Desde git (si los paneles no alcanzan):** `git revert <commit>` en `main` y push. Render y
+Vercel despliegan el revert como un deploy nuevo; no hace falta reescribir el historial.
