@@ -7,7 +7,7 @@ Aquí se anota lo que **no** está definido en `CLAUDE.md` o en `docs/`.
   la columna "Impacto" dice qué habría que tocar.
 - **Resuelta:** ya se decidió. Está en la sección 4 con la fecha y la decisión.
 
-Última actualización: 2026-10-14
+Última actualización: 2026-10-17
 
 ---
 
@@ -16,7 +16,7 @@ Aquí se anota lo que **no** está definido en `CLAUDE.md` o en `docs/`.
 | ID   | Decisión                                         | Qué bloquea                                                                       |
 |------|--------------------------------------------------|-----------------------------------------------------------------------------------|
 | A-06 | `suelo_descubierto` es un **logro**; faltan su `nivelId` y su disparador | Su entrada en el catálogo. **No está en el seed** hasta que se defina. El resto de A-06 quedó resuelto (R-02). |
-| A-07 | Imagen y límites de mundo (`minX, maxX, minY, maxY`) **reales** de cada nivel | Mientras tanto hay valores **provisionales** (S-46): SVG generados en `dashboard/public/niveles/` y límites coherentes con seed-datos. Cuando el equipo de Unity entregue capturas y límites, se reemplazan en los catálogos (`api/src/catalogos/`) y en las imágenes. |
+| A-07 | Imagen y límites de mundo (`minX, maxX, minY, maxY`) **reales** de cada nivel | Mientras tanto hay valores **provisionales** (S-46): SVG generados en `dashboard/public/niveles/` y límites coherentes con seed-datos. Cuando el equipo de Unity entregue capturas y límites, se reemplazan con la herramienta de captura y `actualizar-juego --nivel` (procedimiento en `docs/MAPAS_NIVELES.md`). |
 
 ---
 

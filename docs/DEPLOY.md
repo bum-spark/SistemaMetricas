@@ -60,7 +60,7 @@ usuario, con permiso solo sobre esa base** (R-41).
    | `MONGODB_URI` | la cadena del paso 1.4 (sin nombre de base) | **sí** |
    | `MONGODB_DB` | `xolos_analytics` | no |
    | `JWT_SECRET` | 48 bytes aleatorios (ver abajo). **Obligatoria**: sin ella (o con menos de 32 caracteres) la API no arranca | **sí** |
-   | `CORS_ORIGIN` | **provisionalmente `http://localhost:4200`**. Acepta varios orígenes separados por coma; cuando el dashboard esté publicado se agrega su dominio (sección 6) | no |
+   | `CORS_ORIGIN` | `https://sistemametricas-dashboard.vercel.app,http://localhost:4200` (el dominio publicado y, para correr el dashboard local contra producción, `localhost:4200`). Orígenes separados por coma, sin `/` final (sección 6) | no |
    | `TRUST_PROXY` | `1` | no |
    | `RATE_LIMIT_INGESTA_IP` | `300` (o vacío = 300) | no |
    | `RATE_LIMIT_INGESTA_KEY` | `1000` (o vacío = 1000) | no |
