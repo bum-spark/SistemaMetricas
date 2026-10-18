@@ -339,6 +339,21 @@ guardados durante la ingesta):
 - **Plan gratuito que duerme el servicio:** la API en Render se duerme sin uso y la primera
   petición tarda ~1 minuto. El dashboard avisa ("El servidor se está despertando") y el login
   muestra el estado de la API; antes de una demo hay que abrir `/salud` unos minutos antes.
+- **Sin retención de eventos:** los eventos crudos se guardan para siempre; no hay índice TTL ni
+  archivado. A 1x, Atlas M0 (512 MB) alcanza para unos 2 meses
+  ([`docs/ARQUITECTURA.md`](docs/ARQUITECTURA.md) §3); después hay que subir de plan o definir
+  una retención ("Cómo crece").
+- **Sin copias de seguridad:** el plan gratuito de Atlas (M0) no incluye respaldos automáticos ni
+  restauración a un punto en el tiempo. Un borrado accidental (o `limpiar-seed` contra la base
+  equivocada) no se puede deshacer; los scripts muestran la base y piden `--confirmar` para
+  reducir ese riesgo, pero no lo eliminan.
+- **Sin monitoreo:** no hay métricas de la propia API (latencia, errores, tasa de rechazos) ni
+  alertas. Lo único disponible son los logs de Render y el chip de `/salud` del login.
+- **Tipos de evento nuevos requieren despliegue (S-28):** cada tipo tiene su esquema de validación
+  en el código de la API; un juego que necesite un tipo nuevo espera a que se agregue y se
+  despliegue. Moverlos al catálogo está en "Cómo crece".
+- **Invitados sin borrado:** un invitado solo se puede desactivar (y reactivar); no hay forma de
+  borrarlo y su correo queda ocupado. Lo mismo para los admins (`desactivar-admin`).
 - **Accesibilidad:** hay foco visible, navegación con teclado en tabs y controles, alternativa
   textual en las gráficas y contraste revisado con los tokens, pero **falta una pasada
   completa con lector de pantalla**.
