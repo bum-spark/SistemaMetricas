@@ -14,8 +14,28 @@ código.
 
 ![Resumen de La Casa del Bosque](docs/capturas/03-resumen.png)
 
+## Qué se entrega
+
+| Qué | Dónde |
+|---|---|
+| Dashboard publicado | https://sistemametricas-dashboard.vercel.app |
+| Documentación de la API (Swagger / OpenAPI) | https://xolos-analytics-api.onrender.com/api/v1/docs |
+| Repositorio | https://github.com/bum-spark/SistemaMetricas |
+| Colección de Postman | [`postman/coleccion.postman_collection.json`](postman/coleccion.postman_collection.json), con los entornos [`entorno-produccion`](postman/entorno-produccion.postman_environment.json) y [`entorno-local`](postman/entorno-local.postman_environment.json) (ver [Pruebas](#pruebas-tests-lint-y-newman)) |
+| Guion de la demo | [`docs/GUION_DEMO.md`](docs/GUION_DEMO.md) |
+
+**Cómo entra un evaluador.** No hay registro público ni credenciales compartidas. Un admin del
+estudio lo invita desde la pantalla **Invitados** del dashboard con su correo y le asigna los
+juegos que puede ver; el dashboard genera un enlace de un solo uso (vigente 72 h) que el admin le
+manda por un canal privado. Con ese enlace el evaluador crea su propia contraseña y entra por el
+login normal, con acceso de **solo lectura** a esos juegos ([Invitados](#invitados-solo-lectura)).
+
+La API usa el plan gratuito de Render y tarda ~1 minuto en despertar después de un rato sin uso:
+abre https://xolos-analytics-api.onrender.com/api/v1/salud antes de entrar al dashboard.
+
 ## Contenido
 
+- [Qué se entrega](#qué-se-entrega)
 - [Arquitectura](#arquitectura)
 - [Estructura del repositorio](#estructura-del-repositorio)
 - [Correr todo en local](#correr-todo-en-local)
