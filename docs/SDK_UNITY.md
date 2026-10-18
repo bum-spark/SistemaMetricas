@@ -13,10 +13,13 @@ sdk-unity/
     EstudioXolos.Metricas.asmdef
     Nucleo/                        C# puro, sin UnityEngine (cliente, cola, reintentos, JSON)
     Unity/                         XolosMetricas (MonoBehaviour), UnityWebRequest, PlayerPrefs
+  Editor/                          herramienta de captura de nivel para el mapa de calor
+                                   (solo editor; docs/MAPAS_NIVELES.md)
   Configuracion/
     xolos-metricas.example.json    ejemplo SIN valores (se copia al juego)
   Pruebas/                         pruebas del núcleo en .NET 8 y prueba e2e contra la API local
-  Verificacion/                    compila el SDK contra las DLL del editor de Unity
+  Verificacion/                    compila el SDK (y, en Verificacion/Editor/, la herramienta de
+                                   captura) contra las DLL del editor de Unity
 ```
 
 ---
@@ -179,7 +182,8 @@ jugador use coma, y probado contra el validador real de la API.
 Desde `sdk-unity/`:
 
 ```bash
-# Pruebas del núcleo (fuera de Unity, .NET 8, mismo C# 9 que Unity): 22 casos
+# Pruebas del núcleo y de los cálculos de la captura de nivel
+# (fuera de Unity, .NET 8, mismo C# 9 que Unity): 26 casos
 dotnet run --project Pruebas
 
 # Partida simulada de La Casa del Bosque por HTTP contra una API LOCAL
@@ -188,7 +192,16 @@ dotnet run --project Pruebas -- e2e http://localhost:3000/api/v1 <juegoId> <apiK
 
 # Compila el SDK completo contra las DLL del editor de Unity (sin abrir Unity)
 dotnet build Verificacion/CompilarConUnity.csproj -p:UnityManaged="<Unity>/Editor/Data/Managed"
+
+# Compila la herramienta de captura de nivel (Editor/) contra UnityEngine.dll y UnityEditor.dll;
+# con -p:UnityAnterior2023=true compila la rama de Unity 2021.3/2022
+dotnet build Verificacion/Editor/CompilarEditorConUnity.csproj -p:UnityManaged="<Unity>/Editor/Data/Managed"
 ```
+
+**Herramienta de captura de nivel (2026-10-17):** 4 pruebas de sus cálculos (unión de esquinas de
+varios Tilemaps, margen, píxeles con la proporción de los límites, formato de `--limites` con
+punto decimal en cultura es-ES) y compilación contra Unity 6000.0.45f1 en sus dos ramas: 0 errores,
+0 advertencias. Qué no se pudo probar: docs/MAPAS_NIVELES.md, "Qué se probó y qué no".
 
 **Qué se probó (2026-10-12):**
 - Núcleo: 22/22 pruebas — JSON (incluida cultura con coma decimal), consentimiento (sin respuesta,

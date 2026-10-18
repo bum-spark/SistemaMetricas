@@ -83,3 +83,30 @@ Vercel sirve los WebP con `no-cache` y un `ETag`. En la primera visita se descar
 siguientes, el navegador pregunta si cambiaron y recibe `304 Not Modified` sin cuerpo (una
 petición corta por imagen, sin volver a bajar los bytes). Los archivos con hash del build
 (`-XXXXXXXX.js/css/woff2`) sí llevan caché de un año (S-60).
+
+## Imágenes de nivel (mapa de calor)
+
+Formato y peso de las capturas de nivel (`dashboard/public/niveles/<slug>/<nivelId>.webp`). La
+captura en Unity, los límites y la actualización del catálogo están en
+[`MAPAS_NIVELES.md`](MAPAS_NIVELES.md).
+
+| Regla        | Valor                                                                 |
+|--------------|-----------------------------------------------------------------------|
+| Formato      | WebP (preferido) o PNG. Los dos conservan la transparencia.           |
+| Ancho máximo | 1920 px, sin agrandar si la captura es más angosta                    |
+| Peso máximo  | ~500 KB                                                               |
+| Nombre       | `<nivelId>.webp` (o `.png`), el `nivelId` del catálogo                |
+| Proporción   | La de la captura, **sin recortar ni agregar bordes**: debe ser la de los límites del nivel (el script avisa si difiere más de 2 %) |
+
+Desde `dashboard/`, con la captura que deja la herramienta de Unity (por ejemplo, en la carpeta
+`CapturasXolos/` del proyecto del juego):
+
+```
+npx --yes sharp-cli@5 -i <ruta del proyecto de Unity>/CapturasXolos/casa_abandonada.png -o public/niveles/la-casa-del-bosque/casa_abandonada.webp -f webp -q 80 --effort 6 resize 1920 --withoutEnlargement
+```
+
+`resize 1920` solo cambia el tamaño manteniendo la proporción, así que los límites siguen
+valiendo. Si el archivo pasa de ~500 KB, repite con `-q 75`, `-q 70`… Para dejarlo en PNG,
+cambia `-f webp -q 80` por `-f png` y la extensión de la salida. A diferencia de los fondos del
+login, la captura original no hace falta guardarla en el repo: se puede volver a generar desde
+Unity.

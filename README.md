@@ -361,6 +361,7 @@ Con los datos del seed (semilla 42), verificadas con la misma CSP de producción
 | [`docs/DECISIONES_ABIERTAS.md`](docs/DECISIONES_ABIERTAS.md) | Decisiones abiertas, supuestos (S-xx) y resueltas (R-xx) |
 | [`docs/DEPLOY.md`](docs/DEPLOY.md) | Render, Atlas, Vercel y CORS paso a paso |
 | [`docs/DISENO_DASHBOARD.md`](docs/DISENO_DASHBOARD.md) | Fuente de verdad visual del dashboard |
-| [`docs/IMAGENES.md`](docs/IMAGENES.md) | Conversión a WebP de los fondos del login y cómo agregar o cambiar uno |
+| [`docs/IMAGENES.md`](docs/IMAGENES.md) | Conversión a WebP de los fondos del login y de las imágenes de nivel |
+| [`docs/MAPAS_NIVELES.md`](docs/MAPAS_NIVELES.md) | Reemplazar la imagen de un nivel del mapa de calor: captura en Unity, límites y catálogo |
 | [`docs/SDK_UNITY.md`](docs/SDK_UNITY.md) | Integración del SDK en Unity |
 | [`docs/GUION_DEMO.md`](docs/GUION_DEMO.md) | Guion de la demo |

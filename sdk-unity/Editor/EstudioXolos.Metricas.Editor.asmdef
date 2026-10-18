@@ -1,0 +1,10 @@
+{
+  "name": "EstudioXolos.Metricas.Editor",
+  "rootNamespace": "EstudioXolos.Metricas.Editor",
+  "references": [],
+  "includePlatforms": ["Editor"],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "autoReferenced": false,
+  "noEngineReferences": false
+}
