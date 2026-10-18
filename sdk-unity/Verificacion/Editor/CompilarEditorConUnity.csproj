@@ -1,0 +1,31 @@
+<!--
+  Solo COMPILA la herramienta de editor (Editor/: captura de nivel) contra las DLL del editor de
+  Unity, con el mismo C# 9 que usa Unity. No ejecuta Unity. Va en su propia carpeta para no
+  compartir obj/ con CompilarConUnity.csproj. Uso, desde sdk-unity/:
+    dotnet build Verificacion/Editor/CompilarEditorConUnity.csproj -p:UnityManaged="<carpeta Editor/Data/Managed>"
+  Con -p:UnityAnterior2023=true compila la rama de Unity 2021.3/2022 (FindObjectsOfType) sin
+  tratar como error su aviso de API obsoleta en Unity 6.
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <UnityManaged Condition="'$(UnityManaged)' == ''">C:\Program Files\Unity\Hub\Editor\6000.0.45f1\Editor\Data\Managed</UnityManaged>
+    <DefineConstants Condition="'$(UnityAnterior2023)' != 'true'">UNITY_EDITOR;UNITY_2023_1_OR_NEWER</DefineConstants>
+    <DefineConstants Condition="'$(UnityAnterior2023)' == 'true'">UNITY_EDITOR</DefineConstants>
+    <NoWarn Condition="'$(UnityAnterior2023)' == 'true'">CS0618</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\Editor\**\*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Los ensamblados completos del editor (los mismos que ve un script en Assets/Editor):
+         UnityEditor.dll depende de UnityEngine.dll, que trae todos los módulos (Tilemap, Grid,
+         IMGUI, conversión de imágenes…). -->
+    <Reference Include="UnityEngine"><HintPath>$(UnityManaged)\UnityEngine.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEditor"><HintPath>$(UnityManaged)\UnityEditor.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+</Project>

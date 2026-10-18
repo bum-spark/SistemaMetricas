@@ -165,9 +165,12 @@ producción; es pública, no es un secreto).
 
 | Comando (desde `/api`) | Qué hace |
 |---|---|
-| `npm run crear-admin [-- --juegos slug1,slug2]` | Crea un admin (sin `--juegos`, con acceso a todos los juegos). No hay registro público. |
+| `npm run crear-admin [-- --juegos slug1,slug2]` | Crea un admin (sin `--juegos`, con acceso a todos los juegos). No hay registro público. Con otro correo crea otro admin sin tocar a los demás (ver abajo). |
+| `npm run desactivar-admin -- --email <correo>` | Desactiva un admin: no puede entrar y sus sesiones dejan de servir al instante. No borra nada. Avisa si no queda ningún admin activo. |
+| `npm run reactivar-admin -- --email <correo>` | Lo vuelve a activar con su misma contraseña y sus juegos. |
 | `npm run crear-juego -- --juego <slug> [--version x.y.z]` | Crea un juego con su catálogo (`la-casa-del-bosque` o `faro-nocturno-demo`) y muestra la API key una sola vez. |
-| `npm run actualizar-juego -- --juego <slug> --logo-url <ruta>` | Cambia solo los campos indicados de un juego existente (hoy: `logoUrl`), con la misma validación que la API. En Git Bash antepón `MSYS_NO_PATHCONV=1`. |
+| `npm run actualizar-juego -- --juego <slug> --logo-url <ruta>` | Cambia solo los campos indicados de un juego existente, con la misma validación que la API. En Git Bash antepón `MSYS_NO_PATHCONV=1`. |
+| `npm run actualizar-juego -- --juego <slug> --nivel <nivelId> [--imagen-url <ruta>] [--limites minX,maxX,minY,maxY]` | Cambia la imagen y/o los límites de **un** nivel del catálogo (mapa de calor). Imprime antes y después y avisa si la proporción de la imagen difiere más de 2 % de la de los límites. Con un número negativo al inicio: `--limites=-2,118,0,30`. Procedimiento completo en [`docs/MAPAS_NIVELES.md`](docs/MAPAS_NIVELES.md). |
 | `npm run rotar-api-key -- --juego <slug>` | Genera una key nueva; la anterior deja de servir al instante. |
 | `npm run revocar-api-key -- --juego <slug>` | Revoca la key (el juego ya no puede mandar datos; sus datos se conservan). |
 | `npm run seed-datos` / `npm run limpiar-seed` | Datos de prueba (`origen: "seed"`) y su borrado. |
@@ -175,6 +178,33 @@ producción; es pública, no es un secreto).
 
 Todos imprimen a qué base van a escribir, sin credenciales; si no es local piden `--confirmar`.
 El detalle está en [`docs/ESQUEMA_EVENTOS.md`](docs/ESQUEMA_EVENTOS.md) §8.
+
+### Agregar otro admin y darle acceso a juegos
+
+`crear-admin` con un correo **distinto** crea un admin nuevo y no modifica a los existentes
+(verificado con un test y con el script real). Con un correo que ya existe no hace nada. Los
+datos se leen de `ADMIN_EMAIL`, `ADMIN_PASSWORD` (mín. 12) y `ADMIN_NOMBRE`; las variables de la
+terminal tienen prioridad sobre el `.env`, así que no hace falta editarlo. En PowerShell, desde
+`api/`:
+
+```powershell
+$env:ADMIN_EMAIL = "otra.persona@ejemplo.com"
+$env:ADMIN_NOMBRE = "Otra Persona"
+# La contraseña se escribe sin mostrarse y no queda en el historial.
+$env:ADMIN_PASSWORD = [System.Net.NetworkCredential]::new('', (Read-Host -AsSecureString 'Contraseña (mín. 12)')).Password
+npm run crear-admin -- --juegos la-casa-del-bosque      # sin --juegos: todos los juegos existentes
+Remove-Item Env:ADMIN_PASSWORD, Env:ADMIN_EMAIL, Env:ADMIN_NOMBRE
+```
+
+Contra Atlas, primero sin `--confirmar` (para revisar el destino) y luego con `--confirmar`.
+
+Acceso a juegos:
+- **Al crearlo:** `--juegos slug1,slug2`, o nada para darle todos los existentes.
+- **Juegos nuevos:** `crear-juego` y `seed-datos` se los dan a todos los admins activos (a los
+  invitados, no). `crear-juego --sin-acceso` no se los da a nadie.
+- **Cambiar los juegos de un admin que ya existe:** hoy no hay script ni pantalla para eso; queda
+  en "Cómo crece" de [`docs/ARQUITECTURA.md`](docs/ARQUITECTURA.md) (CRUD de admins). Las personas
+  que solo necesitan ver datos se invitan desde el dashboard, donde sí se cambian sus juegos.
 
 ### Invitados (solo lectura)
 
@@ -309,6 +339,21 @@ guardados durante la ingesta):
 - **Plan gratuito que duerme el servicio:** la API en Render se duerme sin uso y la primera
   petición tarda ~1 minuto. El dashboard avisa ("El servidor se está despertando") y el login
   muestra el estado de la API; antes de una demo hay que abrir `/salud` unos minutos antes.
+- **Sin retención de eventos:** los eventos crudos se guardan para siempre; no hay índice TTL ni
+  archivado. A 1x, Atlas M0 (512 MB) alcanza para unos 2 meses
+  ([`docs/ARQUITECTURA.md`](docs/ARQUITECTURA.md) §3); después hay que subir de plan o definir
+  una retención ("Cómo crece").
+- **Sin copias de seguridad:** el plan gratuito de Atlas (M0) no incluye respaldos automáticos ni
+  restauración a un punto en el tiempo. Un borrado accidental (o `limpiar-seed` contra la base
+  equivocada) no se puede deshacer; los scripts muestran la base y piden `--confirmar` para
+  reducir ese riesgo, pero no lo eliminan.
+- **Sin monitoreo:** no hay métricas de la propia API (latencia, errores, tasa de rechazos) ni
+  alertas. Lo único disponible son los logs de Render y el chip de `/salud` del login.
+- **Tipos de evento nuevos requieren despliegue (S-28):** cada tipo tiene su esquema de validación
+  en el código de la API; un juego que necesite un tipo nuevo espera a que se agregue y se
+  despliegue. Moverlos al catálogo está en "Cómo crece".
+- **Invitados sin borrado:** un invitado solo se puede desactivar (y reactivar); no hay forma de
+  borrarlo y su correo queda ocupado. Lo mismo para los admins (`desactivar-admin`).
 - **Accesibilidad:** hay foco visible, navegación con teclado en tabs y controles, alternativa
   textual en las gráficas y contraste revisado con los tokens, pero **falta una pasada
   completa con lector de pantalla**.
@@ -360,6 +405,7 @@ Con los datos del seed (semilla 42), verificadas con la misma CSP de producción
 | [`docs/DECISIONES_ABIERTAS.md`](docs/DECISIONES_ABIERTAS.md) | Decisiones abiertas, supuestos (S-xx) y resueltas (R-xx) |
 | [`docs/DEPLOY.md`](docs/DEPLOY.md) | Render, Atlas, Vercel y CORS paso a paso |
 | [`docs/DISENO_DASHBOARD.md`](docs/DISENO_DASHBOARD.md) | Fuente de verdad visual del dashboard |
-| [`docs/IMAGENES.md`](docs/IMAGENES.md) | Conversión a WebP de los fondos del login y cómo agregar o cambiar uno |
+| [`docs/IMAGENES.md`](docs/IMAGENES.md) | Conversión a WebP de los fondos del login y de las imágenes de nivel |
+| [`docs/MAPAS_NIVELES.md`](docs/MAPAS_NIVELES.md) | Reemplazar la imagen de un nivel del mapa de calor: captura en Unity, límites y catálogo |
 | [`docs/SDK_UNITY.md`](docs/SDK_UNITY.md) | Integración del SDK en Unity |
 | [`docs/GUION_DEMO.md`](docs/GUION_DEMO.md) | Guion de la demo |

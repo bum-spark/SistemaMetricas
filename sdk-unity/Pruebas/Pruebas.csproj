@@ -15,5 +15,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Runtime\Nucleo\**\*.cs" Link="Nucleo\%(RecursiveDir)%(Filename)%(Extension)" />
+    <!-- Cálculos de la herramienta de captura de nivel (C# puro, sin UnityEngine). -->
+    <Compile Include="..\Editor\CalculoCaptura.cs" Link="Editor\CalculoCaptura.cs" />
   </ItemGroup>
 </Project>

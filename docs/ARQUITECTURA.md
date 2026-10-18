@@ -135,8 +135,9 @@ comparten a mano con un enlace de un solo uso. Queda **fuera de alcance**, y as�
 | Envío de correos | Requiere un proveedor (SES, Resend…), dominio verificado y plantillas; con pocos invitados, copiar el enlace basta | La API ya genera el enlace: un servicio de correo lo envía en lugar de mostrarlo, sin cambiar el modelo |
 | Autorregistro | El dashboard tiene datos internos del estudio; toda cuenta la crea un admin | Solicitud de acceso que un admin aprueba (reusa la invitación) |
 | "Olvidé mi contraseña" | Sin correo no hay un canal seguro para mandar el enlace; hoy el admin usa **Restablecer** | Con correo: el mismo token de un solo uso, pedido por el usuario |
+| CRUD de admins con roles dueño/admin | Los admins se crean con `crear-admin` y se desactivan o reactivan con `desactivar-admin` / `reactivar-admin`; para la entrega alcanza, y los invitados cubren a quien solo necesita ver datos | Rol `dueño` (puede crear, desactivar y cambiar los juegos de otros admins) además de `admin`; pantalla y endpoints `/admins` con las mismas reglas que `/invitados` (nadie actúa sobre sí mismo, un admin no puede tocar al dueño, siempre queda al menos un dueño activo) |
 | Más roles | Con admin + solo lectura alcanza para la entrega | `rol` pasa a una lista de permisos por juego (por ejemplo "editor de catálogo"); el middleware ya centraliza el control |
-| Cambiar la propia contraseña | Se cubre con Restablecer | Endpoint autenticado que pide la contraseña actual; ya existe `passwordCambiadaEn` para cerrar sesiones viejas |
+| Cambiar la propia contraseña | Para invitados se cubre con Restablecer; un admin hoy no tiene forma de cambiarla (`crear-admin` no sobrescribe una cuenta existente) | Endpoint autenticado que pide la contraseña actual; ya existe `passwordCambiadaEn` para cerrar sesiones viejas |
 | Doble factor | Agrega flujo y almacenamiento de secretos | TOTP por usuario, obligatorio para admins |
 
 **No existe borrado de invitados**, solo desactivar (y reactivar): se conserva quién invitó y

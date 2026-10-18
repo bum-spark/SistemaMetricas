@@ -405,7 +405,8 @@ namespace EstudioXolos.Metricas.Pruebas
         private static async Task<int> EjecutarPruebas()
         {
             var fallas = 0;
-            foreach (var (nombre, prueba) in Casos)
+            var casos = Casos.Concat(PruebasCaptura.Casos).ToList();
+            foreach (var (nombre, prueba) in casos)
             {
                 try
                 {
@@ -419,7 +420,7 @@ namespace EstudioXolos.Metricas.Pruebas
                 }
             }
             Console.WriteLine();
-            Console.WriteLine((Casos.Count - fallas) + "/" + Casos.Count + " pruebas OK");
+            Console.WriteLine((casos.Count - fallas) + "/" + casos.Count + " pruebas OK");
             return fallas == 0 ? 0 : 1;
         }
     }

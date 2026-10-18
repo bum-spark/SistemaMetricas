@@ -139,6 +139,22 @@ En Git Bash antepón `MSYS_NO_PATHCONV=1` (si no, convierte `/logos/…` en una 
 el script lo rechaza). `seed-datos` y `crear-juego` también completan el logo si falta, sin
 pisar uno existente.
 
+### Imagen y límites de un nivel (mapa de calor)
+
+Cuando haya una captura real de un nivel (procedimiento en
+[`MAPAS_NIVELES.md`](MAPAS_NIVELES.md)): primero se publica la imagen con el dashboard (push a
+`main`, Vercel la sirve en `/niveles/<slug>/…`) y **después** se actualiza el catálogo en Atlas.
+Primero sin `--confirmar` para revisar el destino:
+
+```powershell
+cd api
+npm run actualizar-juego -- --juego la-casa-del-bosque --nivel casa_abandonada --imagen-url /niveles/la-casa-del-bosque/casa_abandonada.webp --limites=0,120,0,30
+npm run actualizar-juego -- --juego la-casa-del-bosque --nivel casa_abandonada --imagen-url /niveles/la-casa-del-bosque/casa_abandonada.webp --limites=0,120,0,30 --confirmar
+```
+
+El script imprime los valores antes y después; si avisa que la proporción no coincide, revisa
+la captura o los límites antes de seguir. En Git Bash antepón `MSYS_NO_PATHCONV=1`.
+
 ## 4. Comprobar el deploy
 
 La primera petición después de un rato puede tardar ~1 minuto (el plan gratuito "duerme").
