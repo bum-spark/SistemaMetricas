@@ -49,9 +49,15 @@ describe('La Casa del Bosque (ESQUEMA_EVENTOS.md §5.1)', () => {
     expect(por('hospital_cuarto')).toEqual(['petalo_1', 'petalo_2', 'petalo_3', 'petalo_4']);
   });
 
-  it('tiene duración esperada de 20 min, causas fantasma/lava/caída y sus 4 eventos específicos', () => {
+  it('tiene duración esperada de 20 min, causas fantasma/lava/caída/fuego y sus 4 eventos específicos', () => {
     expect(c.duracionEsperadaMs).toBe(1200000);
-    expect(c.causasMuerte.map((x) => x.causa)).toEqual(['fantasma', 'lava', 'caida']);
+    // fuego va al final: el dashboard colorea por posición y las demás conservan su color.
+    expect(c.causasMuerte).toEqual([
+      { causa: 'fantasma', nombre: 'Fantasma' },
+      { causa: 'lava', nombre: 'Lava' },
+      { causa: 'caida', nombre: 'Caída' },
+      { causa: 'fuego', nombre: 'Fuego' },
+    ]);
     expect(c.tiposEvento).toEqual(
       expect.arrayContaining(['flor_recogida', 'dialogo_saltado', 'coleccionable_encontrado', 'tutorial_completado']),
     );

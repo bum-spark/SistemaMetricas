@@ -155,3 +155,28 @@ describe('forma del embudo', () => {
     expect(casa.datos.logros.some((l) => l.logroId === 'la_verdad')).toBe(true);
   });
 });
+
+describe('causas de las muertes sintéticas (S-69)', () => {
+  const porCausa = (datos: DatosSeed) => {
+    const conteo: Record<string, number> = {};
+    for (const e of datos.eventos) {
+      if (e.tipo === 'muerte') {
+        const causa = (e.data as { causa: string }).causa;
+        conteo[causa] = (conteo[causa] ?? 0) + 1;
+      }
+    }
+    return conteo;
+  };
+
+  it('fuego está en el catálogo pero el seed no lo usa', () => {
+    expect(casa.catalogo.causasMuerte.map((c) => c.causa)).toContain('fuego');
+    expect(porCausa(casa.datos)).not.toHaveProperty('fuego');
+  });
+
+  it('agregar una causa al catálogo no cambia los datos: mismas muertes por causa que antes de fuego', () => {
+    // Cifras de la semilla 42 tomadas ANTES de agregar fuego (las de docs/GUION_DEMO.md).
+    expect(porCausa(casa.datos)).toEqual({ fantasma: 291, lava: 103, caida: 151 });
+    expect(porCausa(faro.datos)).toEqual({ agua: 69, caida: 131, cuervo: 88 });
+    expect(casa.datos.eventos).toHaveLength(6575);
+  });
+});
