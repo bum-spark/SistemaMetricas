@@ -82,6 +82,8 @@ export const LA_CASA_DEL_BOSQUE: DefinicionJuego = {
       { causa: 'fantasma', nombre: 'Fantasma' },
       { causa: 'lava', nombre: 'Lava' },
       { causa: 'caida', nombre: 'Caída' },
+      // Al final: el dashboard colorea las causas por posición, así las demás no cambian de color.
+      { causa: 'fuego', nombre: 'Fuego' },
     ],
     logros: [
       { logroId: 'tutorial_superado', nombre: 'Tutorial superado', descripcion: 'Completa el tutorial de controles.', nivelId: 'casa_abandonada' },

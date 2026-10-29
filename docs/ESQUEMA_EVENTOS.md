@@ -352,7 +352,7 @@ concentra las muertes; se reemplazan por las capturas y límites reales de Unity
 **Logo:** `logoUrl: /logos/la-casa-del-bosque/logo.png` (campo del juego, no del catálogo;
 ver sección 6). `crear-juego` y `seed-datos` lo guardan, y `seed-datos` lo completa si falta.
 
-**Causas de muerte:** `fantasma` (Fantasma), `lava` (Lava), `caida` (Caída).
+**Causas de muerte:** `fantasma` (Fantasma), `lava` (Lava), `caida` (Caída), `fuego` (Fuego). El orden importa: el dashboard colorea cada causa por su posición, por eso `fuego` se agregó al final (S-69). `seed-datos` no genera muertes por `fuego`.
 
 **Logros:**
 
@@ -672,7 +672,7 @@ corren a mano con acceso a la base de datos (S-19). Se ejecutan desde `/api` con
   `ultimoRecibidoEn` (R-34); los logros obtenidos se insertan una vez por jugador.
 - **Forma realista** (perfiles en `api/src/seed/perfiles.ts`, comprobada por tests):
   - Embudo de La Casa del Bosque ≈ 100 % → 70 % → 45 % → 30 % terminan; Faro ≈ 100 → 72 → 52 → 38 → 27 %.
-  - Muertes concentradas en 2–3 zonas por nivel (≈ 90 % cerca de una zona, 10 % dispersas).
+  - Muertes concentradas en 2–3 zonas por nivel (≈ 90 % cerca de una zona, 10 % dispersas). Las dispersas usan solo las causas de las zonas del perfil, en el orden del catálogo: una causa nueva del catálogo no aparece en el seed ni cambia sus datos (S-69).
   - ≈ 10 % de sesiones con crash (sin `sesion_fin`; a veces con `error` fatal); el 75 % de
     esos jugadores reabre el juego y retoma el nivel.
   - Dos builds: 1.0.0 (primera semana) y 1.0.1 (segunda semana), con la 1.0.1 mejor

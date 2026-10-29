@@ -112,11 +112,17 @@ class Simulacion {
   private readonly r: Aleatorio;
   private readonly inicioRango: number;
   private readonly finRango: number;
+  // Causas del "ruido" de muertes: solo las que el perfil usa en sus zonas, en el orden del
+  // catálogo. Una causa nueva del catálogo (p. ej. `fuego`) no aparece en los datos sintéticos
+  // y el seed sigue dando exactamente los mismos datos (S-69).
+  private readonly causasRuido: string[];
 
   constructor(private readonly e: EntradaGenerador) {
     this.r = new Aleatorio(hashTexto(`${e.semilla}:${e.perfil.slug}`));
     this.finRango = e.referencia.getTime();
     this.inicioRango = this.finRango - DIAS_DE_DATOS * DIA_MS;
+    const enZonas = new Set(e.perfil.niveles.flatMap((n) => n.zonas.map((z) => z.causa)));
+    this.causasRuido = e.catalogo.causasMuerte.map((c) => c.causa).filter((c) => enZonas.has(c));
   }
 
   ejecutar(): DatosSeed {
@@ -411,7 +417,7 @@ class Simulacion {
     }
     if (this.r.probabilidad(0.1)) {
       return {
-        causa: this.r.elegir(this.e.catalogo.causasMuerte).causa,
+        causa: this.r.elegir(this.causasRuido),
         x: redondear(this.r.entre(limites.minX, limites.maxX)),
         y: redondear(this.r.entre(limites.minY, limites.maxY)),
       };
