@@ -191,6 +191,7 @@ producción; es pública, no es un secreto).
 | `npm run crear-juego -- --juego <slug> [--version x.y.z]` | Crea un juego con su catálogo (`la-casa-del-bosque` o `faro-nocturno-demo`) y muestra la API key una sola vez. |
 | `npm run actualizar-juego -- --juego <slug> --logo-url <ruta>` | Cambia solo los campos indicados de un juego existente, con la misma validación que la API. En Git Bash antepón `MSYS_NO_PATHCONV=1`. |
 | `npm run actualizar-juego -- --juego <slug> --nivel <nivelId> [--imagen-url <ruta>] [--limites minX,maxX,minY,maxY]` | Cambia la imagen y/o los límites de **un** nivel del catálogo (mapa de calor). Imprime antes y después y avisa si la proporción de la imagen difiere más de 2 % de la de los límites. Con un número negativo al inicio: `--limites=-2,118,0,30`. Procedimiento completo en [`docs/MAPAS_NIVELES.md`](docs/MAPAS_NIVELES.md). |
+| `npm run sincronizar-catalogo -- --juego <slug> [--simular]` | Agrega a un juego que ya existe en la base lo nuevo de su catálogo constante (causas, niveles, logros, coleccionables, tipos de evento), al final de cada lista, sin quitar ni modificar nada (nunca toca `imagenUrl` ni `limites` de un nivel existente). Dice cuánto agregaría de cada cosa, o que no hay nada que agregar; con `--simular` no escribe. Contra Atlas: [`docs/DEPLOY.md`](docs/DEPLOY.md), "Cambios de catálogo". |
 | `npm run rotar-api-key -- --juego <slug>` | Genera una key nueva; la anterior deja de servir al instante. |
 | `npm run revocar-api-key -- --juego <slug>` | Revoca la key (el juego ya no puede mandar datos; sus datos se conservan). |
 | `npm run seed-datos` / `npm run limpiar-seed` | Datos de prueba (`origen: "seed"`) y su borrado. |
@@ -369,6 +370,10 @@ guardados durante la ingesta):
   reducir ese riesgo, pero no lo eliminan.
 - **Sin monitoreo:** no hay métricas de la propia API (latencia, errores, tasa de rechazos) ni
   alertas. Lo único disponible son los logs de Render y el chip de `/salud` del login.
+- **Los cambios de catálogo no llegan solos a Atlas:** la constante de `api/src/catalogos/` solo se
+  aplica a juegos nuevos. El juego que ya existe se actualiza con `sincronizar-catalogo` (solo
+  agrega); hasta entonces, la ingesta rechaza lo que no esté en su catálogo (por ejemplo, una
+  muerte con `causa: "fuego"`).
 - **Tipos de evento nuevos requieren despliegue (S-28):** cada tipo tiene su esquema de validación
   en el código de la API; un juego que necesite un tipo nuevo espera a que se agregue y se
   despliegue. Moverlos al catálogo está en "Cómo crece".

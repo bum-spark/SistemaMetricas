@@ -155,6 +155,44 @@ npm run actualizar-juego -- --juego la-casa-del-bosque --nivel casa_abandonada -
 El script imprime los valores antes y después; si avisa que la proporción no coincide, revisa
 la captura o los límites antes de seguir. En Git Bash antepón `MSYS_NO_PATHCONV=1`.
 
+### Cambios de catálogo (por ejemplo, la causa `fuego`)
+
+La constante del catálogo (`api/src/catalogos/`) solo se usa al **crear** un juego. Un juego que
+ya existe en Atlas guarda su propio catálogo, y la ingesta valida contra ese: hasta
+sincronizarlo, Unity no puede mandar lo nuevo (una muerte con `causa: "fuego"` se rechazaría).
+`sincronizar-catalogo` solo **agrega** lo que falta; no quita ni modifica nada, y nunca toca la
+imagen ni los límites de un nivel existente.
+
+Orden exacto:
+
+1. Fusionar la rama a `main`.
+2. `git push` de `main`.
+3. Esperar a que Render termine de desplegar: en **Events** debe decir "Deploy live", y
+   https://xolos-analytics-api.onrender.com/api/v1/salud debe responder `{"estado":"ok"}`. El
+   script corre desde tu computadora, pero así la API publicada y el catálogo quedan con el mismo
+   código.
+4. Desde `api/`, con tu `.env` apuntando a Atlas, primero **simular**:
+
+   ```powershell
+   npm run sincronizar-catalogo -- --juego la-casa-del-bosque --confirmar --simular
+   ```
+
+   Revisa la base y el host impresos, lo que agregaría (para la causa nueva:
+   `Resumen: agregaría 1 causa, 0 niveles, 0 logros, 0 coleccionables, 0 tipos de evento`) y
+   los avisos. Si hubieras puesto imágenes reales de niveles, aparecen como avisos y se
+   conservan.
+5. Si es lo esperado, **aplicar**:
+
+   ```powershell
+   npm run sincronizar-catalogo -- --juego la-casa-del-bosque --confirmar
+   ```
+
+6. Repetir el paso 4: debe decir "Nada que agregar". Después, el dashboard muestra "Fuego" en la
+   leyenda y como pestaña del mapa (vacías hasta que lleguen muertes por fuego).
+
+Si el script dice que el catálogo **quedaría inválido**, no escribió nada. Revisa el mensaje (por
+ejemplo, un nivel nuevo con un `orden` que ya existe) antes de volver a intentarlo.
+
 ## 4. Comprobar el deploy
 
 La primera petición después de un rato puede tardar ~1 minuto (el plan gratuito "duerme").
