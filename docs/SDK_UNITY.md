@@ -123,7 +123,7 @@ IDs del catálogo en `ESQUEMA_EVENTOS.md` §5.1. Niveles en orden: `casa_abandon
 |---|---|---|
 | Arranque, con consentimiento ya dado | `XolosMetricas.Iniciar()` | `POST /sesiones` y luego `sesion_inicio {}` |
 | Entra a un nivel | `NivelInicio("casa_abandonada")` | `nivel_inicio {nivelId: "casa_abandonada", intento: 1}` |
-| Termina el **último aviso** del tutorial (controles flotantes: moverse → saltar → esquivar al fantasma → recoger un objeto) | `TutorialCompletado("casa_abandonada")` y `Logro("tutorial_superado")` | `tutorial_completado {duracionMs: 55000}` + `logro {logroId: "tutorial_superado"}` |
+| Termina el **último aviso** del tutorial (controles flotantes: moverse → saltar → esquivar al fantasma → recoger un objeto) | `TutorialCompletado("casa_abandonada")` | `tutorial_completado {duracionMs: 55000}` (sin logro: `tutorial_superado` se quitó del catálogo, S-71) |
 | Lo atrapa un fantasma | `Muerte("casa_abandonada", "fantasma", transform.position)` | `muerte {…, causa: "fantasma", x: 46.2, y: 6.1, intento: 1}` + `nivel_fin {resultado: "muerte", intento: 1, duracionMs}` |
 | Cae a la lava / a un hueco | `Muerte(nivel, "lava" \| "caida", posición)` | igual, con esa causa |
 | Reaparece tras morir | `NivelInicio(nivelActual)` | `nivel_inicio {…, intento: 2}` |

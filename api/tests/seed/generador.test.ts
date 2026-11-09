@@ -173,10 +173,27 @@ describe('causas de las muertes sintéticas (S-69)', () => {
     expect(porCausa(casa.datos)).not.toHaveProperty('fuego');
   });
 
-  it('agregar una causa al catálogo no cambia los datos: mismas muertes por causa que antes de fuego', () => {
-    // Cifras de la semilla 42 tomadas ANTES de agregar fuego (las de docs/GUION_DEMO.md).
-    expect(porCausa(casa.datos)).toEqual({ fantasma: 291, lava: 103, caida: 151 });
+  it('agregar una causa al catálogo no cambia los datos: las muertes por causa no cambian', () => {
+    // Cifras de la semilla 42 desde que se quitó tutorial_superado (S-71); agregar fuego (S-69) o
+    // flor_1..4 (S-70) al catálogo no las cambia.
+    expect(porCausa(casa.datos)).toEqual({ fantasma: 289, lava: 139, caida: 158 });
     expect(porCausa(faro.datos)).toEqual({ agua: 69, caida: 131, cuervo: 88 });
-    expect(casa.datos.eventos).toHaveLength(6575);
+    expect(casa.datos.eventos).toHaveLength(6461);
+  });
+});
+
+describe('coleccionables del catálogo que el seed no genera (S-70)', () => {
+  it('flor_1..4 están en el catálogo de casa_abandonada pero el seed no los encuentra', () => {
+    expect(casa.catalogo.coleccionables.filter((c) => c.coleccionableId.startsWith('flor_')).map((c) => c.nivelId)).toEqual([
+      'casa_abandonada',
+      'casa_abandonada',
+      'casa_abandonada',
+      'casa_abandonada',
+    ]);
+    const encontrados = casa.datos.eventos
+      .filter((e) => e.tipo === 'coleccionable_encontrado')
+      .map((e) => (e.data as { coleccionableId: string }).coleccionableId);
+    expect(encontrados.length).toBeGreaterThan(0);
+    expect(encontrados.some((id) => id.startsWith('flor_'))).toBe(false);
   });
 });

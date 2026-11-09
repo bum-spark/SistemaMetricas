@@ -125,7 +125,7 @@ describe('DELETE /api/v1/jugadores/:juegoId/:playerId', () => {
 
     const res = await borrar(casa.juegoId, ctx.playerId);
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ eliminados: { jugador: 1, sesiones: 2, eventos: 11, logros: 2 } });
+    expect(res.body).toEqual({ eliminados: { jugador: 1, sesiones: 2, eventos: 11, logros: 1 } });
 
     const filtro = { playerId: ctx.playerId };
     expect(await JugadorModelo.countDocuments(filtro)).toBe(0);

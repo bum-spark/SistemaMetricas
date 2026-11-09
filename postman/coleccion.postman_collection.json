@@ -366,7 +366,7 @@
                   "  evento('sesion_inicio'),",
                   "  evento('nivel_inicio', { nivelId: 'casa_abandonada', intento: 1 }),",
                   "  evento('tutorial_completado', { duracionMs: 55000 }),",
-                  "  evento('logro', { logroId: 'tutorial_superado' }),",
+                  "  evento('coleccionable_encontrado', { coleccionableId: 'flor_1', nivelId: 'casa_abandonada' }),",
                   "  evento('muerte', { nivelId: 'casa_abandonada', intento: 1, causa: 'fantasma', x: 12.5, y: -3.2 }),",
                   "  evento('nivel_fin', { nivelId: 'casa_abandonada', intento: 1, resultado: 'muerte', duracionMs: 95000 }),",
                   "  evento('nivel_inicio', { nivelId: 'casa_abandonada', intento: 2 }),",

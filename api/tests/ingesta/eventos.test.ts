@@ -46,13 +46,13 @@ describe('POST /api/v1/eventos: lote válido', () => {
   it('registra los logros (una vez por jugador)', async () => {
     await enviar(loteEjemplo(ctx));
     const logros = await LogroObtenidoModelo.find({ playerId: ctx.playerId }).lean();
-    expect(logros.map((l) => l.logroId).sort()).toEqual(['casa_abandonada_completada', 'tutorial_superado']);
+    expect(logros.map((l) => l.logroId)).toEqual(['casa_abandonada_completada']);
 
     // El mismo logro en otra sesión no suma otro registro.
     const otra = await abrirSesion(app, juego, ctx.playerId);
-    const res = await enviar(evento({ ...ctx, sessionId: otra.sessionId }, 1, 'logro', { logroId: 'tutorial_superado' }));
+    const res = await enviar(evento({ ...ctx, sessionId: otra.sessionId }, 1, 'logro', { logroId: 'casa_abandonada_completada' }));
     expect(res.body).toEqual({ aceptados: 1, rechazados: [] });
-    expect(await LogroObtenidoModelo.countDocuments({ playerId: ctx.playerId })).toBe(2);
+    expect(await LogroObtenidoModelo.countDocuments({ playerId: ctx.playerId })).toBe(1);
   });
 
   it('acepta un solo evento enviado como objeto', async () => {
@@ -76,7 +76,7 @@ describe('duplicados por eventoId', () => {
     const res = await enviar(lote);
     expect(res.body).toEqual({ aceptados: 11, rechazados: [] });
     expect(await EventoModelo.countDocuments()).toBe(11);
-    expect(await LogroObtenidoModelo.countDocuments()).toBe(2);
+    expect(await LogroObtenidoModelo.countDocuments()).toBe(1);
   });
 
   it('un eventoId repetido dentro del mismo lote se guarda una sola vez', async () => {
