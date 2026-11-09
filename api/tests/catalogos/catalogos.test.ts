@@ -43,10 +43,18 @@ describe('La Casa del Bosque (ESQUEMA_EVENTOS.md §5.1)', () => {
     });
   });
 
-  it('tiene 4 piezas de carta en habitacion_llamas y 4 pétalos en hospital_cuarto', () => {
+  it('tiene 4 piezas de carta en habitacion_llamas, 4 pétalos en hospital_cuarto y 4 flores en casa_abandonada', () => {
     const por = (nivel: string) => c.coleccionables.filter((x) => x.nivelId === nivel).map((x) => x.coleccionableId);
     expect(por('habitacion_llamas')).toEqual(['carta_pieza_1', 'carta_pieza_2', 'carta_pieza_3', 'carta_pieza_4']);
     expect(por('hospital_cuarto')).toEqual(['petalo_1', 'petalo_2', 'petalo_3', 'petalo_4']);
+    expect(c.coleccionables.filter((x) => x.nivelId === 'casa_abandonada')).toEqual([
+      { coleccionableId: 'flor_1', nivelId: 'casa_abandonada', nombre: 'Pétalo 1' },
+      { coleccionableId: 'flor_2', nivelId: 'casa_abandonada', nombre: 'Pétalo 2' },
+      { coleccionableId: 'flor_3', nivelId: 'casa_abandonada', nombre: 'Pétalo 3' },
+      { coleccionableId: 'flor_4', nivelId: 'casa_abandonada', nombre: 'Pétalo 4' },
+    ]);
+    // Al final de la lista: es donde las deja sincronizar-catalogo en un juego que ya existe.
+    expect(c.coleccionables.slice(-4).map((x) => x.coleccionableId)).toEqual(['flor_1', 'flor_2', 'flor_3', 'flor_4']);
   });
 
   it('tiene duración esperada de 20 min, causas fantasma/lava/caída/fuego y sus 4 eventos específicos', () => {

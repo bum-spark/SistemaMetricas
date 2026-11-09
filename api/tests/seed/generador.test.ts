@@ -180,3 +180,19 @@ describe('causas de las muertes sintéticas (S-69)', () => {
     expect(casa.datos.eventos).toHaveLength(6575);
   });
 });
+
+describe('coleccionables del catálogo que el seed no genera (S-70)', () => {
+  it('flor_1..4 están en el catálogo de casa_abandonada pero el seed no los encuentra', () => {
+    expect(casa.catalogo.coleccionables.filter((c) => c.coleccionableId.startsWith('flor_')).map((c) => c.nivelId)).toEqual([
+      'casa_abandonada',
+      'casa_abandonada',
+      'casa_abandonada',
+      'casa_abandonada',
+    ]);
+    const encontrados = casa.datos.eventos
+      .filter((e) => e.tipo === 'coleccionable_encontrado')
+      .map((e) => (e.data as { coleccionableId: string }).coleccionableId);
+    expect(encontrados.length).toBeGreaterThan(0);
+    expect(encontrados.some((id) => id.startsWith('flor_'))).toBe(false);
+  });
+});

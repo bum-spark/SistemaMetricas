@@ -374,8 +374,9 @@ Los nombres y descripciones de todos los logros salvo `la_verdad` son propuestos
 |---------------------|--------------------------------------------------------------|----------------|
 | `habitacion_llamas` | `carta_pieza_1`, `carta_pieza_2`, `carta_pieza_3`, `carta_pieza_4` | `la_verdad` al tener las 4 |
 | `hospital_cuarto`   | `petalo_1`, `petalo_2`, `petalo_3`, `petalo_4`               | Ninguno por ahora |
+| `casa_abandonada`   | `flor_1`, `flor_2`, `flor_3`, `flor_4`                       | Ninguno por ahora |
 
-Nombres visibles propuestos: "Pieza de carta N", "Pétalo N" (S-20).
+Nombres visibles propuestos: "Pieza de carta N", "Pétalo N" (S-20). Las flores de `casa_abandonada` también se llaman "Pétalo N" (los nombres pueden repetirse entre niveles; el `coleccionableId` no). Van al final de la lista del catálogo y `seed-datos` no las genera (S-70).
 
 **Tipos de evento:** los 10 genéricos + `flor_recogida`, `dialogo_saltado`,
 `coleccionable_encontrado`, `tutorial_completado`.

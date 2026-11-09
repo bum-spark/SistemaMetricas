@@ -38,9 +38,11 @@ const NIVELES = [
   },
 ];
 
-// 4 coleccionables por nivel (constantes del seed).
+// 4 coleccionables por nivel. Las flores de casa_abandonada van al final de la lista (así quedan
+// también al sincronizar un juego existente) y el seed no las genera (S-70).
 const PIEZAS_DE_CARTA = 4;
 const PETALOS = 4;
+const FLORES = 4;
 
 const coleccionables = [
   ...Array.from({ length: PIEZAS_DE_CARTA }, (_, i) => ({
@@ -51,6 +53,11 @@ const coleccionables = [
   ...Array.from({ length: PETALOS }, (_, i) => ({
     coleccionableId: `petalo_${i + 1}`,
     nivelId: 'hospital_cuarto',
+    nombre: `Pétalo ${i + 1}`,
+  })),
+  ...Array.from({ length: FLORES }, (_, i) => ({
+    coleccionableId: `flor_${i + 1}`,
+    nivelId: 'casa_abandonada',
     nombre: `Pétalo ${i + 1}`,
   })),
 ];
