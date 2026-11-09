@@ -40,7 +40,8 @@ export interface PerfilJuego {
   probSeguirTrasCompletar: number;
   // Fracción de sesiones que terminan sin sesion_fin (crash o cierre forzado).
   probCrash: number;
-  tutorial?: { nivelId: string; prob: number; logro: string };
+  // logro: el que Unity manda junto con tutorial_completado, si el juego tiene uno.
+  tutorial?: { nivelId: string; prob: number; logro?: string };
   usaFlor: boolean;
   dialogos: string[];
 }
@@ -78,7 +79,8 @@ export const PERFIL_LA_CASA_DEL_BOSQUE: PerfilJuego = {
   jugadoresPorDefecto: 300,
   probSeguirTrasCompletar: 0.93,
   probCrash: 0.1,
-  tutorial: { nivelId: 'casa_abandonada', prob: 0.92, logro: 'tutorial_superado' },
+  // Sin logro de tutorial: tutorial_superado se quitó del catálogo (S-71); queda tutorial_completado.
+  tutorial: { nivelId: 'casa_abandonada', prob: 0.92 },
   usaFlor: true,
   dialogos: ['abuela_intro', 'puerta_cerrada', 'recuerdo_cocina', 'enfermera', 'carta_final'],
   niveles: [

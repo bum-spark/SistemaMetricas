@@ -93,7 +93,6 @@ export const LA_CASA_DEL_BOSQUE: DefinicionJuego = {
       { causa: 'fuego', nombre: 'Fuego' },
     ],
     logros: [
-      { logroId: 'tutorial_superado', nombre: 'Tutorial superado', descripcion: 'Completa el tutorial de controles.', nivelId: 'casa_abandonada' },
       { logroId: 'casa_abandonada_completada', nombre: 'Casa abandonada completada', descripcion: 'Completa la casa abandonada.', nivelId: 'casa_abandonada' },
       { logroId: 'hospital_cuarto_completado', nombre: 'Cuarto de hospital completado', descripcion: 'Completa el cuarto de hospital.', nivelId: 'hospital_cuarto' },
       { logroId: 'habitacion_llamas_completada', nombre: 'Habitación en llamas completada', descripcion: 'Completa la habitación en llamas.', nivelId: 'habitacion_llamas' },

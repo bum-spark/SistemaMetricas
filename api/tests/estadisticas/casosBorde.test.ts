@@ -42,8 +42,8 @@ describe('una sola sesión real (la partida de ejemplo de §11)', () => {
       { nivelId: 'casa_abandonada', causa: 'fantasma', muertes: 1, jugadores: 1, muertesPorJugador: 1 },
     ]);
     const logros = (await get(casa.juegoId, 'logros')).body.datos as { logroId: string; porcentaje: number }[];
-    expect(logros).toHaveLength(5);
-    expect(logros.filter((l) => l.porcentaje === 100).map((l) => l.logroId)).toEqual(['tutorial_superado', 'casa_abandonada_completada']);
+    expect(logros).toHaveLength(4);
+    expect(logros.filter((l) => l.porcentaje === 100).map((l) => l.logroId)).toEqual(['casa_abandonada_completada']);
 
     // Reintentos: murió en el intento 1 y completó en el 2 → pasó con 2 intentos.
     expect((await get(casa.juegoId, 'reintentos')).body.datos[0]).toEqual({

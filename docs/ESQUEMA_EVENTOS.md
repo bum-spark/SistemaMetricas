@@ -303,7 +303,7 @@ El tutorial está en **`casa_abandonada`**. Son avisos de controles flotantes en
 **moverse → saltar → esquivar al fantasma → recoger un objeto**.
 
 - **Disparador:** Unity manda el evento **cuando termina el último aviso** (recoger un objeto).
-- En el mismo lote, Unity manda el evento `logro` con `logroId: "tutorial_superado"`.
+- No hay logro de tutorial: `tutorial_superado` se quitó del catálogo (S-71). El tutorial se mide solo con este evento.
 
 | Campo        | Tipo   | Oblig. | Notas                                                                          |
 |--------------|--------|:------:|--------------------------------------------------------------------------------|
@@ -358,7 +358,6 @@ ver sección 6). `crear-juego` y `seed-datos` lo guardan, y `seed-datos` lo comp
 
 | `logroId`                       | `nombre`                     | `descripcion`                                                         | Cuándo lo manda Unity                                         |
 |---------------------------------|------------------------------|-----------------------------------------------------------------------|---------------------------------------------------------------|
-| `tutorial_superado`             | Tutorial superado            | Completa el tutorial de controles.                                    | Junto con `tutorial_completado`.                              |
 | `casa_abandonada_completada`    | Casa abandonada completada   | Completa la casa abandonada.                                          | Junto con `nivel_fin` `completado` de `casa_abandonada`.      |
 | `hospital_cuarto_completado`    | Cuarto de hospital completado| Completa el cuarto de hospital.                                       | Junto con `nivel_fin` `completado` de `hospital_cuarto`.      |
 | `habitacion_llamas_completada`  | Habitación en llamas completada | Completa la habitación en llamas.                                  | Junto con `nivel_fin` `completado` de `habitacion_llamas`.    |
@@ -911,7 +910,7 @@ db.eventos.aggregate([
   (`null` si faltan); `totalMuertes` = suma de `celdas`.
 - `explain()` (seed completo): usa `{ juegoId, tipo, timestamp }` (o `{ juegoId, tipo,
   buildVersion }` con ese filtro) y filtra el nivel en FETCH: examina todas las muertes del juego
-  (545 en La Casa del Bosque) en ≤ 10 ms. A 10x, un índice `{ juegoId, tipo, "data.nivelId" }`
+  (586 en La Casa del Bosque) en ≤ 10 ms. A 10x, un índice `{ juegoId, tipo, "data.nivelId" }`
   evitaría leer las muertes de otros niveles (no hace falta hoy).
 El dashboard escala `x, y` con `limites` sobre la imagen del nivel en un canvas.
 
@@ -1103,7 +1102,7 @@ de 1 a 11). Fíjate en los eventos 9 y 10: `nivel_fin` y `logro` tienen el mismo
   { "eventoId": "a1f0c3d2-0000-4000-8000-000000000003", "juegoId": "8c4f2a1e-5d3b-4f7a-9e2c-1b6d8a0f3e57", "playerId": "3f1c9a2e-7b4d-4e8a-9c1f-2d6b8e0a5f71", "sessionId": "b7e2d4c1-0a9f-4b3e-8d2c-6f1a5e9b3c08", "secuencia": 3, "timestamp": "2026-10-12T18:01:00.000Z", "buildVersion": "1.0.0", "plataforma": "windows", "versionEsquema": 1,
     "tipo": "tutorial_completado", "data": { "duracionMs": 55000 } },
   { "eventoId": "a1f0c3d2-0000-4000-8000-000000000004", "juegoId": "8c4f2a1e-5d3b-4f7a-9e2c-1b6d8a0f3e57", "playerId": "3f1c9a2e-7b4d-4e8a-9c1f-2d6b8e0a5f71", "sessionId": "b7e2d4c1-0a9f-4b3e-8d2c-6f1a5e9b3c08", "secuencia": 4, "timestamp": "2026-10-12T18:01:00.000Z", "buildVersion": "1.0.0", "plataforma": "windows", "versionEsquema": 1,
-    "tipo": "logro", "data": { "logroId": "tutorial_superado" } },
+    "tipo": "coleccionable_encontrado", "data": { "coleccionableId": "flor_1", "nivelId": "casa_abandonada" } },
   { "eventoId": "a1f0c3d2-0000-4000-8000-000000000005", "juegoId": "8c4f2a1e-5d3b-4f7a-9e2c-1b6d8a0f3e57", "playerId": "3f1c9a2e-7b4d-4e8a-9c1f-2d6b8e0a5f71", "sessionId": "b7e2d4c1-0a9f-4b3e-8d2c-6f1a5e9b3c08", "secuencia": 5, "timestamp": "2026-10-12T18:01:40.000Z", "buildVersion": "1.0.0", "plataforma": "windows", "versionEsquema": 1,
     "tipo": "muerte", "data": { "nivelId": "casa_abandonada", "intento": 1, "causa": "fantasma", "x": 12.5, "y": -3.2 } },
   { "eventoId": "a1f0c3d2-0000-4000-8000-000000000006", "juegoId": "8c4f2a1e-5d3b-4f7a-9e2c-1b6d8a0f3e57", "playerId": "3f1c9a2e-7b4d-4e8a-9c1f-2d6b8e0a5f71", "sessionId": "b7e2d4c1-0a9f-4b3e-8d2c-6f1a5e9b3c08", "secuencia": 6, "timestamp": "2026-10-12T18:01:40.000Z", "buildVersion": "1.0.0", "plataforma": "windows", "versionEsquema": 1,

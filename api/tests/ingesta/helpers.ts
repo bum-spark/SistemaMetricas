@@ -50,13 +50,13 @@ export function evento(ctx: Contexto, secuencia: number, tipo: string, data: Rec
   };
 }
 
-// La partida corta del ejemplo de ESQUEMA_EVENTOS.md §11 (11 eventos, 2 logros).
+// La partida corta del ejemplo de ESQUEMA_EVENTOS.md §11 (11 eventos, 1 logro, 1 coleccionable).
 export function loteEjemplo(ctx: Contexto) {
   return [
     evento(ctx, 1, 'sesion_inicio'),
     evento(ctx, 2, 'nivel_inicio', { nivelId: 'casa_abandonada', intento: 1 }),
     evento(ctx, 3, 'tutorial_completado', { duracionMs: 55000 }),
-    evento(ctx, 4, 'logro', { logroId: 'tutorial_superado' }),
+    evento(ctx, 4, 'coleccionable_encontrado', { coleccionableId: 'flor_1', nivelId: 'casa_abandonada' }),
     evento(ctx, 5, 'muerte', { nivelId: 'casa_abandonada', intento: 1, causa: 'fantasma', x: 12.5, y: -3.2 }),
     evento(ctx, 6, 'nivel_fin', { nivelId: 'casa_abandonada', intento: 1, resultado: 'muerte', duracionMs: 95000 }),
     evento(ctx, 7, 'nivel_inicio', { nivelId: 'casa_abandonada', intento: 2 }),

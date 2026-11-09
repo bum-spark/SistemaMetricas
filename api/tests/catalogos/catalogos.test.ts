@@ -29,9 +29,8 @@ describe('La Casa del Bosque (ESQUEMA_EVENTOS.md §5.1)', () => {
     expect(c.niveles.filter((n) => n.tieneTutorial).map((n) => n.nivelId)).toEqual(['casa_abandonada']);
   });
 
-  it('tiene los 5 logros definidos y no incluye suelo_descubierto (A-06)', () => {
+  it('tiene los 4 logros definidos: sin tutorial_superado (S-71) ni suelo_descubierto (A-06)', () => {
     expect(c.logros.map((l) => l.logroId)).toEqual([
-      'tutorial_superado',
       'casa_abandonada_completada',
       'hospital_cuarto_completado',
       'habitacion_llamas_completada',

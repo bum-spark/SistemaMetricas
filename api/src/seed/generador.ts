@@ -289,7 +289,9 @@ class Simulacion {
           const duracionTutorial = Math.min(Math.round(this.r.lognormal(55 * SEG, 0.3)), duracionMs - 2 * SEG);
           t = inicioIntento + duracionTutorial;
           emitir('tutorial_completado', { duracionMs: duracionTutorial });
-          logro(tutorial.logro);
+          if (tutorial.logro) {
+            logro(tutorial.logro);
+          }
         }
       }
 

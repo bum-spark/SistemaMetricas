@@ -41,10 +41,10 @@ namespace EstudioXolos.Metricas.Pruebas
             Console.WriteLine("Partida simulada de La Casa del Bosque:");
             if (!await c.IniciarAsync()) { Console.WriteLine("No se pudo iniciar la sesión."); return 1; }
 
-            // Nivel 1: casa abandonada (tutorial, una muerte, flor, logro).
+            // Nivel 1: casa abandonada (tutorial, un coleccionable, una muerte, flor, logro).
             c.NivelInicio("casa_abandonada");
             c.TutorialCompletado("casa_abandonada");
-            c.Logro("tutorial_superado");
+            c.ColeccionableEncontrado("flor_1", "casa_abandonada");
             c.DialogoSaltado("abuela_intro", "casa_abandonada");
             c.Muerte("casa_abandonada", "fantasma", 46.2, 6.1);
             c.NivelInicio("casa_abandonada");

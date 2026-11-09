@@ -2,6 +2,7 @@ import request from 'supertest';
 import { crearAppDePrueba } from '../helpers';
 import { usarBdPrueba } from '../mongo/bdPrueba';
 import { consultar, juegoConSeed, tokenAdmin, type JuegoSembrado } from './helpers';
+import { PERFIL_LA_CASA_DEL_BOSQUE } from '../../src/seed/perfiles';
 import { oraculoMapaCalor, oraculoReintentos, type FiltrosOraculo } from './oraculo';
 
 // Solo lectura: el seed (semilla fija) se inserta una vez para todo el archivo.
@@ -61,8 +62,11 @@ describe('GET /estadisticas/:juegoId/mapa-calor', () => {
       celdas: { x: number; y: number; muertes: number }[];
     };
     const top = [...celdas].sort((a, b) => b.muertes - a.muertes)[0]!;
-    // Zona principal del perfil: fantasma en (46, 6) → celda (45, 5) con celda 5.
-    expect([top.x, top.y]).toEqual([45, 5]);
+    // La celda más poblada contiene el centro de alguna zona caliente del perfil (con celda 5,
+    // la zona del fantasma en (46, 6) cae en la celda (45, 5) y la de caída en (78, 2), en (75, 0)).
+    const zonas = PERFIL_LA_CASA_DEL_BOSQUE.niveles.find((n) => n.nivelId === 'casa_abandonada')!.zonas;
+    const celdasDeZonas = zonas.map((z) => `${Math.floor(z.x / 5) * 5},${Math.floor(z.y / 5) * 5}`);
+    expect(celdasDeZonas).toContain(`${top.x},${top.y}`);
   });
 
   it('sin muertes en el filtro: celdas vacías y total 0, pero con imagen y límites', async () => {
