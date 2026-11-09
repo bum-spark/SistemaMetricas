@@ -20,6 +20,7 @@
     "crear-juego": "tsx ../scripts/crear-juego.ts",
     "actualizar-juego": "tsx ../scripts/actualizar-juego.ts",
     "sincronizar-catalogo": "tsx ../scripts/sincronizar-catalogo.ts",
+    "quitar-del-catalogo": "tsx ../scripts/quitar-del-catalogo.ts",
     "desactivar-admin": "tsx ../scripts/desactivar-admin.ts",
     "reactivar-admin": "tsx ../scripts/reactivar-admin.ts",
     "rotar-api-key": "tsx ../scripts/rotar-api-key.ts",
