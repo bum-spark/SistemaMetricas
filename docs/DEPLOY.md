@@ -190,6 +190,17 @@ Orden exacto:
 6. Repetir el paso 4: debe decir "Nada que agregar". Después, el dashboard muestra "Fuego" en la
    leyenda y como pestaña del mapa (vacías hasta que lleguen muertes por fuego).
 
+**Quitar un logro** (por ejemplo `tutorial_superado`, que ya no está en la constante): solo
+cuando el build de Unity en uso ya no lo mande (si no, esos eventos se rechazan). Primero
+simular y después aplicar:
+
+```powershell
+npm run quitar-del-catalogo -- --juego la-casa-del-bosque --logro tutorial_superado --confirmar --simular
+npm run quitar-del-catalogo -- --juego la-casa-del-bosque --logro tutorial_superado --confirmar
+```
+
+Informa cuántos jugadores lo tienen y cuántos eventos lo mencionan; esos datos se conservan.
+
 Si el script dice que el catálogo **quedaría inválido**, no escribió nada. Revisa el mensaje (por
 ejemplo, un nivel nuevo con un `orden` que ya existe) antes de volver a intentarlo.
 
